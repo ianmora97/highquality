@@ -1,0 +1,141 @@
+$primary: #c46d09;
+$secondary: #503d00;
+$third: #1c1c1c;
+
+$gold: #F4C82C;
+$maps: #e44e4e;
+
+$info: #3086e7;
+$success: #2ecc71;
+$warning: #f1c40f;
+$danger: #e74c3c;
+
+$light: #f1f1f1;
+$dark: #111111;
+
+$body-bg: $dark;
+$body-color: $light;
+
+$gray: #dddddd;
+$gray-dark: #6c757d;
+
+$theme-colors: (
+    "primary": $primary,
+    "secondary": $secondary,
+    "third": $third,
+    "success": $success,
+    "danger": $danger,
+    "warning": $warning,
+    "info": $info,
+    "dark": $dark,
+    "light": $light,
+    "gray": $gray,
+    "gray-dark": $gray-dark,
+    "gold": $gold,
+    "maps": $maps
+);
+
+$font-family-base: 'Roboto Slab', serif;
+$font-size-base: .885rem;
+
+@for $i from 1 through 10 {
+  .w-#{$i}0 {
+    width: $i * 10% !important;
+  }
+  .h-#{$i}0 {
+    height: $i * 10% !important;
+  }
+  .offset-top-#{$i}{
+    margin-top: $i * 0.5rem !important;
+  }
+  .top-#{$i}{
+    top: $i * 10% !important;
+  }
+}
+
+//breakpoints
+$grid-breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 1020px,
+  xl: 1400px,
+  xxl: 1800px
+);
+
+$input-btn-padding-y: .3rem;
+$input-btn-padding-x: .9rem;
+
+$input-border-radius: 5px;
+$input-border-radius-sm: 5px;
+$input-border-radius-lg: 5px;
+
+$btn-border-radius: 5px;
+$nav-link-padding-y: .3rem;
+$nav-link-padding-x: 1.2rem;
+
+$input-btn-font-size: $font-size-base;
+$input-btn-font-size-lg: $font-size-base;
+
+$btn-font-size: calc($font-size-base);
+
+$input-btn-padding-y-sm: .15rem;
+$input-btn-padding-x-sm: .8rem;
+$input-btn-font-size-sm: $font-size-base;
+
+$btn-padding-y-lg: .6rem;
+$btn-padding-x-lg: 1.9rem;
+
+$input-padding-y-lg: .6rem;
+
+$btn-font-size-lg: calc($font-size-base + 2px);
+
+$box-shadow:0 5px 20px -5px rgba(darken($primary, 30%), 0.3);
+
+$input-btn-border-width: 1px;
+
+$input-focus-border-color:$primary;
+$input-bg: $body-bg;
+$input-border-color: lighten($dark, 10%);
+$input-color: $light;
+$input-group-addon-bg: $body-bg;
+$input-group-addon-color: $light;
+
+$input-disabled-bg: $dark;
+
+$form-label-color: $body-color;
+$form-label-margin-bottom: 6px;
+$form-label-font-weight: normal;
+
+$table-color: $body-color;
+$table-bg: $body-bg;
+
+$pagination-active-bg: $dark;
+$pagination-active-color: $light;
+$pagination-active-border-color: $dark;
+
+$body-secondary-color: #6f6f6f;
+$breadcrumb-divider-color: #6f6f6f;
+$breadcrumb-divider: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='8'><path d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='#{$breadcrumb-divider-color}'/></svg>");
+
+$dropdown-bg: white;
+
+::selection {
+    background-color: rgba($primary, 0.4) !important;
+    color: $light !important;
+}
+img{
+    user-select: none !important;
+}
+thead, tbody, tfoot, tr, td, th{
+  white-space: nowrap;
+}
+a{
+  text-decoration: none !important;
+  transition: all 0.3s ease-in-out !important;
+}
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6{
+//   font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+}

@@ -1,0 +1,4 @@
+{
+    "watch": ["src/backend", "src/server.js"],
+    "ignore": ["src/public/**/*"]
+}
