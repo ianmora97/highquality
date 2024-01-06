@@ -51,7 +51,17 @@ const EventSchema = new mongoose.Schema({
         type: String,
         required: false,
         default: ''
-    }
+    },
+    createdAt: {
+        type: Date,
+        required: true,
+        default: moment().format('DD/MM/YYYY hh:mm:ss')
+    },
+    updatedAt: {
+        type: Date,
+        required: true,
+        default: moment().format('DD/MM/YYYY hh:mm:ss')
+    },
 });
 
 const Event = mongoose.model('Event', EventSchema);

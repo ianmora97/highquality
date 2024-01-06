@@ -1,4 +1,5 @@
 const Admin = require('./admin.schema');
+const moment = require('moment');
 
 exports.get = async () => {
     const admins = await Admin.find();
@@ -15,12 +16,15 @@ exports.auth = async (user, password) => {
 };
 
 exports.create = async (admin) => {
+    admin.createdAt = moment().format('DD/MM/YYYY hh:mm:ss');
+    admin.updatedAt = moment().format('DD/MM/YYYY hh:mm:ss');
     const newAdmin = new Admin(admin);
     await newAdmin.save();
     return newAdmin;
 };
 
 exports.update = async (id, data) => {
+    data.updatedAt = moment().format('DD/MM/YYYY hh:mm:ss');
     const admin = await Admin.findByIdAndUpdate(id, data);
     return admin;
 };

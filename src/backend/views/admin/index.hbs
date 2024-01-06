@@ -1,4 +1,4 @@
-<div class="container-fluid inter">
+<div class="container-fluid">
     <div class="row mx-0 g-3 mt-2">
         <div class="col-lg-4">
             <div class="bg-fore p-3 rounded-3 shadow">
@@ -18,6 +18,78 @@
         <div class="col-lg-12">
             <div class="bg-fore p-3 rounded-3 shadow">
                 <div id="calendar" class="text-capitalize"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addEvent" tabindex="-1" aria-labelledby="addEventLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="addEventLabel">
+                    <span class="d-block mb-1">
+                        <i class="fa-duotone fa-calendar-plus"></i> Agregar Evento
+                    </span>
+                    <small class="d-block small text-muted">
+                        <i class="fa-duotone fa-calendar-days text-gold"></i> <span id="dateSelected" class="text-capitalize"></span> 
+                        <i class="fa-duotone fa-clock text-maps"></i> <span id="timeSelected" class="text-uppercase"></span>
+                    </small>
+                </h1>
+                <button type="button" class="btn-close btn-close-white" 
+                data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-1">
+                <div class="row mx-0 g-3">
+                    <div class="col-12">
+                        <label for="opcionModal" class="form-label">Tipo de Evento</label>
+                        <select class="form-select form-select-lg" id="opcionModal" onchange="typeselection(this)">
+                            <option value="0" selected>Seleccione una opcion</option>
+                            <option value="cita">Cita</option>
+                            <option value="cerrado">Cerrado</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <hr class="my-1">
+                    </div>
+                    <div class="col-12">
+                        <div id="cerradoSelection" class="animate__animated animate__fadeIn" style="display: none;">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" role="switch" id="allDayClosed">
+                                <label class="form-check-label" for="allDayClosed">Todo el dia</label>
+                            </div>
+                            <label for="closedHours" class="form-label">Hora: Inicio - Final</label>
+                            <div class="input-group mb-3">
+                                <input type="datetime-local" class="form-control" id="closedHoursStart" placeholder="Inicio">
+                                <input type="datetime-local" class="form-control" id="closedHoursEnd" placeholder="Final">
+                            </div>
+                        </div>
+                        <div id="citaSelection" class="animate__animated animate__fadeIn" style="display: none;">
+                            <i class="fa-duotone fa-clock text-gold"></i> <span>Hora de la Cita:</span>
+                            <div id="horasDisponibles"></div>
+                            <hr>
+                            <i class="fa-duotone fa-scissors text-info"></i> <span>Servicios:</span>
+                            <div id="serviciosDisponibles"></div>
+                            <p class="text-end">
+                                Precio Final: ₡<span class="fw-bold" id="precioFinal"></span> <i class="fa-duotone fa-coins text-gold"></i>
+                            </p>
+                            <hr>
+                            <div class="mb-2">
+                                <label for="nombreCita" class="form-label">Nombre</label>
+                                <input type="text" class="form-control form-control-lg" id="nombreCita" placeholder="Nombre">
+                            </div>
+                            <div>
+                                <label for="numeroTelefono" class="form-label">Número de Teléfono</label>
+                                <input type="text" class="form-control form-control-lg" id="numeroTelefono" placeholder="80808080">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-success"><i class="fa-duotone fa-circle-plus"></i> Agendar Cita</button>
             </div>
         </div>
     </div>

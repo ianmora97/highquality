@@ -1,7 +1,9 @@
 function init(){
-    console.log('Admin Dashboard');
     createCalendar();
 }
+const modalAddEvent = new bootstrap.Modal(document.getElementById('addEvent'), {
+    keyboard: false
+});
 
 async function createCalendar(){
     const calendarEl = document.getElementById('calendar');
@@ -29,9 +31,31 @@ async function createCalendar(){
             left: 'prev,next',
             center: 'title',
             right: 'timeGridWeek,timeGridDay' // user can switch between the two
-        }
+        },
+        dateClick: onDateClick
     });
     calendar.render();
+}
+
+async function onDateClick(info){
+    modalAddEvent.show();
+    const date = moment(info.dateStr);
+
+    $("#dateSelected").html(date.format('dddd DD MMMM'));
+    $("#timeSelected").html(date.format('hh:mm a'));
+
+}
+
+async function typeselection(ele){
+    const val = ele.value;
+    if(val == 'cita'){
+        $("#citaSelection").show();
+        $("#cerradoSelection").hide();
+    }else if(val == 'cerrado'){
+        $("#cerradoSelection").show();
+        $("#citaSelection").hide();
+    }
+
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -13,7 +13,7 @@ const HorarioSchema = new mongoose.Schema({
     enable: {
         type: Boolean,
         required: true,
-    }
+    },
 });
 
 const Horario = mongoose.model('Horario', HorarioSchema);

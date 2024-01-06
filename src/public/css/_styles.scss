@@ -92,7 +92,6 @@ $input-padding-y-lg: .6rem;
 
 $btn-font-size-lg: calc($font-size-base + 2px);
 
-$box-shadow:0 5px 20px -5px rgba(darken($primary, 30%), 0.3);
 
 $input-btn-border-width: 1px;
 
@@ -102,6 +101,8 @@ $input-border-color: lighten($dark, 10%);
 $input-color: $light;
 $input-group-addon-bg: $body-bg;
 $input-group-addon-color: $light;
+$input-focus-box-shadow: 0 0 0 0.1rem rgba($primary, 0.25);
+$form-select-focus-box-shadow: 0 0 0 0.1rem rgba($primary, 0.25);
 
 $input-disabled-bg: $dark;
 
@@ -121,6 +122,13 @@ $breadcrumb-divider-color: #6f6f6f;
 $breadcrumb-divider: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='8'><path d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='#{$breadcrumb-divider-color}'/></svg>");
 
 $dropdown-bg: white;
+
+$modal-header-border-color: $dark;
+$modal-content-color: $light;
+$modal-backdrop-opacity: 0.4;
+$modal-content-border-radius: 1rem;
+$modal-content-bg: $fore;
+$modal-show-transition: transform .4s ease-out;
 
 ::selection {
     background-color: rgba($primary, 0.4) !important;

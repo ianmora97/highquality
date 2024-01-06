@@ -15,6 +15,14 @@ const AdminSchema = new mongoose.Schema({
     password:{
         type: String,
         required: true,
+    },
+    createdAt: {
+        type: Date,
+        default: moment().format('DD/MM/YYYY hh:mm:ss')
+    },
+    updatedAt: {
+        type: Date,
+        default: moment().format('DD/MM/YYYY hh:mm:ss')
     }
 });
 
