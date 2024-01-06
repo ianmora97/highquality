@@ -4,6 +4,7 @@ const { verify } = require('../middlewares/auth');
 const Horario = require('../controllers/horario.controller');
 const Admin = require('../controllers/admin.controller');
 const Event = require('../controllers/event.controller');
+const Services = require('../controllers/services.controller');
 
 /**
  * @routes /api/v1/horario
@@ -34,5 +35,18 @@ router.get('/event', Event.get);
 router.post('/event', verify, Event.create);
 router.put('/event/:id', verify, Event.update);
 router.delete('/event/:id', verify, Event.delete);
+
+/**
+ * @routes /api/v1/services
+ * @description Rutas para el CRUD de services
+ * @access Private 
+ */
+router.get('/services', Services.get);
+router.get('/services/icons', Services.getIcons);
+router.post('/services', verify, Services.create);
+router.put('/services/:id', verify, Services.update);
+router.delete('/services/:id', verify, Services.delete);
+
+
 
 module.exports = router;

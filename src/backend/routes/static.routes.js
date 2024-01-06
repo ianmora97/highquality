@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const path = require('path');
+const path = require('node:path');
 
 router.get('/*', async (req, res) => {
     const scriptPath = req.params[0];

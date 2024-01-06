@@ -16,4 +16,11 @@ router.get('/panel', verify, async (req, res) => {
     });
 });
 
+router.get('/servicios', verify, async (req, res) => {
+    res.render('admin/servicios',{
+        layout: 'admin',
+        user: req.user
+    });
+});
+
 module.exports = router;
