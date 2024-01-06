@@ -11,7 +11,8 @@ $warning: #f1c40f;
 $danger: #e74c3c;
 
 $light: #f1f1f1;
-$dark: #111111;
+$dark: #141414;
+$fore: #0d0d0d;
 
 $body-bg: $dark;
 $body-color: $light;
@@ -28,6 +29,7 @@ $theme-colors: (
     "warning": $warning,
     "info": $info,
     "dark": $dark,
+    "fore": $fore,
     "light": $light,
     "gray": $gray,
     "gray-dark": $gray-dark,
@@ -138,4 +140,8 @@ a{
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6{
 //   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
+}
+
+.inter{
+  font-family: 'Inter', sans-serif !important;
 }

@@ -1,0 +1,10 @@
+// ? Full Calendar
+.fc-theme-standard td, .fc-theme-standard th{
+    border: 1px solid $dark !important;
+}
+.fc-theme-standard .fc-scrollgrid{
+    border: none !important;
+}
+.fc .fc-col-header-cell-cushion{
+    padding: 10px 4px !important;
+}

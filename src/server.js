@@ -61,20 +61,7 @@ if(process.env.NODE_ENV === 'prod'){
     });
 }
 
-// ? Socket.io
-var io = require('socket.io')(server);
-io.on('connection', (socket) =>{
-    console.log('[OK] Socket connected', socket.id);
-    socket.on('reserva:new', (data) => {
-        io.sockets.emit('reserva:new',data);
-    });
-    socket.on('reserva:delete', (data) => {
-        io.sockets.emit('reserva:delete',data);
-    });
-    socket.on('estado:update', (data) => {
-        io.sockets.emit('estado:update',data);
-    });
-});
-// on message
-
-app.set('socketio', io);
+module.exports = {
+    app,
+    server
+}
