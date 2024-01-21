@@ -18,8 +18,8 @@ exports.get = async (limit, page, sort) => {
 };
 
 exports.create = async (event) => {
-    event.createdAt = moment().format('DD/MM/YYYY hh:mm:ss');
-    event.updatedAt = moment().format('DD/MM/YYYY hh:mm:ss');
+    event.createdAt = moment().format();
+    event.updatedAt = moment().format();
     const newEvent = new Event(event);
     await newEvent.save();
     return newEvent;

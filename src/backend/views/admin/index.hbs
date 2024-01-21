@@ -1,3 +1,11 @@
+<script src="/scripts/@fullcalendar/core/index.global.min.js"></script>
+<script src="/scripts/@fullcalendar/daygrid/index.global.min.js"></script>
+<script src="/scripts/@fullcalendar/timegrid/index.global.min.js"></script>
+<script src="/scripts/@fullcalendar/interaction/index.global.min.js"></script>
+<script src="/scripts/@fullcalendar/bootstrap5/index.global.min.js"></script>
+<script src="/scripts/@fullcalendar/moment/index.global.min.js"></script>
+<script src="/scripts/@fullcalendar/multimonth/index.global.min.js"></script>
+
 <div class="container-fluid">
     <div class="row mx-0 g-3 mt-2">
         <div class="col-lg-4">
@@ -53,6 +61,7 @@
                         <hr class="my-1">
                     </div>
                     <div class="col-12">
+                        <!-- ! Cerrado -->
                         <div id="cerradoSelection" class="animate__animated animate__fadeIn" style="display: none;">
                             <div class="form-check form-switch mb-3">
                                 <input class="form-check-input" type="checkbox" role="switch" id="allDayClosed">
@@ -64,14 +73,15 @@
                                 <input type="datetime-local" class="form-control" id="closedHoursEnd" placeholder="Final">
                             </div>
                         </div>
+                        <!-- ? Servicios -->
                         <div id="citaSelection" class="animate__animated animate__fadeIn" style="display: none;">
-                            <i class="fa-duotone fa-clock text-gold"></i> <span>Hora de la Cita:</span>
+                            <i class="fa-duotone fa-clock text-gold"></i> <span class="mb-1 d-inline-block">Hora de la Cita:</span>
                             <div id="horasDisponibles"></div>
                             <hr>
-                            <i class="fa-duotone fa-scissors text-info"></i> <span>Servicios:</span>
-                            <div id="serviciosDisponibles"></div>
+                            <i class="fa-duotone fa-scissors text-info"></i> <span class="mb-1 d-inline-block">Servicios:</span>
+                            <div id="serviciosDisponibles" class="d-flex gap-2 py-2 flex-wrap"></div>
                             <p class="text-end">
-                                Precio Final: ₡<span class="fw-bold" id="precioFinal"></span> <i class="fa-duotone fa-coins text-gold"></i>
+                                Precio Final: ₡<span class="fw-bold" id="precioFinalModal"></span> <i class="fa-duotone fa-coins text-gold"></i>
                             </p>
                             <hr>
                             <div class="mb-2">
@@ -89,7 +99,9 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-success"><i class="fa-duotone fa-circle-plus"></i> Agendar Cita</button>
+                <button type="button" class="btn btn-success" onclick="agendarCita()" style="color: white;">
+                    <i class="fa-duotone fa-circle-plus"></i> Agendar Cita
+                </button>
             </div>
         </div>
     </div>

@@ -11,7 +11,7 @@ const Services = require('../controllers/services.controller');
  * @description Rutas para el CRUD de horario
  * @access Private 
  */
-router.get('/horario', verify, Horario.get);
+router.get('/horario', Horario.get);
 router.post('/horario', verify, Horario.create);
 router.put('/horario/:id', verify, Horario.update);
 router.delete('/horario/:id', verify, Horario.delete);

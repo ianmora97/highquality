@@ -3,7 +3,7 @@ const moment = require('moment');
 
 const HorarioSchema = new mongoose.Schema({
     day: {
-        type: Array,
+        type: String,
         required: true,
     },
     hours:{
