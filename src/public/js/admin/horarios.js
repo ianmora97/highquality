@@ -32,11 +32,11 @@ function addService(item,i){
     let hours = "";
     item.hours.forEach(e =>{
         hours += `<p class="mb-0 fw-bold border-end pe-2 border-dark">
-            <span class="text-success">${e}</span>
+            <span class="text-${item.enable ? "success" : "secondary"}">${e}</span>
         </p> `;
     })
     $("#horarios").append(`
-        <div class="card bg-fore shadow p-3 animate__animated animate__fadeInLeft w-100 
+        <div class="card bg-fore shadow p-3 animate__animated animate__fadeInLeft w-100 animate__faster 
         border-end-0 border-start-0 border-bottom-0 border-5 border-${item.enable ? "primary" : "secondary"}" 
         style="animation-delay:${i*50}ms;">
 
@@ -44,7 +44,7 @@ function addService(item,i){
                 <h5 class="fw-bold mb-1">${DAYS_MAP[item.day]}</h5>
             
                 <div class="d-flex justify-content-end align-items-center">
-                    <div class="form-check form-switch form-check-lg ">
+                    <div class="form-check form-switch form-check-lg" role="button">
                         <input class="form-check-input" type="checkbox" onchange="cambiarestado('${item._id}')" 
                         role="switch" id="switchservicio-${item.day}" ${item.enable ? "checked": ""}>
                     </div>
@@ -158,11 +158,12 @@ function eliminarHoraEdit(e){
 }
 
 async function cambiarestado(id){
-    const servicio = g_servicios.get(id);
+    const horario = g_horarios.get(id);
     let dataSend = {
-        enable: !servicio.enable
+        enable: !horario.enable
     };
-    const { data } = await axios.put(`/api/v1/services/${id}`, dataSend);
+    const { data } = await axios.put(`/api/v1/horario/${id}`, dataSend);
+    bringData();
 }
 
 document.addEventListener('DOMContentLoaded', init);

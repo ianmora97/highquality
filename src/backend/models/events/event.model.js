@@ -11,8 +11,19 @@ exports.get = async (limit, page, sort) => {
     }else if(page){
         const events = await Event.find().skip(page).sort(sort).lean();
         return events;
+    }else if(sort == 'thisweek'){
+        const events = await Event.find({
+            createdAt: {
+                $gte: moment().startOf('isoWeek').format()
+            }
+        }).sort(sort).lean();
+        return events;
     }else{
-        const events = await Event.find().sort(sort).lean();
+        const events = await Event.find({
+            createdAt: {
+                $gte: sort
+            }
+        }).sort(sort).lean();
         return events;
     }
 };

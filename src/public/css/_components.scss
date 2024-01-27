@@ -13,8 +13,11 @@
     border-color: $primary !important;
     color: $light !important;
 }
-
-
+.fc-popover{
+    background-color: $fore !important;
+    border-color: $dark !important;
+    color: $light !important;
+}
 // ? Modal
 .modal .modal-footer{
     padding-top: 4px !important;
@@ -27,6 +30,11 @@
     .form-check-input{
         width: 2.8rem !important;
         height: 1.5em !important;
+    }
+    .form-check-label{
+        font-size: 1.1rem !important;
+        padding-left: 4px;
+        
     }
 }
 .form-check.form-check-flex.form-switch.form-switch-lg{

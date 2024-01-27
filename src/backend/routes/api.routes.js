@@ -5,6 +5,7 @@ const Horario = require('../controllers/horario.controller');
 const Admin = require('../controllers/admin.controller');
 const Event = require('../controllers/event.controller');
 const Services = require('../controllers/services.controller');
+const Special = require('../controllers/special.controller');
 
 /**
  * @routes /api/v1/horario
@@ -47,6 +48,15 @@ router.post('/services', verify, Services.create);
 router.put('/services/:id', verify, Services.update);
 router.delete('/services/:id', verify, Services.delete);
 
+/**
+ * @routes /api/v1/special
+ * @description Rutas para el CRUD de special
+ * @access Private 
+ */
+router.get('/special', Special.get);
+router.post('/special', verify, Special.create);
+router.put('/special/:id', verify, Special.update);
+router.delete('/special/:id', verify, Special.delete);
 
 
 module.exports = router;
