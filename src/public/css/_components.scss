@@ -18,6 +18,20 @@
     border-color: $dark !important;
     color: $light !important;
 }
+.fc-v-event{
+    border-left-width: 5px !important;
+    .fc-event-title{
+        font-weight: bold !important;
+    }
+}
+.fc-timegrid-event-harness-inset .fc-timegrid-event, .fc-timegrid-event.fc-event-mirror, .fc-timegrid-more-link{
+    box-shadow: none !important;
+    cursor: pointer !important;
+}
+.fc .fc-timegrid-axis-cushion, .fc .fc-timegrid-slot-label-cushion{
+    font-size: 10px !important;
+}
+
 // ? Modal
 .modal .modal-footer{
     padding-top: 4px !important;
@@ -47,4 +61,25 @@
 // ? Buttons
 .btn.btn-secondary{
     color: white !important;
+}
+
+.container-md-fluid{
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 0;
+    width: 100%;
+    padding-right: calc(var(--bs-gutter-x)* 0.5);
+    padding-left: calc(var(--bs-gutter-x)* 0.5);
+    margin-right: auto;
+    margin-left: auto;
+    @media (max-width: 576px){
+        margin-right: 0;
+        margin-left: 0;
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+// ? Swal Container
+.swal2-container{
+    font-family: 'Inter', sans-serif !important;
 }

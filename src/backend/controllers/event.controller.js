@@ -26,4 +26,11 @@ exports.delete = async (req, res) => {
     res.json(event);
 };
 
+exports.pagar = async (req, res) => {
+    const {id} = req.params;
+    const monto = req.body.monto;
+    const event = await Event.pagar(id,monto);
+    res.json(event);
+};
+
 

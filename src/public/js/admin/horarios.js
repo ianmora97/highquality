@@ -13,13 +13,13 @@ function fillData(data){
         $("#horarios").empty();
         data.forEach((e,i) =>{
             g_horarios.set(e._id,e);
-            addService(e,i+1);
+            addHorario(e,i+1);
         })
     }else{
         console.log('No hay datos');
     }
 }
-function addService(item,i){
+function addHorario(item,i){
     const DAYS_MAP = {
         "Monday": "Lunes",
         "Tuesday": "Martes",
@@ -130,7 +130,6 @@ async function actualizarHorario(){
 
 function eliminarHoraEdit(e){
     const id = $("#idUpdate").html();
-    // confirmation with sweetalert2
     const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
     const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
     const bootstrapColorSwall = Swal.mixin({

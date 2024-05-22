@@ -36,6 +36,7 @@ router.get('/event', Event.get);
 router.post('/event', verify, Event.create);
 router.put('/event/:id', verify, Event.update);
 router.delete('/event/:id', verify, Event.delete);
+router.put('/event/:id/pagar', verify, Event.pagar);
 
 /**
  * @routes /api/v1/services

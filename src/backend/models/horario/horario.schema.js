@@ -19,3 +19,5 @@ const HorarioSchema = new mongoose.Schema({
 const Horario = mongoose.model('Horario', HorarioSchema);
 
 module.exports = Horario;
+
+// Generate here an example of the days from monday to sunday from 10:00am - 8:00pm - create a json file

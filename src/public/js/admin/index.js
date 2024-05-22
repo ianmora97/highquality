@@ -35,11 +35,30 @@ async function bringServices(){
     horarios.forEach(e => {
         g_horarios.set(e.day, e);
     });
+    await addHalfHourtoMap();
 
     const { data: special } = await axios.get('/api/v1/special');
     special.forEach(e => {
         g_special.set(e._id, e);
     });
+}
+async function addHalfHourtoMap(){
+    g_horarios.forEach((e,i) => {
+        e.hours.forEach((h,j) => {
+            const half = moment(h, 'h:mm a').add(30, 'minutes').format('h:mm a');
+            e.hours.push(half);
+        });
+    });
+}
+function addHalfHour(arr){
+    const array = [];
+    for(let i =0; i < arr.length; i++){
+        let h = arr[i];
+        array.push(h);
+        let half = moment(h, 'h:mm a').add(30, 'minutes').format('h:mm a');
+        array.push(half);
+    }
+    return [...new Set(array)];
 }
 
 function showHorario(e,i){
@@ -113,19 +132,27 @@ function createSpecialEvents(){
 
 var businessHours = [];
 var hiddenDays = [];
+var slotDays = {
+    min: '08:00:00',
+    max: '22:00:00'
+};
 
 async function createCalendar(){
+    // set the min and max time for the calendar
+
     g_horarios.forEach((e,i) => {
-        if(!e.enable) hiddenDays.push(moment(DAYS_MAP_EN_ES[e.day], 'dddd').format('d'));
+        if(!e.enable) hiddenDays.push(parseInt(moment(DAYS_MAP_EN_ES[e.day], 'dddd').format('d')));
         else{
             e.hours = sortHours(e.hours);
             const day = DAYS_MAP_EN_ES[e.day];
             const hours = e.hours;
             businessHours.push({
-                daysOfWeek: [moment(day, 'dddd').format('d')],
+                daysOfWeek: [parseInt(moment(day, 'dddd').format('d'))],
                 startTime: moment(hours[0], 'h:mm a').format('HH:mm'),
                 endTime: moment(hours[hours.length-1], 'h:mm a').format('HH:mm'),
             });
+            slotDays.min = moment(hours[0], 'h:mm a').format('HH:mm:00');
+            slotDays.max = moment(hours[hours.length-1], 'h:mm a').format('HH:mm:00');
         }
     });
     renderCalendar();
@@ -137,16 +164,22 @@ async function renderCalendar(){
         locale: 'es',
         initialView: 'timeGridWeek',
         aspectRatio: 1,
-        height: "850px",
+        height: "900px",
         nowIndicator: true,
-        themeSystem: 'bootstrap',
         dayMaxEventRows: true,
+        dayMaxEventRows: true,
+        expandRows: true,
+        themeSystem: 'bootstrap',
         firstDay: 1,
         businessHours: businessHours,
         hiddenDays: hiddenDays,
-        slotMinTime: "08:00:00",
-        slotMaxTime: "22:00:00",
-        dayMaxEventRows: true,
+        slotMinTime: slotDays.min,
+        slotMaxTime: slotDays.max,
+        eventTimeFormat:{
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        },
         views: {
             dayGrid: {
                 titleFormat: { month: 'long' },
@@ -162,25 +195,198 @@ async function renderCalendar(){
             hour: 'numeric',
             minute: '2-digit',
             omitZeroMinute: true,
-            meridiem: 'narrow',
+            meridiem: 'short',
             hour12: true
         },
         headerToolbar: {
-            left: 'prev,next',
+            left: 'prev,next today',
             center: 'title',
-            right: 'timeGridWeek' // user can switch between the two
+            right: 'timeGridWeek dayGridDay' // user can switch between the two
+        },
+        buttonText: {
+            today: 'Hoy',
+            week: 'Semana',
+            day: 'Día',
         },
         dateClick: onDateClick,
         datesSet: dateSet,
-        viewDidMount: viewDidMount,
+        eventClick: eventClick,
+        eventContent: eventContent
     });
     calendar.render();
 }
-async function viewDidMount(info){
-    g_special.forEach((e,i) => {
-        $('.fc-daygrid-day[data-date="'+moment(e.start, "YYYY-MM-DD HH:mm").format("YYYY-MM-DD")+'"] .fc-daygrid-day-frame.fc-scrollgrid-sync-inner .fc-daygrid-day-events')
-        .addClass('bg-dark text-white text-center rounded').html('<i class="fa-duotone fa-hourglass-half fa-xs"></i> Media Hora');
+function eventContent(info){
+    const { event, view } = info;
+    const { title, start, end, extendedProps  } = event;
+    const hora = moment(start).format('h:mm a');
+    if(view.type == 'timeGridWeek'){
+        return {
+            html: `
+            <div class="d-flex justify-content-start align-items-center px-2">
+                <p class="mb-0 text-white me-2"><i class="fa-duotone fa-cut"></i></p>
+                <div class="text-white">
+                    <p class="small m-0 fw-bold">${title}</p>
+                    <p class="small m-0"><span class="text-lowercase">${hora}</span></p>
+                </div>
+            </div>`
+        }
+    }else if(view.type == 'dayGridMonth'){
+        return {
+            html:`
+            <span class="p-2">
+                <i class="fas fa-cut text-white"></i> ${title}
+                <p class="text-white px-2 m-0">Hora: ${hora}</p>
+            </span>`
+        } 
+    }
+    return true;
+}
+async function eventClick(info){
+    const { title, start, end, extendedProps  } = info.event;
+    const ev = extendedProps;
+
+    const fecha = moment(start,'YYYY-MM-DD HH:mm').format('dddd D MMMM');
+    const hora = moment(start,'YYYY-MM-DD HH:mm').format('h:mm a')
+
+    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
+    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+            confirmButton: 'btn btn-success text-white me-2',
+            denyButton: 'btn btn-danger text-white me-2',
+            cancelButton: 'btn btn-light text-dark',
+        },
+        buttonsStyling: false
+    })
+    swalWithBootstrapButtons.fire({
+        html: `
+            <div>
+                <h1 class="text-capitalize fw-bold">${title}</h1>
+                <div class="d-flex justify-content-center align-items-center my-4">
+                    ${ev.servicios.map((e,i) => {
+                        return `<span class="badge bg-gold me-1">${e}</span>`
+                    }).join('')}
+                </div>
+                <h4 class="text-primary fw-bold">${toCRC(ev.precio)} colones</h4>
+                <hr>
+                <small class="mb-1 d-block">
+                    <span class="text-capitalize">${fecha}</span> - <span class="fw-bold">${hora}</span>
+                </small>
+                <hr>
+                <div class="d-grid gap-2 col-6 mx-auto">
+                    <button type="button" class="btn btn-outline-danger btn-sm mt-2" 
+                    onclick="deleteEvent('${ev._id}')"><i class="fas fa-calendar-times pe-1"></i> Eliminar Cita</button>
+                </div>
+            </div>
+        `,
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'Pago',
+        cancelButtonText: 'Cerrar',
+        denyButtonText: 'Pendiente de Pago',
+        background: bg,
+        color: color,
+        showClass: {
+            popup: `
+                animate__animated
+                animate__fadeInDown
+                animate__faster
+                `
+        },
+        hideClass: {
+            popup: `
+                animate__animated
+                animate__fadeOutUp
+                animate__faster`
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            swalWithBootstrapButtons.fire({
+                title: 'Pago',
+                html: `
+                    <p>¿Monto?</p>
+                `,
+                input: 'text',
+                inputValue: ev.precio,
+                inputAttributes: {
+                    autocapitalize: 'off'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Pagar',
+                background: bg,
+                color: color,
+                preConfirm: async (input) => {
+                    if(input == ''){
+                        return Swal.showValidationMessage('Ingrese un monto')
+                    }else{
+                        const {data} = await axios.put(`/api/v1/event/${ev._id}/pagar`,{
+                            monto: input
+                        });
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 1000,
+                            timerProgressBar: true,
+                            background: bg,
+                            color: color,
+                        })
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Pagado'
+                        });
+                        calendar.today();
+
+                        socket.emit('estado:update',{
+                            id_reserva: ev.id_reserva,
+                            estado: 1
+                        })
+                    }
+                }
+            });
+        }else if(result.isDenied){
+            const {data} = await axios.put(`/api/v1/event/${ev._id}/pagar`,{
+                monto: 0
+            });
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1000,
+                timerProgressBar: true,
+                background: bg,
+                color: color,
+            })
+            Toast.fire({
+                icon: 'warning',
+                title: 'Por Pagar'
+            })
+            calendar.today();
+            socket.emit('estado:update',{
+                id_reserva: ev.id_reserva,
+                estado: 2
+            })
+        }
+    })
+}
+async function deleteEvent(id){
+    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
+    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
+    const {data} = await axios.delete(`/api/v1/event/${id}`);
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 1000,
+        timerProgressBar: true,
+        background: bg,
+        color: color,
     });
+    Toast.fire({
+        icon: 'success',
+        title: 'Eliminado'
+    });
+    calendar.today();
 }
 async function dateSet(info) {
     const { startStr, endStr } = info;
@@ -190,23 +396,62 @@ async function dateSet(info) {
 
     const sort = moment(startStr).startOf('isoWeek').format()
     const { data } = await axios.get(`/api/v1/event?sort=${sort}`);
+    analytics(data);
     calendar.removeAllEventSources();
     calendar.addEventSource(data);
     createSpecialEvents();
     calendar.addEventSource(eventsSpecial);
 }
-var currentDateSelected = '';
-async function onDateClick(info){
-    currentDateSelected = info.dateStr;
-    $("#mediahoraSwitch").prop('checked', false);
-    g_special.forEach((e,i) => {
-        if(moment(e.start).format("YYYY-MM-DD") == moment(currentDateSelected).format("YYYY-MM-DD")){
-            if(e.title == 'mediahora'){
-                $("#mediahoraSwitch").prop('checked', true);
-            }
+
+function analytics(data){
+    const today = moment().format('YYYY-MM-DD');
+    const events = data.filter(e => moment(e.start).format('YYYY-MM-DD') == today);
+    const total = events.length;
+    
+    $("#countCitas").html(total);
+    
+    let monto = 0;
+    const pagadas = events.filter(e => e.extendedProps.estado == 'PAGO');
+    pagadas.forEach(e => {
+        monto += parseInt(e.extendedProps.precio);
+    });
+    
+    anime({
+        targets: '#countCitas',
+        innerHTML: [0,total],
+        easing: 'linear',
+        round: 1,
+        duration: 500
+    });
+
+    anime({
+        targets: '#countGanancias',
+        innerHTML: [0,monto],
+        easing: 'linear',
+        round: 1,
+        duration: 500,
+        complete: function(anim) {
+            $('#countGanancias').html(toCRC(monto));
         }
     });
 
+}
+
+async function removeHoursBookedfromthatday(arr, date){
+    const hours = [...arr];
+    date.hour(0o0);
+    const { data: events } = await axios.get(`/api/v1/event?sort=${date.format()}`);
+    let bookedHours = [];
+    bookedHours = events.map(e => {
+        return moment(e.start).format('h:mm a')
+    });
+    const availableHours = hours.filter(hour => !bookedHours.includes(hour));
+    return availableHours;
+}
+
+var currentDateSelected = '';
+async function onDateClick(info){
+    currentDateSelected = info.dateStr;
     
     modalAddEvent.show();
     const date = moment(info.dateStr);
@@ -214,7 +459,9 @@ async function onDateClick(info){
 
     $("#horasDisponibles").empty();
     $("#serviciosDisponibles").empty();
-    day.hours.forEach((e,i) => {
+    const createHalf = addHalfHour(day.hours);
+    const arr = await removeHoursBookedfromthatday(createHalf, date);
+    arr.forEach((e,i) => {
         showHorario(e,i);
     });
     g_servicios.forEach((e,i) => {
@@ -224,97 +471,6 @@ async function onDateClick(info){
     $("#dateSelected").html(date.format('dddd DD MMMM'));
     $("#timeSelected").html(date.format('hh:mm a'));
 
-}
-async function addMediaHora(){
-    var remove = false;
-    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
-    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
-    const bootstrapColorSwall = Swal.mixin({
-        customClass: {
-            confirmButton: 'btn btn-primary',
-            cancelButton: 'btn btn-fore ms-2'
-        },
-        buttonsStyling: false
-    });
-    var id = "";
-    g_special.forEach((e,i) => {
-        if(moment(e.start).format("YYYY-MM-DD") == moment(currentDateSelected).format("YYYY-MM-DD")){
-            if(e.title == 'mediahora'){
-                remove = true;
-                id = e._id;
-            }
-        }
-    });
-    if(remove){
-        bootstrapColorSwall.fire({
-            title: '30 minutos',
-            text: "Desactivar las citas de media hora?",
-            icon: 'warning',
-            confirmButtonText: "Si",
-            showCancelButton: true,
-            cancelButtonText: "No, cancelar",
-            background: bg,
-            color: color,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                axios.delete(`/api/v1/special/${id}`);
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Media Hora Desactivada',
-                    text: `Se desactivó la media hora correctamente`,
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-                modalAddEvent.hide();
-                location.reload();
-            }else{
-                $("#citaSelection").hide();
-                $("#cerradoSelection").hide();
-            }
-        });
-        return;
-    }
-
-    bootstrapColorSwall.fire({
-        title: '30 minutos',
-        text: "Activar las citas de media hora?",
-        confirmButtonText: "Si",
-        showCancelButton: true,
-        cancelButtonText: "No, cancelar",
-        background: bg,
-        color: color,
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const datasend = {
-                title: 'mediahora',
-                start: moment(currentDateSelected).format(),
-                end: moment(currentDateSelected).format(),
-                props:{
-                    allDay: true,
-                    backgroundColor: '#ffffff',
-                    borderColor: '#ffffff',
-                    textColor: '#000000',
-                    extendedProps: {
-                        estado: 'MEDIAHORA'
-                    },
-                }
-            }
-            const {data} = axios.post('/api/v1/special', datasend);
-            Swal.fire({
-                icon: 'success',
-                title: 'Media Hora Activada',
-                text: `Se activó la media hora correctamente`,
-                showConfirmButton: false,
-                timer: 1500
-            });
-            modalAddEvent.hide();
-            location.reload();
-        }else{
-            $("#citaSelection").hide();
-            $("#cerradoSelection").hide();
-        }
-        
-    });
 }
 async function typeselection(ele){
     const val = ele.value;
@@ -336,27 +492,31 @@ function agendarCita(){
     const title = $("#nombreCita").val();
     const numero = $("#numeroTelefono").val();
     const servicios = [];
+    let price = 0;
     g_serviciosTempCheck.forEach((value, key)=>{
         servicios.push(key);
+        price += parseInt(value);
     });
     const start = moment(`${date} ${horaSeleccionada}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
     const data = {
         title: title,
         start: start,
-        end: moment(start).add(1, 'hours').format('YYYY-MM-DD HH:mm:ss'),
+        end: moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
         allDay: false,
         display: 'auto',
-        backgroundColor: '#ffffff',
-        borderColor: '#ffffff',
-        textColor: '#000000',
+        backgroundColor: '#191919',
+        borderColor: '#595959',
+        textColor: '#ffffff',
         extendedProps: {
             servicios: servicios,
             numero: numero,
-            estado: 'PENDIENTE'
+            estado: 'PENDIENTE',
+            precio: price
         },
     }
     const { data: event } = axios.post('/api/v1/event', data);
     modalAddEvent.hide();
+    calendar.today();
     // Swal.fire({
     //     icon: 'success',
     //     title: 'Cita agendada',
@@ -364,7 +524,7 @@ function agendarCita(){
     //     showConfirmButton: false,
     //     timer: 1500
     // });
-    location.reload();
+    
 }
 var horaSeleccionada = "00:00 am";
 function changeHora(hora){
@@ -380,5 +540,7 @@ function sortHours(hours) {
     });
     return sortedHours;
 }
-
+function toCRC(number){
+    return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(number).replace(/\D00(?=\D*$)/, "");
+}
 document.addEventListener('DOMContentLoaded', init);
