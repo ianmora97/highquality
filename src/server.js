@@ -7,7 +7,7 @@ const path = require('node:path');
 const http = require('http');
 const https = require('https');
 var cookieParser = require('cookie-parser')
-// const {toHttps,cert} = require('./backend/middlewares/security/https');
+const {cert} = require('./backend/middlewares/https');
 const helmet = require('helmet');
 
 // ? Settings
