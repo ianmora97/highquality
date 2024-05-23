@@ -13,21 +13,21 @@ exports.get = async (limit, page, sort) => {
         return events;
     }else if(sort == 'thisweek'){
         const events = await Event.find({
-            createdAt: {
+            start: {
                 $gte: moment().startOf('isoWeek').format()
             }
         }).sort(sort).lean();
         return events;
     }else if(sort == 'today'){
         const events = await Event.find({
-            createdAt: {
+            start: {
                 $gte: moment().startOf('day').format()
             }
         }).sort(sort).lean();
         return events;
     }else{
         const events = await Event.find({
-            createdAt: {
+            start: {
                 $gte: sort
             }
         }).sort(sort).lean();

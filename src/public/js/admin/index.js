@@ -536,32 +536,49 @@ function agendarCita(){
 }
 function cerrarDia(){
     const date = $("#dateSelected").html();
-    const title = $("#nombreCita").val();
-    const numero = $("#numeroTelefono").val();
-    const servicios = [];
-    let price = 0;
-    g_serviciosTempCheck.forEach((value, key)=>{
-        servicios.push(key);
-        price += parseInt(value);
+    const servicios = ['Cerrado'];
+    
+    // ponga todas las citas por hora del dia disponibles y agregue el estado cerrado en cada una de elllas
+    const day = moment(date, 'dddd DD MMMM').format('dddd');
+    const hours = g_horarios.get(DAYS_MAP_ES_EN[day]).hours;
+    hours.forEach((e,i) => {
+        const start = moment(`${date} ${e}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
+        const data = {
+            title: "Cerrado",
+            start: start,
+            end: moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
+            allDay: false,
+            display: 'auto',
+            backgroundColor: '#142946',
+            borderColor: '#046af3',
+            textColor: '#ffffff',
+            extendedProps: {
+                servicios: servicios,
+                numero: '88008800',
+                estado: 'PENDIENTE',
+                precio: '0'
+            },
+        }
+        const { data: event } = axios.post('/api/v1/event', data);
     });
-    const start = moment(`${date} ${horaSeleccionada}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
-    const data = {
-        title: "Cerrado",
-        start: start,
-        end: moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
-        allDay: false,
-        display: 'auto',
-        backgroundColor: '#142946',
-        borderColor: '#046af3',
-        textColor: '#ffffff',
-        extendedProps: {
-            servicios: servicios,
-            numero: numero,
-            estado: 'PENDIENTE',
-            precio: price
-        },
-    }
-    const { data: event } = axios.post('/api/v1/event', data);
+    // const start = moment(`${date} ${horaSeleccionada}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
+    // const data = {
+    //     title: "Cerrado",
+    //     start: start,
+    //     end: moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
+    //     allDay: false,
+    //     display: 'auto',
+    //     backgroundColor: '#142946',
+    //     borderColor: '#046af3',
+    //     textColor: '#ffffff',
+    //     extendedProps: {
+    //         servicios: servicios,
+    //         numero: numero,
+    //         estado: 'PENDIENTE',
+    //         precio: price
+    //     },
+    // }
+    // const { data: event } = axios.post('/api/v1/event', data);
     modalAddEvent.hide();
     calendar.today();   
 }
