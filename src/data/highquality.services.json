@@ -1,0 +1,30 @@
+[{
+  "_id": {
+    "$oid": "6648f49e52f5871b21ff89c9"
+  },
+  "name": "Corte Pelo",
+  "price": 4000,
+  "icon": "corteNino.png",
+  "enable": true,
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6648f4a952f5871b21ff89cc"
+  },
+  "name": "Barba",
+  "price": 2000,
+  "icon": "cejas.png",
+  "enable": true,
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "664ccd5224c8565279c3f4d2"
+  },
+  "name": "Black Mask",
+  "price": 5000,
+  "icon": "blackmask.png",
+  "enable": true,
+  "__v": 0
+}]

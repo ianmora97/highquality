@@ -1,0 +1,133 @@
+[{
+  "_id": {
+    "$oid": "6648f6c3b4da2daac8d9ebfd"
+  },
+  "day": "Monday",
+  "hours": [
+    "10:00 am",
+    "11:00 am",
+    "12:00 pm",
+    "1:00 pm",
+    "2:00 pm",
+    "3:00 pm",
+    "4:00 pm",
+    "5:00 pm",
+    "6:00 pm",
+    "7:00 pm"
+  ],
+  "enable": true
+},
+{
+  "_id": {
+    "$oid": "6648f7b6b4da2daac8d9ebfe"
+  },
+  "day": "Tuesday",
+  "hours": [
+    "10:00 am",
+    "11:00 am",
+    "12:00 pm",
+    "1:00 pm",
+    "2:00 pm",
+    "3:00 pm",
+    "4:00 pm",
+    "5:00 pm",
+    "6:00 pm",
+    "7:00 pm"
+  ],
+  "enable": true
+},
+{
+  "_id": {
+    "$oid": "6648f7d0b4da2daac8d9ebff"
+  },
+  "day": "Wednesday",
+  "hours": [
+    "10:00 am",
+    "11:00 am",
+    "12:00 pm",
+    "1:00 pm",
+    "2:00 pm",
+    "3:00 pm",
+    "4:00 pm",
+    "5:00 pm",
+    "6:00 pm",
+    "7:00 pm"
+  ],
+  "enable": true
+},
+{
+  "_id": {
+    "$oid": "6648f7dcb4da2daac8d9ec00"
+  },
+  "day": "Thursday",
+  "hours": [
+    "10:00 am",
+    "11:00 am",
+    "12:00 pm",
+    "1:00 pm",
+    "2:00 pm",
+    "3:00 pm",
+    "4:00 pm",
+    "5:00 pm",
+    "6:00 pm",
+    "7:00 pm"
+  ],
+  "enable": true
+},
+{
+  "_id": {
+    "$oid": "6648f7e5b4da2daac8d9ec01"
+  },
+  "day": "Friday",
+  "hours": [
+    "10:00 am",
+    "11:00 am",
+    "12:00 pm",
+    "1:00 pm",
+    "2:00 pm",
+    "3:00 pm",
+    "4:00 pm",
+    "5:00 pm",
+    "6:00 pm",
+    "7:00 pm"
+  ],
+  "enable": true
+},
+{
+  "_id": {
+    "$oid": "6648f7edb4da2daac8d9ec02"
+  },
+  "day": "Saturday",
+  "hours": [
+    "10:00 am",
+    "11:00 am",
+    "12:00 pm",
+    "1:00 pm",
+    "2:00 pm",
+    "3:00 pm",
+    "4:00 pm",
+    "5:00 pm",
+    "6:00 pm",
+    "7:00 pm"
+  ],
+  "enable": true
+},
+{
+  "_id": {
+    "$oid": "6648f7f7b4da2daac8d9ec03"
+  },
+  "day": "Sunday",
+  "hours": [
+    "10:00 am",
+    "11:00 am",
+    "12:00 pm",
+    "1:00 pm",
+    "2:00 pm",
+    "3:00 pm",
+    "4:00 pm",
+    "5:00 pm",
+    "6:00 pm",
+    "7:00 pm"
+  ],
+  "enable": false
+}]
