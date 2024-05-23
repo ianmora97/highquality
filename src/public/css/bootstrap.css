@@ -201,6 +201,21 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
   font-family: "The Nautigal", serif;
 }
 
+.nav-pills {
+  position: relative;
+  height: 2rem;
+}
+.nav-pills .nav-link {
+  color: #dddddd !important;
+  background-color: transparent !important;
+  border: transparent !important;
+}
+.nav-pills .nav-link.active {
+  background-color: #f8272e !important;
+  border: #f8272e !important;
+  color: #f1f1f1 !important;
+}
+
 .fc-theme-standard td, .fc-theme-standard th {
   border: 1px solid #141414 !important;
 }

@@ -1,3 +1,19 @@
+// ? Nav Bar
+.nav-pills{
+    position: relative;
+    height: 2rem;
+    .nav-link{
+        color: $gray !important;
+        background-color: transparent !important;
+        border: transparent !important;
+        &.active{
+            background-color: $secondary !important;
+            border: $secondary !important;
+            color: $light !important;
+        }
+    }
+}
+
 // ? Full Calendar
 .fc-theme-standard td, .fc-theme-standard th{
     border: 1px solid $dark !important;

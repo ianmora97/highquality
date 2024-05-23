@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { verify } = require('../middlewares/auth');
+const { addProps } = require('../middlewares/book');
 const Horario = require('../controllers/horario.controller');
 const Admin = require('../controllers/admin.controller');
 const Event = require('../controllers/event.controller');
@@ -34,6 +35,7 @@ router.delete('/admin/:id', verify, Admin.delete);
  */
 router.get('/event', Event.get);
 router.post('/event', verify, Event.create);
+router.post('/event/book', verify, addProps, Event.createClient);
 router.put('/event/:id', verify, Event.update);
 router.delete('/event/:id', verify, Event.delete);
 router.put('/event/:id/pagar', verify, Event.pagar);

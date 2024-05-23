@@ -1,0 +1,66 @@
+<script src="/scripts/@fullcalendar/core/index.global.min.js"></script>
+<script src="/scripts/@fullcalendar/daygrid/index.global.min.js"></script>
+<script src="/scripts/@fullcalendar/list/index.global.min.js"></script>
+<script src="/scripts/@fullcalendar/timegrid/index.global.min.js"></script>
+<script src="/scripts/@fullcalendar/interaction/index.global.min.js"></script>
+<script src="/scripts/@fullcalendar/bootstrap5/index.global.min.js"></script>
+<script src="/scripts/@fullcalendar/moment/index.global.min.js"></script>
+
+<div class="bg-fore p-3 rounded-3 shadow">
+    <p class="small text-muted text-center d-block mb-1" id="date">-</p>
+    <div id="calendar" class="text-capitalize"></div>
+</div>
+
+<div class="modal fade" id="addEvent" tabindex="-1" aria-labelledby="addEventLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="addEventLabel">
+                    <span class="d-block mb-1">
+                        <i class="fa-duotone fa-calendar-plus"></i> Agregar Evento
+                    </span>
+                    <small class="d-block small text-muted">
+                        <i class="fa-duotone fa-calendar-days text-gold"></i> <span id="dateSelected" class="text-capitalize"></span> 
+                        <i class="fa-duotone fa-clock text-maps"></i> <span id="timeSelected" class="text-uppercase"></span>
+                    </small>
+                </h1>
+                <button type="button" class="btn-close btn-close-white" 
+                data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-1">
+                <div class="row mx-0 g-3">
+                    <div class="col-12">
+                        <div id="citaSelection" class="animate__animated animate__fadeIn">
+                            <i class="fa-duotone fa-clock text-gold"></i> <span class="mb-1 d-inline-block">Hora de la Cita:</span>
+                            <div id="horasDisponibles"></div>
+                            <hr>
+                            <i class="fa-solid fa-scissors text-info"></i> <span class="mb-1 d-inline-block">Servicios:</span>
+                            <div id="serviciosDisponibles" class="d-flex gap-2 py-2 flex-wrap"></div>
+                            <p class="text-end">
+                                Precio Final: ₡<span class="fw-bold" id="precioFinalModal"></span> <i class="fa-duotone fa-coins text-gold"></i>
+                            </p>
+                            <hr>
+                            <div class="mb-2">
+                                <label for="nombreCita" class="form-label">Nombre</label>
+                                <input type="text" class="form-control form-control-lg" id="nombreCita" placeholder="Nombre">
+                            </div>
+                            <div>
+                                <label for="numeroTelefono" class="form-label">Número de Teléfono</label>
+                                <input type="number" class="form-control form-control-lg" id="numeroTelefono" placeholder="80808080">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-success" onclick="agendarCita()" style="color: white;">
+                    <i class="fa-duotone fa-circle-plus"></i> Agendar Cita
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/client/index.js"></script>

@@ -6,8 +6,6 @@
 <script src="/scripts/@fullcalendar/moment/index.global.min.js"></script>
 <script src="/scripts/@fullcalendar/multimonth/index.global.min.js"></script>
 
-
-
 <div class="container-md-fluid">
     <div class="row mx-0 g-3 mt-2">
         <div class="col-lg-4">
@@ -38,7 +36,7 @@
         </div>
         <div class="col-lg-12">
             <div class="bg-fore p-3 rounded-3 shadow">
-                <p class="small text-muted text-center d-block mb-1" id="date">asdasd</p>
+                <p class="small text-muted text-center d-block mb-1" id="date">-</p>
                 <div id="calendar" class="text-capitalize"></div>
             </div>
         </div>
@@ -113,8 +111,13 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-success" onclick="agendarCita()" style="color: white;">
+                <button type="button" class="btn btn-success" onclick="agendarCita()" style="color: white; display: none;" 
+                id="agendarCitaButton">
                     <i class="fa-duotone fa-circle-plus"></i> Agendar Cita
+                </button>
+                <button type="button" class="btn btn-success" onclick="cerrarDia()" style="color: white; display: none;" 
+                id="salvarCerrado">
+                    <i class="fa-duotone fa-circle-plus"></i> Cerrar
                 </button>
             </div>
         </div>

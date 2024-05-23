@@ -175,11 +175,6 @@ async function renderCalendar(){
         hiddenDays: hiddenDays,
         slotMinTime: slotDays.min,
         slotMaxTime: slotDays.max,
-        eventTimeFormat:{
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-        },
         views: {
             dayGrid: {
                 titleFormat: { month: 'long' },
@@ -190,6 +185,11 @@ async function renderCalendar(){
                 dayMaxEventRows: 0,
                 dayHeaderFormat: { weekday: 'long' }
             }
+        },
+        eventTimeFormat:{
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
         },
         slotLabelFormat:{
             hour: 'numeric',
@@ -211,9 +211,20 @@ async function renderCalendar(){
         dateClick: onDateClick,
         datesSet: dateSet,
         eventClick: eventClick,
-        eventContent: eventContent
+        eventContent: eventContent,
+        eventDidMount: eventDidMount
     });
     calendar.render();
+}
+function eventDidMount(info){
+    anime({
+        targets: '.fc-v-event',
+        translateY: [-40,0],
+        opacity: [0,1],
+        duration: 500,
+        delay: anime.stagger(100),
+        easing: 'easeInOutSine'
+    });
 }
 function eventContent(info){
     const { event, view } = info;
@@ -223,7 +234,7 @@ function eventContent(info){
         return {
             html: `
             <div class="d-flex justify-content-start align-items-center px-2">
-                <p class="mb-0 text-white me-2"><i class="fa-duotone fa-cut"></i></p>
+                <p class="mb-0 text-white me-2"><i class="fa-solid fa-cut"></i></p>
                 <div class="text-white">
                     <p class="small m-0 fw-bold">${title}</p>
                     <p class="small m-0"><span class="text-lowercase">${hora}</span></p>
@@ -477,13 +488,18 @@ async function typeselection(ele){
     if(val == 'cita'){
         $("#citaSelection").show();
         $("#cerradoSelection").hide();
+        $("#agendarCitaButton").show();
+        $("#salvarCerrado").hide();
     }else if(val == 'cerrado'){
         $("#cerradoSelection").show();
         $("#citaSelection").hide();
+        $("#agendarCitaButton").hide();
+        $("#salvarCerrado").show();
     }else{
         $("#citaSelection").hide();
         $("#cerradoSelection").hide();
-    
+        $("#agendarCitaButton").hide();
+        $("#salvarCerrado").hide();
     }
 }
 
@@ -516,15 +532,38 @@ function agendarCita(){
     }
     const { data: event } = axios.post('/api/v1/event', data);
     modalAddEvent.hide();
-    calendar.today();
-    // Swal.fire({
-    //     icon: 'success',
-    //     title: 'Cita agendada',
-    //     text: 'Se agendó correctamente la cita',
-    //     showConfirmButton: false,
-    //     timer: 1500
-    // });
-    
+    calendar.today();   
+}
+function cerrarDia(){
+    const date = $("#dateSelected").html();
+    const title = $("#nombreCita").val();
+    const numero = $("#numeroTelefono").val();
+    const servicios = [];
+    let price = 0;
+    g_serviciosTempCheck.forEach((value, key)=>{
+        servicios.push(key);
+        price += parseInt(value);
+    });
+    const start = moment(`${date} ${horaSeleccionada}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
+    const data = {
+        title: "Cerrado",
+        start: start,
+        end: moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
+        allDay: false,
+        display: 'auto',
+        backgroundColor: '#142946',
+        borderColor: '#046af3',
+        textColor: '#ffffff',
+        extendedProps: {
+            servicios: servicios,
+            numero: numero,
+            estado: 'PENDIENTE',
+            precio: price
+        },
+    }
+    const { data: event } = axios.post('/api/v1/event', data);
+    modalAddEvent.hide();
+    calendar.today();   
 }
 var horaSeleccionada = "00:00 am";
 function changeHora(hora){

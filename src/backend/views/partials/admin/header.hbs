@@ -6,13 +6,18 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse inter" id="navbarNavAltMarkup">
-            <div class="navbar-nav w-100 gap-3 ms-4">
-                <a class="nav-link" id="tab-panel" href="/dashboard/panel"><i class="fa-duotone fa-calendar-days"></i> Citas</a>
-                <a class="nav-link" id="tab-horarios" href="/dashboard/horarios"><i class="fa-duotone fa-clock"></i> Horario</a>
-                <a class="nav-link" id="tab-servicios" href="/dashboard/servicios"><i class="fa-duotone fa-scissors"></i> Servicios</a>
-
-                <a class="nav-link ms-auto" href="#"><i class="fa-thin fa-user-cowboy"></i> {{user.name}}</a>
+            <div class="nav nav-pills w-100 gap-3 ms-4">
+                <a class="nav-link" id="tab-panel" href="/dashboard/panel">
+                    <i class="fa-duotone fa-calendar-days"></i> Citas
+                </a>
+                <a class="nav-link" id="tab-horarios" href="/dashboard/horarios">
+                    <i class="fa-duotone fa-clock"></i> Horario
+                </a>
+                <a class="nav-link" id="tab-servicios" href="/dashboard/servicios">
+                    <i class="fa-duotone fa-scissors"></i> Servicios
+                </a>
             </div>
+            <a class="nav-link ms-auto" href="#"><i class="fa-thin fa-user-cowboy"></i> {{user.name}}</a>
         </div>
     </div>
 </nav>
@@ -22,5 +27,13 @@
     $(document).ready(function() {
         $(`#tab-${CURRENT_PAGE}`).addClass("active");
         $(`#tab-${CURRENT_PAGE}`).attr("aria-current", "page");
+        anime({
+            targets: '.nav-link',
+            translateY: [-10, 0],
+            opacity: [0, 1],
+            delay: anime.stagger(100),
+            easing: 'easeInOutSine'
+        })
     });
+
 </script>
