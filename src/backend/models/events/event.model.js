@@ -18,6 +18,13 @@ exports.get = async (limit, page, sort) => {
             }
         }).sort(sort).lean();
         return events;
+    }else if(sort == 'today'){
+        const events = await Event.find({
+            createdAt: {
+                $gte: moment().startOf('day').format()
+            }
+        }).sort(sort).lean();
+        return events;
     }else{
         const events = await Event.find({
             createdAt: {
