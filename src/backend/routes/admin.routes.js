@@ -31,5 +31,12 @@ router.get('/horarios', verify, async (req, res) => {
         tab: 'horarios'
     });
 });
+router.get('/clientes', verify, async (req, res) => {
+    res.render('admin/clients',{
+        layout: 'admin',
+        user: req.user,
+        tab: 'clientes'
+    });
+});
 
 module.exports = router;

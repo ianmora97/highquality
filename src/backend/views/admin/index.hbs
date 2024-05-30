@@ -6,6 +6,10 @@
 <script src="/scripts/@fullcalendar/moment/index.global.min.js"></script>
 <script src="/scripts/@fullcalendar/multimonth/index.global.min.js"></script>
 
+<script src="/scripts/@selectize/selectize/dist/js/selectize.min.js"></script>
+<link rel="stylesheet" href="/scripts/@selectize/selectize/dist/css/selectize.css">
+<link rel="stylesheet" href="/scripts/@selectize/selectize/dist/css/selectize.bootstrap5.css">
+
 <div class="container-md-fluid">
     <div class="row mx-0 g-3 mt-2">
         <div class="col-lg-4">
@@ -87,6 +91,19 @@
                         </div>
                         <!-- ? Servicios -->
                         <div id="citaSelection" class="animate__animated animate__fadeIn" style="display: none;">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label for="nombreCita" class="form-label">
+                                        <i class="fa-duotone fa-user text-secondary"></i> Cliente:
+                                    </label>
+                                    <p class="mb-0">
+                                        <i class="fa-duotone fa-mobile text-gold"></i> <span id="numeroTelefono"></span>
+                                    </p>
+                                </div>
+                                <select id="clientsSelectize" placeholder="Nombre del cliente...">
+                                </select>
+                            </div>
+                            <hr>
                             <i class="fa-duotone fa-clock text-gold"></i> <span class="mb-1 d-inline-block">Hora de la Cita:</span>
                             <div id="horasDisponibles"></div>
                             <hr>
@@ -95,15 +112,10 @@
                             <p class="text-end">
                                 Precio Final: ₡<span class="fw-bold" id="precioFinalModal"></span> <i class="fa-duotone fa-coins text-gold"></i>
                             </p>
-                            <hr>
-                            <div class="mb-2">
-                                <label for="nombreCita" class="form-label">Nombre</label>
-                                <input type="text" class="form-control form-control-lg" id="nombreCita" placeholder="Nombre">
-                            </div>
-                            <div>
-                                <label for="numeroTelefono" class="form-label">Número de Teléfono</label>
-                                <input type="text" class="form-control form-control-lg" id="numeroTelefono" placeholder="80808080">
-                            </div>
+                            
+                            
+                                
+                
                         </div>
                     </div>
                 </div>

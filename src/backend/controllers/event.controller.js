@@ -1,6 +1,9 @@
 const Event = require('../models/events/event.model');
+const { addClient } = require('../helpers/addClient');
 const { sendWhatsappMessage } = require('../helpers/whatsapp');
 const { sendTelegramMessage } = require('../helpers/telegram');
+
+
 exports.get = async (req, res) => {
     const limit = req.query?.limit || null;
     const page = req.query?.page || null;
@@ -12,12 +15,14 @@ exports.get = async (req, res) => {
 
 exports.create = async (req, res) => {
     const event = await Event.create(req.body);
+    await addClient(req.body);
     res.json(event);
 };
 exports.createClient = async (req, res) => {
     const event = await Event.create(req.body);
-    await sendWhatsappMessage(req.body);
-    await sendTelegramMessage(req.body);
+    await addClient(req.body);
+    // await sendWhatsappMessage(req.body);
+    // await sendTelegramMessage(req.body);
     res.json(event);
 };
 

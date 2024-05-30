@@ -41,6 +41,37 @@ async function bringServices(){
     special.forEach(e => {
         g_special.set(e._id, e);
     });
+
+    const { data: clients } = await axios.get('/api/v1/client');
+    fillClients(clients);
+}
+function fillClients(data){
+    $("#clientsSelectize").selectize({
+        valueField: 'numero',
+        labelField: 'nombre',
+        searchField: 'nombre',
+        options: data,
+        create: true,
+        render: {
+            option: function(item, escape) {
+                return `
+                <div class="bg-dark py-1 px-3 text-white rounded">
+                    <span class="title">
+                        <span class="name" id="nombreSelected">${escape(item.nombre)}</span>
+                    </span>
+                </div>`;
+            },
+            item: function(item, escape){
+                return `
+                <div class="bg-secondary px-1 rounded-3"> 
+                    <span class="name">${escape(item.nombre)}</span>
+                </div>`;
+            }
+        },
+        onChange: function(value, arg){
+            $("#numeroTelefono").html(value);
+        }
+    });
 }
 async function addHalfHourtoMap(){
     g_horarios.forEach((e,i) => {
@@ -60,7 +91,6 @@ function addHalfHour(arr){
     }
     return [...new Set(array)];
 }
-
 function showHorario(e,i){
     const HORA_FORMAT = moment(e, 'h:mm a').format('h-mm');
     $("#horasDisponibles").append(`
@@ -102,11 +132,9 @@ function addServicioToArray(servicio, precio){
     }
     $('#precioFinalModal').html(`${total}`);
 }
-
 const modalAddEvent = new bootstrap.Modal(document.getElementById('addEvent'), {
     keyboard: false
 });
-
 var eventsSpecial = [];
 function createSpecialEvents(){
     eventsSpecial = [];
@@ -129,7 +157,6 @@ function createSpecialEvents(){
         }
     });
 }
-
 var businessHours = [];
 var hiddenDays = [];
 var slotDays = {
@@ -138,8 +165,6 @@ var slotDays = {
 };
 
 async function createCalendar(){
-    // set the min and max time for the calendar
-
     g_horarios.forEach((e,i) => {
         if(!e.enable) hiddenDays.push(parseInt(moment(DAYS_MAP_EN_ES[e.day], 'dddd').format('d')));
         else{
@@ -217,23 +242,16 @@ async function renderCalendar(){
     calendar.render();
 }
 function eventDidMount(info){
-    anime({
-        targets: '.fc-v-event',
-        translateY: [-40,0],
-        opacity: [0,1],
-        duration: 500,
-        delay: anime.stagger(100),
-        easing: 'easeInOutSine'
-    });
+    
 }
 function eventContent(info){
     const { event, view } = info;
-    const { title, start, end, extendedProps  } = event;
+    const { title, start} = event;
     const hora = moment(start).format('h:mm a');
     if(view.type == 'timeGridWeek'){
         return {
             html: `
-            <div class="d-flex justify-content-start align-items-center px-2">
+            <div class="d-flex justify-content-start align-items-center px-2 animate__animated animate__fadeIn">
                 <p class="mb-0 text-white me-2"><i class="fa-solid fa-cut"></i></p>
                 <div class="text-white">
                     <p class="small m-0 fw-bold">${title}</p>
@@ -413,7 +431,6 @@ async function dateSet(info) {
     createSpecialEvents();
     calendar.addEventSource(eventsSpecial);
 }
-
 function analytics(data){
     const today = moment().format('YYYY-MM-DD');
     const events = data.filter(e => moment(e.start).format('YYYY-MM-DD') == today);
@@ -447,7 +464,6 @@ function analytics(data){
     });
 
 }
-
 async function removeHoursBookedfromthatday(arr, date){
     const hours = [...arr];
     date.hour(0o0);
@@ -459,7 +475,6 @@ async function removeHoursBookedfromthatday(arr, date){
     const availableHours = hours.filter(hour => !bookedHours.includes(hour));
     return availableHours;
 }
-
 var currentDateSelected = '';
 async function onDateClick(info){
     currentDateSelected = info.dateStr;
@@ -502,11 +517,10 @@ async function typeselection(ele){
         $("#salvarCerrado").hide();
     }
 }
-
 function agendarCita(){
     const date = $("#dateSelected").html();
-    const title = $("#nombreCita").val();
-    const numero = $("#numeroTelefono").val();
+    const title = $("#nombreSelected").html();
+    const numero = $("#clientsSelectize").val();
     const servicios = [];
     let price = 0;
     g_serviciosTempCheck.forEach((value, key)=>{
@@ -515,7 +529,7 @@ function agendarCita(){
     });
     const start = moment(`${date} ${horaSeleccionada}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
     const data = {
-        title: title,
+        title: sentecesCase(title),
         start: start,
         end: moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
         allDay: false,
@@ -538,7 +552,6 @@ function cerrarDia(){
     const date = $("#dateSelected").html();
     const servicios = ['Cerrado'];
     
-    // ponga todas las citas por hora del dia disponibles y agregue el estado cerrado en cada una de elllas
     const day = moment(date, 'dddd DD MMMM').format('dddd');
     const hours = g_horarios.get(DAYS_MAP_ES_EN[day]).hours;
     hours.forEach((e,i) => {
@@ -598,5 +611,8 @@ function sortHours(hours) {
 }
 function toCRC(number){
     return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(number).replace(/\D00(?=\D*$)/, "");
+}
+function sentecesCase(str){
+    return str.toLowerCase().replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
 }
 document.addEventListener('DOMContentLoaded', init);

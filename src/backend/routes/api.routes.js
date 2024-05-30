@@ -4,6 +4,7 @@ const { verify } = require('../middlewares/auth');
 const { addProps } = require('../middlewares/book');
 const Horario = require('../controllers/horario.controller');
 const Admin = require('../controllers/admin.controller');
+const Client = require('../controllers/client.controller');
 const Event = require('../controllers/event.controller');
 const Services = require('../controllers/services.controller');
 const Special = require('../controllers/special.controller');
@@ -50,6 +51,16 @@ router.get('/services/icons', Services.getIcons);
 router.post('/services', verify, Services.create);
 router.put('/services/:id', verify, Services.update);
 router.delete('/services/:id', verify, Services.delete);
+
+/**
+ * @routes /api/v1/client
+ * @description Rutas para el CRUD de client
+ * @access Private 
+ */
+router.get('/client', Client.get);
+router.post('/client', verify, Client.create);
+router.put('/client/:id', verify, Client.update);
+router.delete('/client/:id', verify, Client.delete);
 
 /**
  * @routes /api/v1/special

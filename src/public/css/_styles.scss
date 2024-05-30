@@ -137,8 +137,18 @@ $modal-show-transition: transform .4s ease-out;
 img{
     user-select: none !important;
 }
+$table-border-color: $dark;
+$table-bg: $fore;
+
 thead, tbody, tfoot, tr, td, th{
   white-space: nowrap;
+}
+
+thead th:first-child{
+  border-top-left-radius: 0.5rem;
+}
+thead th:last-child{
+  border-top-right-radius: 0.5rem;
 }
 a{
   text-decoration: none !important;

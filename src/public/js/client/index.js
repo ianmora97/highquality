@@ -28,14 +28,12 @@ async function bringServices(){
     data.forEach((e,i) => {
         g_servicios.set(e._id, e);
     });
-
     const { data: horarios } = await axios.get('/api/v1/horario');
     g_horarios.clear();
     horarios.forEach(e => {
         g_horarios.set(e.day, e);
     });
 }
-
 function showHorario(e,i){
     const HORA_FORMAT = moment(e, 'h:mm a').format('h-mm');
     $("#horasDisponibles").append(`
@@ -77,18 +75,15 @@ function addServicioToArray(servicio, precio){
     }
     $('#precioFinalModal').html(`${total}`);
 }
-
 const modalAddEvent = new bootstrap.Modal(document.getElementById('addEvent'), {
     keyboard: false
 });
-
 var businessHours = [];
 var hiddenDays = [];
 var slotDays = {
     min: '08:00:00',
     max: '22:00:00'
 };
-
 async function createCalendar(){
     g_horarios.forEach((e,i) => {
         if(!e.enable) hiddenDays.push(parseInt(moment(DAYS_MAP_EN_ES[e.day], 'dddd').format('d')));
@@ -167,18 +162,12 @@ function eventContent(info){
         html: ''
     };
 }
-
 async function dateSet(info) {
     const { startStr, endStr } = info;
     const start = moment(startStr).format('dddd D MMM');
     const end = moment(endStr).format('dddd D MMM');
     $("#date").html(`${start} - ${end}`);
-
-    // const sort = moment(startStr).format();
-    // const { data: events } = await axios.get(`/api/v1/event?sort=${sort}`);
-
 }
-
 async function removeHoursBookedfromthatday(arr, date){
     const hours = [...arr];
     date.hour(0o0);
@@ -190,7 +179,6 @@ async function removeHoursBookedfromthatday(arr, date){
     const availableHours = hours.filter(hour => !bookedHours.includes(hour));
     return availableHours;
 }
-
 var currentDateSelected = '';
 async function onDateClick(info){
     currentDateSelected = info.dateStr;
@@ -212,8 +200,10 @@ async function onDateClick(info){
     $("#dateSelected").html(date.format('dddd DD MMMM'));
     $("#timeSelected").html(date.format('hh:mm a'));
 }
-
 function agendarCita(){
+    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
+    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
+
     const date = $("#dateSelected").html();
     const title = $("#nombreCita").val();
     const numero = $("#numeroTelefono").val();
@@ -225,7 +215,7 @@ function agendarCita(){
     });
     const start = moment(`${date} ${horaSeleccionada}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
     const data = {
-        title: title,
+        title: sentecesCase(title),
         start: start,
         end: moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
         extendedProps: {
@@ -242,7 +232,9 @@ function agendarCita(){
         title: 'Cita agendada',
         text: 'Se agendó correctamente la cita',
         showConfirmButton: false,
-        timer: 1500
+        timer: 1500,
+        background: bg,
+        color: color,
     });
 }
 var horaSeleccionada = "00:00 am";
@@ -250,7 +242,6 @@ function changeHora(hora){
     $("#timeSelected").html(hora);
     horaSeleccionada = hora;
 }
-
 function sortHours(hours) {
     const sortedHours = hours.sort((a, b) => {
         const timeA = new Date("2020-01-01 " + a).getTime();
@@ -261,5 +252,8 @@ function sortHours(hours) {
 }
 function toCRC(number){
     return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(number).replace(/\D00(?=\D*$)/, "");
+}
+function sentecesCase(str){
+    return str.toLowerCase().replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
 }
 document.addEventListener('DOMContentLoaded', init);
