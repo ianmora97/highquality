@@ -35,6 +35,16 @@ exports.get = async (limit, page, sort) => {
     }
 };
 
+exports.getMonth = async (month) => {
+    const events = await Event.find({
+        start: {
+            $gte: moment(month).startOf('month').format(),
+            $lte: moment(month).endOf('month').format()
+        }
+    }).lean();
+    return events;
+};
+
 exports.create = async (event) => {
     event.createdAt = moment().format();
     event.updatedAt = moment().format();

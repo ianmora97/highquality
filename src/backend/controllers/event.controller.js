@@ -1,5 +1,5 @@
 const Event = require('../models/events/event.model');
-const { addClient } = require('../helpers/addClient');
+const { addClient, addOneCitaPaga } = require('../helpers/addClient');
 const { sendWhatsappMessage } = require('../helpers/whatsapp');
 const { sendTelegramMessage } = require('../helpers/telegram');
 
@@ -13,14 +13,27 @@ exports.get = async (req, res) => {
     res.json(events);
 };
 
+exports.getMonth = async (req, res) => {
+    const month = req.query?.month || null;
+    const events = await Event.getMonth(month);
+    res.json(events);
+};
+
 exports.create = async (req, res) => {
-    const event = await Event.create(req.body);
-    await addClient(req.body);
-    res.json(event);
+    if(req.body.title != 'Cerrado'){
+        const client = await addClient(req.body);
+        req.body.title = client.nombre;
+        const event = await Event.create(req.body);
+        res.json(event);
+    }else{
+        const event = await Event.create(req.body);
+        res.json(event);
+    }
 };
 exports.createClient = async (req, res) => {
+    const client = await addClient(req.body);
+    req.body.title = client.nombre;
     const event = await Event.create(req.body);
-    await addClient(req.body);
     // await sendWhatsappMessage(req.body);
     // await sendTelegramMessage(req.body);
     res.json(event);
@@ -42,6 +55,7 @@ exports.pagar = async (req, res) => {
     const {id} = req.params;
     const monto = req.body.monto;
     const event = await Event.pagar(id,monto);
+    await addOneCitaPaga(event);
     res.json(event);
 };
 

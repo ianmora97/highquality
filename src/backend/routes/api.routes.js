@@ -35,8 +35,9 @@ router.delete('/admin/:id', verify, Admin.delete);
  * @access Private 
  */
 router.get('/event', Event.get);
+router.get('/event/month', Event.getMonth);
 router.post('/event', verify, Event.create);
-router.post('/event/book', verify, addProps, Event.createClient);
+router.post('/event/book', addProps, Event.createClient);
 router.put('/event/:id', verify, Event.update);
 router.delete('/event/:id', verify, Event.delete);
 router.put('/event/:id/pagar', verify, Event.pagar);

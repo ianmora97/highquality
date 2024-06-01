@@ -12,31 +12,41 @@
 <div class="container-fluid">
     <div class="row mx-0 g-3 mt-2">
         <section class="col-12 animate__animated animate__fadeInUp">
-            <div class="bg-fore shadow rounded-3 p-3">
-                <h1 class="fw-bold"><i class="fa-duotone fa-users text-primary"></i> Clientes</h1>
-                <small class="text-light mb-1">Todos los clientes registrados</small>
-                <div class="d-flex justify-content-start align-items-center">
-                    <p class="text-muted small mt-1 mb-0 me-3"><i class="fa-solid fa-clock"></i> Actualizado hace: <span id="lastUpdated" class="text-primary">1 seg</span></p>
-                    <p class="text-muted small mt-1 mb-0"><i class="fa-duotone fa-dice"></i> Total: <span id="totalitems" class="text-primary">20</span></p>
+            <div class="bg-fore shadow rounded-3 p-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold"><i class="fa-duotone fa-users text-primary"></i> Clientes</h1>
+                    <small class="text-light mb-1">Todos los clientes registrados</small>
+                    <div class="d-flex justify-content-start align-items-center">
+                        <p class="text-muted small mt-1 mb-0 me-3"><i class="fa-solid fa-clock"></i> Actualizado hace: <span id="lastUpdated" class="text-primary">1 seg</span></p>
+                    </div>
                 </div>
+                <h1 class="display-2 fw-bold mb-0">
+                    <span id="totalitems" class="text-gold">20</span>
+                </h1>
             </div>
         </section>
 
         <section class="col-12 animate__animated animate__fadeInUp">
-            <div class="table-container position-relative bg-fore$table-bg: rounded-3" id="table-container">
-                <table style="margin: 0 !important;" class="table table-custom table-striped table-responsive nowrap align-middle position-relative w-100" id="table">
+            <div class="table-container position-relative bg-fore rounded-3" 
+            id="table-container">
+                <table style="margin: 0 !important;" 
+                class="table table-custom table-striped table-responsive nowrap align-middle position-relative w-100" 
+                id="table">
                     <thead>
                         <tr id="thead">
-                            <th scope="col" data-priority="1">Nombre</th>
-                            <th scope="col" data-priority="2">Numero</th>
+                            <th scope="col" data-priority="1"><i class="fa-duotone fa-id-card"></i> Nombre</th>
+                            <th scope="col" data-priority="2"><i class="fa-duotone fa-calendar-days"></i> Citas</th>
+                            <th scope="col" data-priority="3"><i class="fa-duotone fa-phone"></i> Telefono</th>
                         </tr>
                     </thead>
                     <tbody id="tbody">
                         <tr class="placeholder-glow">
                             <td><span class="placeholder col-10"></span></td>
                             <td><span class="placeholder col-10"></span></td>
+                            <td><span class="placeholder col-10"></span></td>
                         </tr>
                         <tr class="placeholder-glow">
+                            <td><span class="placeholder col-10"></span></td>
                             <td><span class="placeholder col-10"></span></td>
                             <td><span class="placeholder col-10"></span></td>
                         </tr>
@@ -55,35 +65,7 @@
                 <div class="pagination-tables" id="pagination"></div>
             </div>
         </section>
-    </div>
-</div>
 
-<div class="modal fade" id="editHorario" tabindex="-1" 
-aria-labelledby="editHorarioLabel" aria-hidden="true" data-bs-focus="false">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="editHorarioLabel">
-                    <i class="fa-duotone fa-clock"></i> Editar Horario
-                    <span class="small text-muted d-block" id="idUpdate"></span>
-                </h1>
-                
-                <button type="button" class="btn-close btn-close-white" 
-                data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="horas-edit"></div>
-                <div class="d-flex justify-content-center align-items-center px-2">
-                    <button class="btn btn-outline-primary" type="button" onclick="agregarHora(this)"><i class="fa-solid fa-clock"></i> Agregar Hora</button>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-light" onclick="actualizarHorario()">
-                    <i class="fa-duotone fa-save"></i> Actualizar
-                </button>
-            </div>
-        </div>
     </div>
 </div>
 

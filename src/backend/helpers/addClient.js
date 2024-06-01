@@ -17,6 +17,18 @@ function addClient(data){
     });
 }
 
+function addOneCitaPaga(data){
+    return new Promise(async (resolve, reject) => {
+        try {
+            const client = await Client.addOneCitaPaga(parseInt(data.extendedProps.numero));
+            resolve(client);
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
 module.exports = {
-    addClient
+    addClient,
+    addOneCitaPaga
 };

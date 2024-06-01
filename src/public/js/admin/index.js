@@ -43,15 +43,21 @@ async function bringServices(){
     });
 
     const { data: clients } = await axios.get('/api/v1/client');
-    fillClients(clients);
+    fillClients(clients);    
 }
+var g_clientSelected;
+var g_clients = new Map();
+var clientSelectize;
 function fillClients(data){
-    $("#clientsSelectize").selectize({
+    data.forEach(e =>{
+        g_clients.set(parseInt(e.numero), e);
+    })
+    clientSelectize = $("#clientsSelectize").selectize({
         valueField: 'numero',
         labelField: 'nombre',
         searchField: 'nombre',
         options: data,
-        create: true,
+        create: false,
         render: {
             option: function(item, escape) {
                 return `
@@ -70,15 +76,19 @@ function fillClients(data){
         },
         onChange: function(value, arg){
             $("#numeroTelefono").html(value);
+            g_clientSelected = g_clients.get(parseInt(value));
         }
     });
 }
 async function addHalfHourtoMap(){
-    g_horarios.forEach((e,i) => {
-        e.hours.forEach((h,j) => {
+    g_horarios.forEach((e) => {
+        let hours = e.hours;
+        const length = hours.length;
+        for(let i = 0; i < (length - 1); i++){
+            const h = hours[i];
             const half = moment(h, 'h:mm a').add(30, 'minutes').format('h:mm a');
             e.hours.push(half);
-        });
+        }
     });
 }
 function addHalfHour(arr){
@@ -163,7 +173,7 @@ var slotDays = {
     min: '08:00:00',
     max: '22:00:00'
 };
-
+var expected_view = 'timeGridWeek';
 async function createCalendar(){
     g_horarios.forEach((e,i) => {
         if(!e.enable) hiddenDays.push(parseInt(moment(DAYS_MAP_EN_ES[e.day], 'dddd').format('d')));
@@ -174,12 +184,16 @@ async function createCalendar(){
             businessHours.push({
                 daysOfWeek: [parseInt(moment(day, 'dddd').format('d'))],
                 startTime: moment(hours[0], 'h:mm a').format('HH:mm'),
-                endTime: moment(hours[hours.length-1], 'h:mm a').format('HH:mm'),
+                endTime: moment(hours[hours.length-1], 'h:mm a').add(1, 'hour').format('HH:mm'),
             });
             slotDays.min = moment(hours[0], 'h:mm a').format('HH:mm:00');
-            slotDays.max = moment(hours[hours.length-1], 'h:mm a').format('HH:mm:00');
+            slotDays.max = moment(hours[hours.length-1], 'h:mm a').add(1, 'hour').format('HH:mm:00');
         }
     });
+    let viewport = $(window).width();
+    if(viewport < 600){
+        expected_view = 'dayGridFourWeek';
+    }
     renderCalendar();
 }
 var calendar;
@@ -187,7 +201,7 @@ async function renderCalendar(){
     const calendarEl = document.getElementById('calendar');
     calendar = new FullCalendar.Calendar(calendarEl, {
         locale: 'es',
-        initialView: 'timeGridWeek',
+        initialView: expected_view,
         aspectRatio: 1,
         height: "900px",
         nowIndicator: true,
@@ -209,6 +223,12 @@ async function renderCalendar(){
                 titleFormat: { month: 'long' },
                 dayMaxEventRows: 0,
                 dayHeaderFormat: { weekday: 'long' }
+            },
+            dayGridFourWeek: {
+                titleFormat: { month: 'long' },
+                type: 'timeGridWeek',
+                duration: { days: 4 },
+                dayMaxEventRows: 0
             }
         },
         eventTimeFormat:{
@@ -224,14 +244,15 @@ async function renderCalendar(){
             hour12: true
         },
         headerToolbar: {
-            left: 'prev,next today',
+            left: 'prev',
             center: 'title',
-            right: 'timeGridWeek dayGridDay' // user can switch between the two
+            right: 'next'
         },
         buttonText: {
             today: 'Hoy',
             week: 'Semana',
             day: 'Día',
+            dayGridFourWeek: '3 Dias',
         },
         dateClick: onDateClick,
         datesSet: dateSet,
@@ -259,14 +280,17 @@ function eventContent(info){
                 </div>
             </div>`
         }
-    }else if(view.type == 'dayGridMonth'){
+    }else if(view.type == 'dayGridFourWeek'){
         return {
-            html:`
-            <span class="p-2">
-                <i class="fas fa-cut text-white"></i> ${title}
-                <p class="text-white px-2 m-0">Hora: ${hora}</p>
-            </span>`
-        } 
+            html: `
+            <div class="d-flex justify-content-start align-items-center px-2 animate__animated animate__fadeIn">
+                <p class="mb-0 text-white me-2"><i class="fa-solid fa-cut"></i></p>
+                <div class="text-white">
+                    <p class="small m-0 fw-bold">${title}</p>
+                    <p class="small m-0"><span class="text-lowercase">${hora}</span></p>
+                </div>
+            </div>`
+        }
     }
     return true;
 }
@@ -431,7 +455,7 @@ async function dateSet(info) {
     createSpecialEvents();
     calendar.addEventSource(eventsSpecial);
 }
-function analytics(data){
+async function analytics(data){
     const today = moment().format('YYYY-MM-DD');
     const events = data.filter(e => moment(e.start).format('YYYY-MM-DD') == today);
     const total = events.length;
@@ -462,6 +486,21 @@ function analytics(data){
             $('#countGanancias').html(toCRC(monto));
         }
     });
+    const month = moment().format('YYYY-MM');
+    const {data: eventsMonth } = await axios.get('/api/v1/event/month?month='+month);
+    const pagos = eventsMonth.filter(e => e.extendedProps.estado == 'PAGO');
+    const totalMonth = pagos.map(e => parseInt(e.extendedProps.precio)).reduce((acc, e) => acc + e, 0);
+
+    anime({
+        targets: '#countGananciasMes',
+        innerHTML: [0,totalMonth],
+        easing: 'linear',
+        round: 1,
+        duration: 500,
+        complete: function(anim) {
+            $('#countGananciasMes').html(toCRC(totalMonth));
+        }
+    });
 
 }
 async function removeHoursBookedfromthatday(arr, date){
@@ -485,8 +524,7 @@ async function onDateClick(info){
 
     $("#horasDisponibles").empty();
     $("#serviciosDisponibles").empty();
-    const createHalf = addHalfHour(day.hours);
-    const arr = await removeHoursBookedfromthatday(createHalf, date);
+    const arr = await removeHoursBookedfromthatday(day.hours, date);
     arr.forEach((e,i) => {
         showHorario(e,i);
     });
@@ -517,7 +555,43 @@ async function typeselection(ele){
         $("#salvarCerrado").hide();
     }
 }
-function agendarCita(){
+async function addNewClientToList(){
+    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
+    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+            confirmButton: 'btn btn-success text-white me-2',
+            cancelButton: 'btn btn-light text-dark',
+        },
+        buttonsStyling: false
+    });
+    const { value: formValues } = await swalWithBootstrapButtons.fire({
+        title: 'Agregar Cliente',
+        html: `
+            <input id="nombreCliente" class="form-control form-control-lg mb-2" placeholder="Nombre">
+            <input id="numeroCliente" class="form-control form-control-lg" placeholder="Número de Teléfono">`,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Guardar',
+        cancelButtonText: 'Cancelar',
+        background: bg,
+        color: color,
+        preConfirm: async () => {
+            const numero = parseInt(document.getElementById('numeroCliente').value);
+            const nombre = sentecesCase(document.getElementById('nombreCliente').value);
+            const {data: client} = await axios.post('/api/v1/client',{numero,nombre});
+            g_clients.set(client.numero, client);
+            return client;
+        }
+    });
+    const selectize = clientSelectize[0].selectize;
+    selectize.addOption(formValues);
+    selectize.refreshOptions();
+}
+async function agendarCita(){
+    if(!checkCitaData()){
+        return;
+    }
     const date = $("#dateSelected").html();
     const title = $("#nombreSelected").html();
     const numero = $("#clientsSelectize").val();
@@ -528,6 +602,7 @@ function agendarCita(){
         price += parseInt(value);
     });
     const start = moment(`${date} ${horaSeleccionada}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
+    
     const data = {
         title: sentecesCase(title),
         start: start,
@@ -544,54 +619,115 @@ function agendarCita(){
             precio: price
         },
     }
-    const { data: event } = axios.post('/api/v1/event', data);
+    const { data: event } = await axios.post('/api/v1/event', data);
     modalAddEvent.hide();
-    calendar.today();   
+    calendar.today();
+    reloadData();
+}
+function reloadData(){
+    g_serviciosTempCheck.clear();
+    g_clientSelected = undefined;
+    horaSeleccionada = "00:00 am";
+    $("#clientsSelectize").val('');
+}
+function checkCitaData(){
+    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
+    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
+    if(horaSeleccionada == "00:00 am"){
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Seleccione una hora',
+            background: bg,
+            color: color,
+        });
+        return false;
+    }else if(g_serviciosTempCheck.size == 0){
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Seleccione un servicio',
+            background: bg,
+            color: color,
+        });
+        return false;
+    }else if(g_clientSelected == undefined){
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Seleccione un cliente',
+            background: bg,
+            color: color,
+        });
+        return false;
+    }
+    return true;
 }
 function cerrarDia(){
+    const allday = $("#allDayClosed").is(':checked');
+
     const date = $("#dateSelected").html();
     const servicios = ['Cerrado'];
     
     const day = moment(date, 'dddd DD MMMM').format('dddd');
     const hours = g_horarios.get(DAYS_MAP_ES_EN[day]).hours;
-    hours.forEach((e,i) => {
-        const start = moment(`${date} ${e}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
-        const data = {
-            title: "Cerrado",
-            start: start,
-            end: moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
-            allDay: false,
-            display: 'auto',
-            backgroundColor: '#142946',
-            borderColor: '#046af3',
-            textColor: '#ffffff',
-            extendedProps: {
-                servicios: servicios,
-                numero: '88008800',
-                estado: 'PENDIENTE',
-                precio: '0'
-            },
+    if(allday){
+        hours.forEach((e,i) => {
+            const start = moment(`${date} ${e}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
+            const data = {
+                title: "Cerrado",
+                start: start,
+                end: moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
+                allDay: false,
+                display: 'auto',
+                backgroundColor: '#142946',
+                borderColor: '#046af3',
+                textColor: '#ffffff',
+                extendedProps: {
+                    servicios: servicios,
+                    numero: '88008800',
+                    estado: 'PENDIENTE',
+                    precio: '0'
+                },
+            }
+            const { data: event } = axios.post('/api/v1/event', data);
+        });
+    }else{
+        const startTime = moment(`${date} ${$("#closedHoursStart").val()}`, 'dddd DD MMMM HH:mm').format('YYYY-MM-DD HH:00:00');
+        const endTime = moment(`${date} ${$("#closedHoursEnd").val()}`, 'dddd DD MMMM HH:mm').format('YYYY-MM-DD HH:00:00');
+        
+        const s = moment(startTime);
+        const e = moment(endTime);
+        const hoursArray = [];
+
+        let currentHour = moment(s).startOf('hour'); // Round down to the start of the hour
+
+        hoursArray.push(currentHour.format('hh:mm a'));
+        for (let i = 0; currentHour.isBefore(e); i++) {
+            currentHour.add(1, 'hour');
+            hoursArray.push(currentHour.format('hh:mm a'));
         }
-        const { data: event } = axios.post('/api/v1/event', data);
-    });
-    // const start = moment(`${date} ${horaSeleccionada}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
-    // const data = {
-    //     title: "Cerrado",
-    //     start: start,
-    //     end: moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
-    //     allDay: false,
-    //     display: 'auto',
-    //     backgroundColor: '#142946',
-    //     borderColor: '#046af3',
-    //     textColor: '#ffffff',
-    //     extendedProps: {
-    //         servicios: servicios,
-    //         numero: numero,
-    //         estado: 'PENDIENTE',
-    //         precio: price
-    //     },
-    // }
-    // const { data: event } = axios.post('/api/v1/event', data);
+        hoursArray.forEach((e,i) => {
+            const start = moment(`${date} ${e}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
+            const data = {
+                title: "Cerrado",
+                start: start,
+                end: moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
+                allDay: false,
+                display: 'auto',
+                backgroundColor: '#142946',
+                borderColor: '#046af3',
+                textColor: '#ffffff',
+                extendedProps: {
+                    servicios: servicios,
+                    numero: '88008800',
+                    estado: 'PENDIENTE',
+                    precio: '0'
+                },
+            }
+            const { data: event } = axios.post('/api/v1/event', data);
+        });
+    }
     modalAddEvent.hide();
     calendar.today();   
 }
@@ -600,7 +736,6 @@ function changeHora(hora){
     $("#timeSelected").html(hora);
     horaSeleccionada = hora;
 }
-
 function sortHours(hours) {
     const sortedHours = hours.sort((a, b) => {
         const timeA = new Date("2020-01-01 " + a).getTime();

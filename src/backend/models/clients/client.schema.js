@@ -11,9 +11,13 @@ const ClientSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    citasPagas:{
+        type: Number,
+        default: 0,
+    },
     createdAt: {
         type: Date,
-        default: moment().format('DD/MM/YYYY hh:mm:ss')
+        default: moment().format()
     },
 });
 

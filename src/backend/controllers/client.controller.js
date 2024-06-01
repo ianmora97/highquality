@@ -7,6 +7,7 @@ exports.get = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
+    console.log(req.body)
     const client = await Client.create(req.body);
     res.json(client);
 };

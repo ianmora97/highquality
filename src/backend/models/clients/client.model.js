@@ -25,6 +25,15 @@ exports.update = async (id, data) => {
     return client;
 };
 
+exports.addOneCitaPaga = async (phone) => {
+    const client = await Client.findOne({
+        numero: phone
+    });
+    client.citasPagas += 1;
+    await client.save();
+    return client;
+};
+
 exports.delete = async (id) => {
     const client = await Client.findByIdAndDelete(id);
     return client;

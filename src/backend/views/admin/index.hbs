@@ -34,12 +34,12 @@
                 border-start border-5 border-primary 
                 animate__animated animate__fadeInDown"
                 style="animation-delay: 400ms;">
-                <h1 class=" display-5 fw-bold text-primary" id="countGananciasMes">₡1 160 000</h1>
+                <h1 class=" display-5 fw-bold text-primary" id="countGananciasMes">₡0</h1>
                 <h6 class=""><i class="fa-duotone fa-sack-dollar text-primary"></i> Ganancias del Mes</h6>
             </div>
         </div>
         <div class="col-lg-12">
-            <div class="bg-fore p-3 rounded-3 shadow">
+            <div class="bg-fore px-md-3 py-3 rounded-3 shadow">
                 <p class="small text-muted text-center d-block mb-1" id="date">-</p>
                 <div id="calendar" class="text-capitalize"></div>
             </div>
@@ -47,7 +47,8 @@
     </div>
 </div>
 
-<div class="modal fade" id="addEvent" tabindex="-1" aria-labelledby="addEventLabel" aria-hidden="true">
+<div class="modal fade" id="addEvent" tabindex="-1" aria-labelledby="addEventLabel" aria-hidden="true"
+    data-bs-focus="false">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -85,8 +86,8 @@
                             </div>
                             <label for="closedHours" class="form-label">Hora: Inicio - Final</label>
                             <div class="input-group mb-3">
-                                <input type="datetime-local" class="form-control" id="closedHoursStart" placeholder="Inicio">
-                                <input type="datetime-local" class="form-control" id="closedHoursEnd" placeholder="Final">
+                                <input type="time" class="form-control" id="closedHoursStart" placeholder="Inicio">
+                                <input type="time" class="form-control" id="closedHoursEnd" placeholder="Final">
                             </div>
                         </div>
                         <!-- ? Servicios -->
@@ -100,8 +101,13 @@
                                         <i class="fa-duotone fa-mobile text-gold"></i> <span id="numeroTelefono"></span>
                                     </p>
                                 </div>
-                                <select id="clientsSelectize" placeholder="Nombre del cliente...">
-                                </select>
+                                <div class="d-flex justify-content-start align-items-center">
+                                    <button class="btn btn-outline-secondary" onclick="addNewClientToList()">
+                                        <i class="fa-solid fa-plus"></i> Nuevo Cliente
+                                    </button>
+                                    <select id="clientsSelectize" class="flex-fill" placeholder="Nombre del cliente...">
+                                    </select>
+                                </div>
                             </div>
                             <hr>
                             <i class="fa-duotone fa-clock text-gold"></i> <span class="mb-1 d-inline-block">Hora de la Cita:</span>
@@ -112,10 +118,6 @@
                             <p class="text-end">
                                 Precio Final: ₡<span class="fw-bold" id="precioFinalModal"></span> <i class="fa-duotone fa-coins text-gold"></i>
                             </p>
-                            
-                            
-                                
-                
                         </div>
                     </div>
                 </div>

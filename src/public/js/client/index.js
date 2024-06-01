@@ -172,8 +172,14 @@ async function removeHoursBookedfromthatday(arr, date){
     const hours = [...arr];
     date.hour(0o0);
     const { data: events } = await axios.get(`/api/v1/event?sort=${date.format()}`);
+
+    const today = moment(date).format('YYYY-MM-DD');
+    const eventsToday = events.filter(e => {
+        return moment(e.start).format('YYYY-MM-DD') == today;
+    });
+
     let bookedHours = [];
-    bookedHours = events.map(e => {
+    bookedHours = eventsToday.map(e => {
         return moment(e.start).format('h:mm a')
     });
     const availableHours = hours.filter(hour => !bookedHours.includes(hour));
@@ -190,6 +196,11 @@ async function onDateClick(info){
     $("#horasDisponibles").empty();
     $("#serviciosDisponibles").empty();
     const arr = await removeHoursBookedfromthatday(day.hours, date);
+    if(arr.length == 0){
+        $("#horasDisponibles").append(`
+            <p class="text-center text-muted">No hay horas disponibles</p>
+        `);
+    }
     arr.forEach((e,i) => {
         showHorario(e,i);
     });
@@ -200,7 +211,11 @@ async function onDateClick(info){
     $("#dateSelected").html(date.format('dddd DD MMMM'));
     $("#timeSelected").html(date.format('hh:mm a'));
 }
+var g_clientSelected;
 function agendarCita(){
+    if(!checkCitaData()){
+        return;
+    }
     const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
     const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
 
@@ -232,10 +247,55 @@ function agendarCita(){
         title: 'Cita agendada',
         text: 'Se agendó correctamente la cita',
         showConfirmButton: false,
-        timer: 1500,
+        timer: 2000,
         background: bg,
         color: color,
+        onClose: reloadData
     });
+    
+}
+function reloadData(){
+    location.reload();
+}
+function checkCitaData(){
+    const title = $("#nombreCita").val();
+    const numero = $("#numeroTelefono").val();
+    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
+    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
+    if(horaSeleccionada == "00:00 am"){
+        Swal.fire({
+            icon: 'error',
+            text: 'Seleccione una hora',
+            background: bg,
+            color: color,
+        });
+        return false;
+    }else if(g_serviciosTempCheck.size == 0){
+        Swal.fire({
+            icon: 'error',
+            text: 'Seleccione un servicio',
+            background: bg,
+            color: color,
+        });
+        return false;
+    }else if(title == ""){
+        Swal.fire({
+            icon: 'error',
+            text: 'Digite un nombre',
+            background: bg,
+            color: color,
+        });
+        return false;
+    }else if(numero == ""){
+        Swal.fire({
+            icon: 'error',
+            text: 'Digite un número de teléfono',
+            background: bg,
+            color: color,
+        });
+        return false;
+    }
+    return true;
 }
 var horaSeleccionada = "00:00 am";
 function changeHora(hora){

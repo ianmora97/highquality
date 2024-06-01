@@ -9,6 +9,7 @@ async function init(){
 
 function fillData(data){
     $("#tbody").empty();
+    analytics(data);
     data.forEach((e,i)=>{
         addData(e);
     });
@@ -18,21 +19,37 @@ function fillData(data){
 function addData(e){
     $("#tbody").append(`
         <tr>
-            <td>${e.nombre}</td>
+            <td class="fw-bold">${e.nombre}</td>
+            <td>
+                <h5 class="text-primary mb-0">${e.citasPagas}</h5>
+            </td>
             <td class="">
-                <a href="tel:${e.numero}">${e.numero}</a>
+                <a href="tel:${e.numero}" class="text-gray">${e.numero}</a>
             </td>
         </tr>
     `);
 }
-
+function analytics(data){
+    const length = data.length;
+    $("#totalitems").text(length);
+    anime({
+        targets: '#totalitems',
+        innerHTML: [0,length],
+        easing: 'linear',
+        round: 1,
+        duration: 500,
+    });
+}
 function createDataTables(){
     $("#table").DataTable({
         responsive: true,
         select: false,
         keys: false,
-        order: [[ 0, "asc" ]],
+        order: [[ 1, "desc" ]],
         scrollCollapse: false,
+        columnDefs:[
+            { type: 'text', targets: [0,1,2]}
+        ],
         lengthMenu: [
             [ 10, 50, 100, 150, 500 -1 ],
             [ "10", "50", "100", "150", "500", 'Todos' ]
