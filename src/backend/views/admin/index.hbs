@@ -6,6 +6,8 @@
 <script src="/scripts/@fullcalendar/moment/index.global.min.js"></script>
 <script src="/scripts/@fullcalendar/multimonth/index.global.min.js"></script>
 
+<script src="/scripts/chart.js/dist/chart.umd.js"></script>
+
 <script src="/scripts/@selectize/selectize/dist/js/selectize.min.js"></script>
 <link rel="stylesheet" href="/scripts/@selectize/selectize/dist/css/selectize.css">
 <link rel="stylesheet" href="/scripts/@selectize/selectize/dist/css/selectize.bootstrap5.css">
@@ -33,11 +35,26 @@
             <div class="bg-primary bg-opacity-10 p-3 rounded-3 shadow 
                 border-start border-5 border-primary 
                 animate__animated animate__fadeInDown"
-                style="animation-delay: 400ms;">
+                style="animation-delay: 400ms;"
+                onclick="toggleChart()" 
+                role="button">
                 <h1 class=" display-5 fw-bold text-primary" id="countGananciasMes">₡0</h1>
                 <h6 class=""><i class="fa-duotone fa-sack-dollar text-primary"></i> Ganancias del Mes</h6>
             </div>
         </div>
+
+        <div class="col-12" style="display: none;" id="gananciaspormes">
+            <div class="bg-fore p-2 rounded-3 shadow">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="fw-bold">Ganancias por Mes</h3>
+
+                </div>
+                <div class="w-100" style="height: 400px;">
+                    <canvas id="chartGanancias"></canvas>
+                </div>
+            </div>
+        </div>
+
         <div class="col-lg-12">
             <div class="bg-fore px-md-3 py-3 rounded-3 shadow">
                 <p class="small text-muted text-center d-block mb-1" id="date">-</p>

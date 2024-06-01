@@ -9,6 +9,8 @@ const https = require('https');
 var cookieParser = require('cookie-parser')
 const {cert} = require('./backend/middlewares/https');
 const helmet = require('helmet');
+const {createTelegramMessagesCron} = require('./backend/helpers/cron');
+createTelegramMessagesCron();
 
 // ? Settings
 app.set('port', process.env.PORT);
@@ -39,9 +41,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 if(process.env.NODE_ENV === 'prod'){
-    // ? Security and HTTPS
     app.enable('trust proxy');
-    // app.use(toHttps);
 }
 
 // ? Routes

@@ -19,19 +19,11 @@
 </section>
 
 <script>
-    // use anime.js to animate the elements
     anime({
         targets: 'section',
         translateY: [-10, 0],
         opacity: [0, 1],
         delay: anime.stagger(100),
-        easing: 'easeInOutSine'
-    });
-    anime({
-        targets: 'img',
-        rotate: [180, 0],
-        opacity: [0, 1],
-        delay: 500,
         easing: 'easeInOutSine'
     });
     anime({
@@ -43,13 +35,6 @@
     });
     anime({
         targets: 'p',
-        translateY: [-10, 0],
-        opacity: [0, 1],
-        delay: 1500,
-        easing: 'easeInOutSine'
-    });
-    anime({
-        targets: 'a',
         translateY: [-10, 0],
         opacity: [0, 1],
         delay: 1500,

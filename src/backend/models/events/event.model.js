@@ -1,7 +1,7 @@
 const Event = require('./event.schema');
 const moment = require('moment');
 
-exports.get = async (limit, page, sort) => {
+exports.get = async (limit, page, sort, only) => {
     if(limit && page){
         const events = await Event.find().limit(limit).skip(page).sort(sort).lean();
         return events;
@@ -22,6 +22,14 @@ exports.get = async (limit, page, sort) => {
         const events = await Event.find({
             start: {
                 $gte: moment().startOf('day').format()
+            }
+        }).sort(sort).lean();
+        return events;
+    }else if(only == 'true'){
+        const events = await Event.find({
+            start: {
+                $gte: moment(sort).startOf('day').toDate(),
+                $lt: moment(sort).endOf('day').toDate()
             }
         }).sort(sort).lean();
         return events;

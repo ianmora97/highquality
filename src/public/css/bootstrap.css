@@ -224,6 +224,27 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
   color: #f1f1f1 !important;
 }
 
+.nav-pills-home {
+  position: relative;
+  height: 2rem;
+}
+.nav-pills-home .nav-link {
+  color: #6c757d;
+  background-color: transparent !important;
+  border: transparent !important;
+}
+.nav-pills-home .nav-link:hover {
+  color: white;
+}
+.nav-pills-home .nav-link.active {
+  border-bottom: 1px solid #f8272e !important;
+  color: #f1f1f1 !important;
+}
+
+.fc-event-main {
+  overflow: hidden;
+}
+
 .fc-theme-standard td, .fc-theme-standard th {
   border: 1px solid #141414 !important;
 }
@@ -382,15 +403,15 @@ table.dataTable {
   margin-top: 0 !important;
 }
 
-tbody tr td {
+table:not(.fc-scrollgrid) tbody tr td {
   color: #5e5e5e;
   font-size: 0.8rem !important;
 }
-tbody tr td:first-child {
+table:not(.fc-scrollgrid) tbody tr td:first-child {
   padding-left: 1rem;
 }
 
-thead tr th:first-child {
+table:not(.fc-scrollgrid) thead tr th:first-child {
   padding-left: 1rem;
 }
 

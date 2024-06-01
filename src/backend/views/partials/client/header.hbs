@@ -1,0 +1,30 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-fore">
+    <div class="container">
+        <a class="navbar-brand nautigal" href="/" style="font-size: 30px;">HighQuality</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" 
+        aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse inter" id="navbarNavAltMarkup">
+            <div class="nav nav-pills-home w-100 gap-1 ms-4 d-flex justify-content-end flex-fill">
+                <a class="nav-link" id="tab-inicio" href="/">
+                    Inicio
+                </a>
+                <a class="nav-link" id="tab-reservar" href="/reservar">
+                    Reservar
+                </a>
+                <a class="nav-link" id="tab-galeria" href="/galeria">
+                    Galeria
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+    const CURRENT_PAGE = "{{tab}}";
+    $(document).ready(function() {
+        $(`#tab-${CURRENT_PAGE}`).addClass("active");
+        $(`#tab-${CURRENT_PAGE}`).attr("aria-current", "page");
+    });
+</script>

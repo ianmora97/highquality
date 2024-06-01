@@ -13,8 +13,27 @@
         }
     }
 }
+.nav-pills-home{
+    position: relative;
+    height: 2rem;
+    .nav-link{
+        color: $gray-dark;
+        background-color: transparent !important;
+        border: transparent !important;
+        &:hover{
+            color: white;
+        }
+        &.active{
+            border-bottom: 1px solid $secondary !important;
+            color: $light !important;
+        }
+    }
+}
 
 // ? Full Calendar
+.fc-event-main{
+    overflow: hidden;
+}
 .fc-theme-standard td, .fc-theme-standard th{
     border: 1px solid $dark !important;
 }
@@ -178,14 +197,14 @@ table.dataTable{
     }
 }
 
-tbody tr td{
+table:not(.fc-scrollgrid) tbody tr td{
     color: #5e5e5e;
     font-size: 0.8rem !important;
     &:first-child{
         padding-left: 1rem;
     }
 }
-thead tr th{
+table:not(.fc-scrollgrid) thead tr th{
     &:first-child{
         padding-left: 1rem;
     }

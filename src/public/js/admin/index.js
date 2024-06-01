@@ -1,6 +1,14 @@
 async function init(){
     await bringServices();
     createCalendar();
+    insightsThisWeek();
+    // ifWindowResize();
+    createDataforChart();
+}
+async function insightsThisWeek(){
+    const sort = moment().startOf('isoWeek').format()
+    const { data } = await axios.get(`/api/v1/event?sort=${sort}`);
+    analytics(data);
 }
 const DAYS_MAP_ES_EN = {
     "domingo": "Sunday",
@@ -22,7 +30,6 @@ const DAYS_MAP_EN_ES = {
 }
 var g_servicios = new Map();
 var g_horarios = new Map();
-var g_special = new Map();
 async function bringServices(){
     const { data } = await axios.get('/api/v1/services');
     g_servicios.clear();
@@ -36,11 +43,6 @@ async function bringServices(){
         g_horarios.set(e.day, e);
     });
     await addHalfHourtoMap();
-
-    const { data: special } = await axios.get('/api/v1/special');
-    special.forEach(e => {
-        g_special.set(e._id, e);
-    });
 
     const { data: clients } = await axios.get('/api/v1/client');
     fillClients(clients);    
@@ -145,28 +147,6 @@ function addServicioToArray(servicio, precio){
 const modalAddEvent = new bootstrap.Modal(document.getElementById('addEvent'), {
     keyboard: false
 });
-var eventsSpecial = [];
-function createSpecialEvents(){
-    eventsSpecial = [];
-    g_special.forEach((e,i) => {
-        const { title, start, end, props } = e;
-        if(title == 'mediahora'){
-            eventsSpecial.push({
-                title: title,
-                start: start,
-                end: end,
-                allDay: props.allDay,
-                display: 'none',
-                backgroundColor: props.backgroundColor,
-                borderColor: props.borderColor,
-                textColor: props.textColor,
-                extendedProps: {
-                    estado: props.extendedProps.estado
-                },
-            });
-        }
-    });
-}
 var businessHours = [];
 var hiddenDays = [];
 var slotDays = {
@@ -272,7 +252,7 @@ function eventContent(info){
     if(view.type == 'timeGridWeek'){
         return {
             html: `
-            <div class="d-flex justify-content-start align-items-center px-2 animate__animated animate__fadeIn">
+            <div class="d-flex justify-content-start align-items-center px-1 animate__animated animate__fadeIn">
                 <p class="mb-0 text-white me-2"><i class="fa-solid fa-cut"></i></p>
                 <div class="text-white">
                     <p class="small m-0 fw-bold">${title}</p>
@@ -283,7 +263,7 @@ function eventContent(info){
     }else if(view.type == 'dayGridFourWeek'){
         return {
             html: `
-            <div class="d-flex justify-content-start align-items-center px-2 animate__animated animate__fadeIn">
+            <div class="d-flex justify-content-start align-items-center px-1 animate__animated animate__fadeIn">
                 <p class="mb-0 text-white me-2"><i class="fa-solid fa-cut"></i></p>
                 <div class="text-white">
                     <p class="small m-0 fw-bold">${title}</p>
@@ -389,11 +369,6 @@ async function eventClick(info){
                             title: 'Pagado'
                         });
                         calendar.today();
-
-                        socket.emit('estado:update',{
-                            id_reserva: ev.id_reserva,
-                            estado: 1
-                        })
                     }
                 }
             });
@@ -415,10 +390,6 @@ async function eventClick(info){
                 title: 'Por Pagar'
             })
             calendar.today();
-            socket.emit('estado:update',{
-                id_reserva: ev.id_reserva,
-                estado: 2
-            })
         }
     })
 }
@@ -449,11 +420,8 @@ async function dateSet(info) {
 
     const sort = moment(startStr).startOf('isoWeek').format()
     const { data } = await axios.get(`/api/v1/event?sort=${sort}`);
-    analytics(data);
     calendar.removeAllEventSources();
     calendar.addEventSource(data);
-    createSpecialEvents();
-    calendar.addEventSource(eventsSpecial);
 }
 async function analytics(data){
     const today = moment().format('YYYY-MM-DD');
@@ -506,11 +474,12 @@ async function analytics(data){
 async function removeHoursBookedfromthatday(arr, date){
     const hours = [...arr];
     date.hour(0o0);
-    const { data: events } = await axios.get(`/api/v1/event?sort=${date.format()}`);
+    const { data: events } = await axios.get(`/api/v1/event?sort=${date.format()}&onlyThisDay=true`);
     let bookedHours = [];
     bookedHours = events.map(e => {
         return moment(e.start).format('h:mm a')
     });
+    console.log(bookedHours)
     const availableHours = hours.filter(hour => !bookedHours.includes(hour));
     return availableHours;
 }
@@ -524,7 +493,9 @@ async function onDateClick(info){
 
     $("#horasDisponibles").empty();
     $("#serviciosDisponibles").empty();
+
     const arr = await removeHoursBookedfromthatday(day.hours, date);
+    console.log(arr)
     arr.forEach((e,i) => {
         showHorario(e,i);
     });
@@ -731,6 +702,83 @@ function cerrarDia(){
     modalAddEvent.hide();
     calendar.today();   
 }
+var incomeByMonth = [];
+async function createDataforChart(){
+    const months = [
+        moment().format('YYYY-MM'),
+        moment().subtract(1, 'month').format('YYYY-MM'),
+        moment().subtract(2, 'month').format('YYYY-MM'),
+        moment().subtract(3, 'month').format('YYYY-MM'),
+    ];
+    for (let i = 0; i < months.length; i++) {
+        const month = months[i];
+        const {data: eventsMonth } = await axios.get('/api/v1/event/month?month='+month);
+        const pagos = eventsMonth.filter(e => e.extendedProps.estado == 'PAGO');
+        const totalByMonth = pagos.map(e => parseInt(e.extendedProps.precio)).reduce((acc, e) => acc + e, 0);
+        incomeByMonth.push({
+            x: sentecesCase(moment(month, 'YYYY-MM').format('MMMM YYYY')),
+            y: totalByMonth
+        });
+    }
+    incomeByMonth = incomeByMonth.reverse();
+    createChart();
+}
+
+var gananciasChart;
+function createChart(){
+    const ctx = document.getElementById('chartGanancias').getContext('2d');
+    var gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(248, 39, 46, 1)');
+    gradient.addColorStop(0.5, 'rgba(248, 39, 46, 0.25)');
+    gradient.addColorStop(1, 'rgba(248, 39, 46, 0)');
+
+    gananciasChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: incomeByMonth.map(e => e.x),
+            datasets: [{
+                label: 'Ganancias',
+                data: incomeByMonth.map(e => e.y),
+                backgroundColor: gradient,
+                borderColor: 'rgba(248, 39, 46, 1)',
+                borderWidth: 1,
+                tension: 0.4,
+                pointRadius: 10,
+                fill: true,
+                pointBackgroundColor: 'rgba(248, 39, 46, 0.5)',
+                pointBorderColor: 'rgba(248, 39, 46, 1)',
+                pointHoverRadius: 10,
+                pointHoverBackgroundColor: 'rgba(248, 39, 46, 0.5)',
+                pointHoverBorderColor: 'rgba(248, 39, 46, 1)',
+                pointHoverBorderWidth: 2,
+                pointHitRadius: 10,
+                pointBorderWidth: 2
+
+
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins:{
+                title:{
+                    display: false
+                },
+                legend:{
+                    display: false,
+                }
+            }
+        }
+    });
+}
+function toggleChart(){
+    $('#gananciaspormes').slideToggle();
+}
 var horaSeleccionada = "00:00 am";
 function changeHora(hora){
     $("#timeSelected").html(hora);
@@ -749,5 +797,16 @@ function toCRC(number){
 }
 function sentecesCase(str){
     return str.toLowerCase().replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+}
+
+function ifWindowResize(){
+    window.addEventListener('resize', function(){
+        expected_view = "timeGridWeek";
+        let viewport = $(window).width();
+        if(viewport < 600){
+            expected_view = 'dayGridFourWeek';
+        }
+        calendar.changeView(expected_view);
+    });
 }
 document.addEventListener('DOMContentLoaded', init);

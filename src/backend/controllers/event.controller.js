@@ -8,8 +8,9 @@ exports.get = async (req, res) => {
     const limit = req.query?.limit || null;
     const page = req.query?.page || null;
     const sort = req.query?.sort || 'createdAt';
+    const only = req.query?.onlyThisDay || null;
 
-    const events = await Event.get(limit, page, sort);
+    const events = await Event.get(limit, page, sort, only);
     res.json(events);
 };
 
@@ -27,6 +28,7 @@ exports.create = async (req, res) => {
         res.json(event);
     }else{
         const event = await Event.create(req.body);
+        await sendTelegramMessage(req.body);
         res.json(event);
     }
 };
@@ -34,8 +36,8 @@ exports.createClient = async (req, res) => {
     const client = await addClient(req.body);
     req.body.title = client.nombre;
     const event = await Event.create(req.body);
-    // await sendWhatsappMessage(req.body);
-    // await sendTelegramMessage(req.body);
+    await sendWhatsappMessage(req.body);
+    await sendTelegramMessage(req.body);
     res.json(event);
 };
 
