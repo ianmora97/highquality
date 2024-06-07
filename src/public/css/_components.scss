@@ -1,3 +1,32 @@
+// ? Background
+.bg-image-wood{
+    background-image: url('../images/madera.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.bg-fma-homepage{
+    background-image: url('../images/cortes/corteybarba.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    aspect-ratio: 16/9;
+}
+.backdrop-image{
+    &::before{
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+}
+
 // ? Nav Bar
 .nav-pills{
     position: relative;
@@ -98,6 +127,56 @@
     color: white !important;
 }
 
+.btn-star-ranking{
+    background-color: transparent !important;
+    border: none !important;
+    color: $light !important;
+    margin-right: 10px !important;
+    padding: 2px 0px !important;
+    i {
+        &.active{
+            color: $gold !important;
+        }
+    }
+}
+
+.btn-socials{
+    aspect-ratio: 1/1; 
+    max-height: 55px;
+    background-color: $light !important;
+    color: $dark !important;
+    border: none !important;
+    border-radius: 100% !important;
+    transition: all 0.3s;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    &:hover{
+        background-color: $secondary !important;
+        color: $light !important;
+        transform: scale(1.1);
+    }
+}
+
+.bg-image-wood{
+
+}
+
+
+.reviewOpinion{
+    min-height: 160px;
+    max-height: 160px;
+
+    position: relative;
+    overflow: hidden;
+    
+    .card-text{
+        position: relative;
+        overflow: hidden;
+        height: 68px;
+        text-overflow: ellipsis;
+    }
+}
 .container-md-fluid{
     --bs-gutter-x: 1.5rem;
     --bs-gutter-y: 0;
@@ -113,6 +192,66 @@
         padding-right: 0;
     }
 }
+.card-service{
+    background-color: $lightskin;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 0.5rem 0.1rem $dark;
+    padding: 1rem;
+    color: $dark;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 250px;
+    .service-image{
+        aspect-ratio: 1/1;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0.5rem;
+        background-color: $light;
+        width: 90px;
+        img{
+            width: 60px;
+        }
+    }
+}
+
+.mostache-hr {
+    display: flex;
+    justify-content: center;
+    align-items: end;
+    img {
+        width: 40px;
+        margin: 0px 30px;
+    }
+    &.hr-light{
+        img{
+            filter: invert(1) brightness(0.85);
+        }
+        .mostache-hr-inner {
+            border-color: rgb(228, 220, 205);
+        }
+    }
+    &.hr-black{
+        .mostache-hr-inner {
+            border-color: rgb(0, 0, 0);
+        }
+    }
+    .mostache-hr-inner{
+        width: 100px;
+        border-radius: 100%;
+        border-style: solid;
+        border-width: 2px;
+    }
+}
+.bebas{
+    font-family: "Bebas Neue", cursive;
+    letter-spacing: 1px;
+}
+
+
 
 // ? Swal Container
 .swal2-container{

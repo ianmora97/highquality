@@ -4,6 +4,8 @@ $third: #1f203a;
 
 $gold: #F4C82C;
 $maps: #e44e4e;
+$lightskin: #ffe1b3;
+
 
 $info: #3086e7;
 $success: #14b73a;
@@ -30,6 +32,7 @@ $theme-colors: (
     "info": $info,
     "dark": $dark,
     "fore": $fore,
+    "lightskin": $lightskin,
     "light": $light,
     "gray": $gray,
     "gray-dark": $gray-dark,
@@ -52,6 +55,9 @@ $font-size-base: .885rem;
   }
   .top-#{$i}{
     top: $i * 10% !important;
+  }
+  .offset-left-#{$i}{
+    margin-left: $i * 0.5rem !important;
   }
 }
 
@@ -165,4 +171,9 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6{
 }
 .nautigal{
   font-family: "The Nautigal", serif;
+}
+.playfair-display {
+  font-family: "Playfair Display", serif;
+  font-optical-sizing: auto;
+  font-style: normal;
 }

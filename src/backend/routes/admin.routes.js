@@ -38,5 +38,12 @@ router.get('/clientes', verify, async (req, res) => {
         tab: 'clientes'
     });
 });
+router.get('/reviews', verify, async (req, res) => {
+    res.render('admin/reviews',{
+        layout: 'admin',
+        user: req.user,
+        tab: 'reviews'
+    });
+});
 
 module.exports = router;

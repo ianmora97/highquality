@@ -8,6 +8,7 @@ const Client = require('../controllers/client.controller');
 const Event = require('../controllers/event.controller');
 const Services = require('../controllers/services.controller');
 const Special = require('../controllers/special.controller');
+const Reviews = require('../controllers/review.controller');
 
 /**
  * @routes /api/v1/horario
@@ -64,14 +65,16 @@ router.put('/client/:id', verify, Client.update);
 router.delete('/client/:id', verify, Client.delete);
 
 /**
- * @routes /api/v1/special
- * @description Rutas para el CRUD de special
+ * @routes /api/v1/review
+ * @description Rutas para el CRUD de review
  * @access Private 
  */
-router.get('/special', Special.get);
-router.post('/special', verify, Special.create);
-router.put('/special/:id', verify, Special.update);
-router.delete('/special/:id', verify, Special.delete);
+router.get('/review', Reviews.get);
+router.get('/review/display', Reviews.getDisplay);
+router.post('/review', Reviews.create);
+router.post('/review/test', Reviews.test);
+router.put('/review/:id', verify, Reviews.update);
+router.delete('/review/:id', verify, Reviews.delete);
 
 
 module.exports = router;
