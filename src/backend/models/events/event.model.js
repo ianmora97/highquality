@@ -25,6 +25,16 @@ exports.get = async (limit, page, sort, only) => {
             }
         }).sort(sort).lean();
         return events;
+    }else if(sort == 'oneweekahead'){
+        const events = await Event.find({
+            start: {
+                $gte: moment().startOf('day').format(),
+            },
+            end: {
+                $lte: moment().add(7, 'days').endOf('day').format()
+            }
+        }).sort(sort).lean();
+        return events;
     }else if(only == 'true'){
         const events = await Event.find({
             start: {

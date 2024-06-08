@@ -19,4 +19,10 @@ router.get('/galeria', async (req, res) => {
     });
 });
 
+router.get('/servicios', async (req, res) => {
+    res.render('client/servicios',{
+        tab: 'servicios'
+    });
+});
+
 module.exports = router;

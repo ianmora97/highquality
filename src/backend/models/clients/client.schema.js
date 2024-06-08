@@ -5,11 +5,12 @@ const ClientSchema = new mongoose.Schema({
     nombre: {
         type: String,
         required: true,
-        unique: true,
+        unique: false
     },
     numero:{
         type: Number,
         required: true,
+        unique: true,
     },
     citasPagas:{
         type: Number,

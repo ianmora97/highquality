@@ -10,6 +10,8 @@ const Services = require('../controllers/services.controller');
 const Special = require('../controllers/special.controller');
 const Reviews = require('../controllers/review.controller');
 
+const { migrate } = require('../helpers/migrate');
+
 /**
  * @routes /api/v1/horario
  * @description Rutas para el CRUD de horario
@@ -75,6 +77,8 @@ router.post('/review', Reviews.create);
 router.post('/review/test', Reviews.test);
 router.put('/review/:id', verify, Reviews.update);
 router.delete('/review/:id', verify, Reviews.delete);
+
+router.get('/citas/test', migrate);
 
 
 module.exports = router;
