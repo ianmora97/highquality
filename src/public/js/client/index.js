@@ -97,13 +97,7 @@ function checkForm(){
     });
 }
 function animateElements(){
-    anime({
-        targets: 'section',
-        translateY: [-10, 0],
-        opacity: [0, 1],
-        delay: anime.stagger(100),
-        easing: 'easeInOutSine'
-    });
+    
 }
 
 document.addEventListener('DOMContentLoaded', init);

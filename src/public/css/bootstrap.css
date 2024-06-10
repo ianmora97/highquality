@@ -242,6 +242,11 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
   font-weight: 600;
 }
 
+.opensans {
+  font-family: "Open Sans", sans-serif !important;
+  font-style: normal;
+}
+
 .inter {
   font-family: "Inter", sans-serif !important;
 }
@@ -251,9 +256,14 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
 }
 
 .playfair-display {
-  font-family: "Playfair Display", serif;
+  font-family: "Playfair Display", serif !important;
   font-optical-sizing: auto;
   font-style: normal;
+}
+
+.bebas {
+  font-family: "Bebas Neue", cursive;
+  letter-spacing: 1px;
 }
 
 .bg-image-wood {
@@ -265,12 +275,18 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
 }
 
 .bg-fma-homepage {
-  background-image: url("../images/cortes/corteybarba.jpg");
+  background-image: url("../images/fma-landing-page1.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
   aspect-ratio: 16/9;
+}
+@media (max-width: 576px) {
+  .bg-fma-homepage {
+    background-image: url("../images/fma-landing-page1-mobile.jpg");
+    aspect-ratio: 9/16;
+  }
 }
 
 .backdrop-image::before {
@@ -281,6 +297,16 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
+}
+
+.display-1 {
+  font-size: 7rem !important;
+  line-height: 1 !important;
+}
+@media (max-width: 576px) {
+  .display-1 {
+    font-size: 4rem !important;
+  }
 }
 
 .nav-pills {
@@ -446,30 +472,19 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
   }
 }
 
-.card-service {
-  background-color: #ffe1b3;
-  border-radius: 0.5rem;
+.card-service img {
+  border-radius: 100%;
   box-shadow: 0 0 0.5rem 0.1rem #141414;
-  padding: 1rem;
-  color: #141414;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   width: 250px;
-}
-.card-service .service-image {
   aspect-ratio: 1/1;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0.5rem;
-  background-color: #f1f1f1;
-  width: 90px;
+  -o-object-fit: cover;
+     object-fit: cover;
+  filter: brightness(0.3);
+  transition: all 0.3s;
 }
-.card-service .service-image img {
-  width: 60px;
+.card-service img:hover {
+  filter: brightness(0.8);
+  transform: scale(1.1);
 }
 
 .mostache-hr {
@@ -495,11 +510,6 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
   border-radius: 100%;
   border-style: solid;
   border-width: 2px;
-}
-
-.bebas {
-  font-family: "Bebas Neue", cursive;
-  letter-spacing: 1px;
 }
 
 .swal2-container {

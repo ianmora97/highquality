@@ -2,25 +2,30 @@
 <script src="/scripts/@splidejs/splide/dist/js/splide.min.js"></script>
 <script src="/scripts/@splidejs/splide-extension-auto-scroll/dist/js/splide-extension-auto-scroll.min.js"></script>
 
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
 <style>
     body{
-        background-image: url('/images/fma-landing-page.jpg');
+        /* background-image: url('/images/fma-landing-page.jpeg');
         background-size: cover;
         background-position: center;
-        background-attachment: fixed;
+        background-attachment: fixed; */
+        background-color: black;
     }
 </style>
 
 <article>
-    <section class="d-flex justify-content-start align-items-center bg-fma-homepage">
-        <div class="ps-5">
+    <section class="d-flex justify-content-start align-items-lg-center bg-fma-homepage p-5" 
+    data-aos="zoom-out" data-aos-duration="1500">
+        <div class="ps-5" data-aos="fade-left" data-aos-duration="1500">
             <!-- <img src="/images/logo-tr.png" alt="Pole Image" width="150px"> -->
-            <h1 class="display-2">
-                <span class="fw-bold d-block">The best</span>
-                <span class=" playfair-display d-block" style="font-style: italic;">barbershop</span>
-                <span class="fw-bold d-block">in town</span>
+            <h1 class="display-1 bebas text-uppercase" >
+                <span class="d-block">The <span class="text-gold">best</span></span>
+                <span class="d-block ">barbershop</span>
+                <span class="d-block text-gold">in town</span>
             </h1>
-            <a href="/reservar" class="btn btn-secondary rounded-pill">
+            <a href="/reservar" class="btn btn-secondary rounded-pill btn-lg" >
                 <i class="fa-solid fa-scissors"></i> Reservar cita
             </a>
         </div>
@@ -35,19 +40,26 @@
             </div>
     </section> -->
     <section class="bg-light py-5">
-        <h1 class="fw-bold text-center text-dark text-uppercase bebas">Calidad y Experiencia</h1>
-        <div class="mostache-hr hr-black my-3">
-            <div class="mostache-hr-inner"></div>
-            <img src="/images/icons/mostacho.png" alt="moustache">
-            <div class="mostache-hr-inner"></div>
+        <div class="d-lg-flex justify-content-center align-items-center gap-3">
+            <div class="col-lg-3" data-aos="fade-right">
+                <h1 class="fw-bold text-center text-dark text-uppercase bebas">Calidad y Experiencia</h1>
+                <div class="mostache-hr hr-black my-3">
+                    <div class="mostache-hr-inner"></div>
+                    <img src="/images/icons/mostacho.png" alt="moustache">
+                    <div class="mostache-hr-inner"></div>
+                </div>
+                <p class="text-center text-dark lead">High Quality Barber se dedica a brindarles a nuestros clientes un excelente corte de cabello y un servicio premium a un precio asequible.</p>
+            </div>
+            <div class="d-flex d-lg-block justify-content-center" data-aos="fade-left">
+                <img src="/images/brocha.png" alt="moustache">
+            </div>
         </div>
-        <p class="text-center text-dark">High Quality Barber se dedica a brindarles a nuestros clientes un excelente corte de cabello y un servicio premium a un precio asequible.</p>
     </section>
     <section class="bg-image-wood py-5 position-relative">
         <div class="backdrop-image" style="z-index: 1;"></div>
         
         <div class="position-relative py-4" style="z-index: 2;">
-            <h1 class="fw-bold text-center">Servicios</h1>
+            <h1 class="fw-bold text-center bebas">Servicios</h1>
             <div class="mostache-hr hr-light my-4">
                 <div class="mostache-hr-inner"></div>
                 <img src="/images/icons/mostacho.png" alt="moustache">
@@ -57,55 +69,59 @@
                 Nuestro objetivo es ayudar a hombres, adolescentes y niños a verse y sentirse lo mejor posible. Queremos convertirte en un cliente de por vida.
                 Conoce los servicios que ofrecemos
             </p>
-            <div class="d-flex justify-content-center align-items-center flex-wrap gap-2">
-                <div class="card-service ">
-                    <div class="service-image mb-3">
-                        <img src="/images/icons/005-barbershop.png" alt="Tijeras">
+            <div class="d-flex justify-content-center align-items-center flex-wrap gap-2 my-5">
+                <div class="card-service" data-aos="fade-down" data-aos-delay="0">
+                    <img src="/images/cortes/taper_fade.jpeg" alt="Corte de pelo 1">
+                    <div class="text-center mt-5">
+                        <h4 class="fw-bold mb-1 bebas">Modernos</h4>
+                        <p class=""></p>
                     </div>
-                    <h5 class="fw-bold mb-1">Cortes</h5>
                 </div>
                 
-                <div class="card-service ">
-                    <div class="service-image mb-3">
-                        <img src="/images/icons/barba.png" alt="Barba">
+                <div class="card-service" data-aos="fade-down" data-aos-delay="100">
+                    <img src="/images/cortes/corte1.jpg" alt="Corte de pelo 2">
+                    <div class="text-center mt-5">
+                        <h4 class="fw-bold mb-1 bebas">Clasicos</h4>
+                        <p class=""></p>
                     </div>
-                    <h5 class="fw-bold mb-1">Barba</h5>
                 </div>
                 
-                <div class="card-service ">
-                    <div class="service-image mb-3">
-                        <img src="/images/icons/tinte.png" alt="Tinte">
+                <div class="card-service" data-aos="fade-down" data-aos-delay="200">
+                    <img src="/images/cortes/corte2.jpg" alt="Corte de pelo 3">
+                    <div class="text-center mt-5">
+                        <h4 class="fw-bold mb-1 bebas">Diseños</h4>
+                        <p class=""></p>
                     </div>
-                    <h5 class="fw-bold mb-1">Tinte</h5>
                 </div>
                 
-                <div class="card-service ">
-                    <div class="service-image mb-3">
-                        <img src="/images/icons/hair-washing.png" alt="Hair wash">
+                <div class="card-service" data-aos="fade-down" data-aos-delay="300">
+                    <img src="/images/cortes/corte3.jpg" alt="Corte de pelo 4">
+                    <div class="text-center mt-5">
+                        <h4 class="fw-bold mb-1 bebas">Corte de Niño</h4>
+                        <p class=""></p>
                     </div>
-                    <h5 class="fw-bold mb-1">Hair Wash</h5>
                 </div>
 
             </div>
 
-            <a href="/servicios" class="mt-4 mx-auto d-block text-decoration-underline text-gold text-center" style="width: 120px;">
+            <!-- <a href="/servicios" class="mt-4 mx-auto d-block text-decoration-underline text-gold text-center" style="width: 120px;">
                 Ver mas
-            </a>
+            </a> -->
         </div>
     </section>
 
     <div class="container mt-5">
-        <h1 class="fw-bold">Reviews</h1>
+        <h1 class="fw-bold bebas">Reviews</h1>
         <hr>
+        <section class="splide" id="opinionesCarousel">
+            <div class="splide__track">
+                <ul class="splide__list" id="opinionesList">
+                </ul>
+            </div>
+        </section>
     </div>
-    <section class="splide" id="opinionesCarousel">
-        <div class="splide__track">
-              <ul class="splide__list" id="opinionesList">
-              </ul>
-        </div>
-    </section>
     <section class="container my-5">
-        <h2 class="fw-bold">Deja tu opinión</h2>
+        <h2 class="fw-bold bebas">Deja tu opinión</h2>
         <hr>
         <div class="bg-dark rounded-3 shadow p-3">
             <form action="/api/v1/review/test" method="post" id="formOpinion">
@@ -167,5 +183,7 @@
         <p class="text-center text-muted small my-3">HighQuality Barber &copy; 2024</p>
     </section>
 </article>
-
+<script>
+    AOS.init();
+</script>
 <script src="/js/client/index.js"></script>
