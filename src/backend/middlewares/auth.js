@@ -11,7 +11,7 @@ async function cipherPassword(req, res, next) {
 
 async function verify(req, res, next) {
     const {signature} = req.cookies;
-    jwt.verify(signature, process.env.SECRET, (err, decoded) => {
+    jwt.verify(signature, SECRET, (err, decoded) => {
         if(err){
             res.redirect('/dashboard');
         }else{
