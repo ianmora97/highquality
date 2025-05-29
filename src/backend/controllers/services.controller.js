@@ -6,7 +6,6 @@ exports.get = async (req, res) => {
     const services = await Services.get();
     res.json(services);
 };
-
 exports.getIcons = async (req, res) => {
     let _path = path.join(__dirname, '../../public/images/icons');
     fs.readdir(_path, function (err, files) {

@@ -302,6 +302,21 @@ async function eventClick(info){
                 </div>
                 <h4 class="text-primary fw-bold">${toCRC(ev.precio)} colones</h4>
                 <hr>
+                <p class="mb-1">
+                    📞 Telefono: 
+                    <span class="fw-bold">
+                        <a href="tel:+506${ev.numero}">${ev.numero}</a>
+                    </span>
+                    <a 
+                        href="https://wa.me/+506${ev.numero}?text=Hola%20${title},%20le%20contactamos%20de%20HighQuality%20por%20su%20cita%20el%20${encodeURIComponent(fecha)}%20a%20las%20${encodeURIComponent(hora)}."
+                        target="_blank"
+                        class="ms-2 btn btn-success btn-sm"
+                        title="Enviar WhatsApp"
+                    >
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </p>
+                <hr>
                 <small class="mb-1 d-block">
                     <span class="text-capitalize">${fecha}</span> - <span class="fw-bold">${hora}</span>
                 </small>

@@ -39,6 +39,7 @@ router.delete('/admin/:id', verify, Admin.delete);
  */
 router.get('/event', Event.get);
 router.get('/event/month', Event.getMonth);
+router.get('/event/ics', Event.getIcs);
 router.post('/event', verify, Event.create);
 router.post('/event/book', addProps, Event.createClient);
 router.put('/event/:id', verify, Event.update);
@@ -62,6 +63,7 @@ router.delete('/services/:id', verify, Services.delete);
  * @access Private 
  */
 router.get('/client', Client.get);
+router.get('/client/migrate')
 router.post('/client', verify, Client.create);
 router.put('/client/:id', verify, Client.update);
 router.delete('/client/:id', verify, Client.delete);

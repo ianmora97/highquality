@@ -252,6 +252,26 @@ function agendarCita(){
         color: color,
         onClose: reloadData
     });
+    Swal.fire({
+        title:'Cita Agregada!',
+        icon:'success',
+        html: `
+        <h5>🚨Politica de citas🚨</h5>
+        <p>✅ Estar 5 min antes de la hora de la cita</p>
+        <p>✅ Despues de 10 min de atraso su cita queda totalmente anulada❌</p>
+        <p>✅ Avisar al menos 4 horas antes que su persona no va a asistir a la cita respectiva</p>
+        <p>✅ En su siguiente cita o de inmediato se cobrará
+        una penalidad de $2000 colones *50% del servicio * al no avisar que no asistirá a su cita
+        (siendo conciente de qué está desperdiciando el tiempo y el trabajo).</p>
+        `,
+        showConfirmButton: true,
+        showCloseButton: true,
+        confirmButtonText: "Entendido",
+        confirmButtonAriaLabel: "Entendido",
+        background: bg,
+        color: color,
+        onClose: reloadData
+    });
     
 }
 function reloadData(){

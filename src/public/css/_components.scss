@@ -73,6 +73,21 @@
     }
 }
 
+// ? Menu Dashboard
+
+@media (max-width: 768px) {
+    #navbarNavAltMarkup{
+        height: 230px;
+        margin-top: 20px;
+        .nav.nav-pills{
+            .nav-link{
+                width: 100%;
+            }
+        }
+    }
+}
+
+
 // ? Full Calendar
 .fc-event-main{
     overflow: hidden;

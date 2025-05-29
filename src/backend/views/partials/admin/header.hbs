@@ -6,7 +6,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse inter" id="navbarNavAltMarkup">
-            <div class="nav nav-pills w-100 gap-3 ms-4">
+            <div class="nav nav-pills w-100 gap-3 ms-0 ms-md-4">
                 <a class="nav-link" id="tab-panel" href="/dashboard/panel">
                     <i class="fa-duotone fa-calendar-days"></i> Citas
                 </a>
@@ -23,9 +23,6 @@
                     <i class="fa-solid fa-star"></i> Reviews
                 </a>
             </div>
-            <a class="nav-link ms-auto d-flex justify-content-center gap-2" href="#">
-                <i class="fa-duotone fa-circle-user"></i> {{user.name}}
-            </a>
         </div>
     </div>
 </nav>
@@ -39,7 +36,7 @@
             targets: '.nav-link',
             translateY: [-10, 0],
             opacity: [0, 1],
-            delay: anime.stagger(100),
+            delay: anime.stagger(20),
             easing: 'easeInOutSine'
         })
     });
