@@ -10,7 +10,7 @@ const DAYS_MAP_ES_EN = {
     "miércoles": "Wednesday",
     "martes": "Tuesday",
     "lunes": "Monday"
-}
+};
 const DAYS_MAP_EN_ES = {
     "Monday": "Lunes",
     "Tuesday": "Martes",
@@ -19,7 +19,7 @@ const DAYS_MAP_EN_ES = {
     "Friday": "Viernes",
     "Saturday": "Sábado",
     "Sunday": "Domingo"
-}
+};
 var g_servicios = new Map();
 var g_horarios = new Map();
 async function bringServices(){

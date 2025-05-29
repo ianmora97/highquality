@@ -30,6 +30,8 @@
     "datatables.net-datetime": "^1.5.2",
     "datatables.net-fixedheader-bs5": "^4.0.1",
     "datatables.net-responsive-bs5": "^3.0.2",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-handlebars": "^7.1.2",
