@@ -3,7 +3,7 @@ const { addClient, addOneCitaPaga } = require('../helpers/addClient');
 const { sendWhatsappMessage } = require('../helpers/whatsapp');
 const { sendTelegramMessage } = require('../helpers/telegram');
 const { createEvents } = require('ics');
-const { zonedTimeToUtc } = require('date-fns-tz');
+const moment = require('moment-timezone');
 
 exports.get = async (req, res) => {
     const limit = req.query?.limit || null;
@@ -17,7 +17,7 @@ exports.get = async (req, res) => {
 exports.getIcs = async (req, res) => {
     try {
         // const events = await Event.get(null, null, "oneweekahead", null);
-        const events = await Event.get(null,null,"thisweek",null);
+        const events = await Event.get(null, null, "thisweek", null);
 
         const eventosICS = events.map(event => {
             const start = getDateArray(new Date(event.start));
@@ -25,11 +25,10 @@ exports.getIcs = async (req, res) => {
             return {
                 start,
                 end,
-                title: `Cita: ${event.title}`,
-                description: `Servicios: ${event.extendedProps.servicios.join(', ')}\nEstado: ${event.extendedProps.estado}\nPrecio: ₡${event.extendedProps.precio}`,
-                location: 'HighQuality Studio',
+                title: `💈 Cita: ${event.title}`,
+                description: `✂️ Servicios: ${event.extendedProps.servicios.join(', ')}\n📞 Tel: ${event.extendedProps.numero}`,
+                location: '📍 HighQuality Studio',
                 uid: event._id.toString(),
-                contact: `Tel:+506${event.extendedProps.numero}`
             };
         });
 
@@ -87,16 +86,12 @@ exports.pagar = async (req, res) => {
     res.json(event);
 };
 function getDateArray(dateStr) {
-    const timeZone = 'America/Costa_Rica'; // zona horaria local
-    const date = new Date(dateStr);
-    const localDate = new Date(
-        zonedTimeToUtc(date, timeZone).getTime() - (6 * 60 * 60 * 1000) // fuerza UTC-6
-    );
+    const local = moment.tz(dateStr, 'America/Costa_Rica');
     return [
-        localDate.getFullYear(),
-        localDate.getMonth() + 1,
-        localDate.getDate(),
-        localDate.getHours(),
-        localDate.getMinutes(),
+        local.year(),
+        local.month() + 1, // mes es base 0
+        local.date(),
+        local.hour(),
+        local.minute()
     ];
 }
