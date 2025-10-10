@@ -25,7 +25,7 @@ const DAYS_MAP_EN_ES = {
 const AVOID_HOURS = ["13:30", "15:00", "19:30"];
 
 const MIN_HALF = "00:00";
-const MAX_HALF = "23:00";
+const MAX_HALF = "09:00";
 
 var g_servicios = new Map();
 var g_horarios = new Map();
