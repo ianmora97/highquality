@@ -45,7 +45,7 @@ function showHorario(e, i) {
     const HORA_FORMAT = moment(e, 'h:mm a').format('h-mm');
     const isHalfHour = e.includes('30') ? "lightskin" : "gold";
     $("#horasDisponibles").append(`
-        <div class="d-inline-block animate__animated animate__zoomIn animate__fast" style="animation-delay:${i * 40}ms;">
+        <div class="d-inline-block animate__animated animate__zoomIn animate__fast" style="animation-delay:${i * 40}ms;" id="hora-div-${HORA_FORMAT}">
             <input type="radio" name="horaDeCitaSelect" class="btn-check" id="hora-cita-${HORA_FORMAT}" 
             onclick="changeHora('${e}')" autocomplete="off">
             <label class="btn btn-outline-${isHalfHour} mt-2" for="hora-cita-${HORA_FORMAT}">${e}</label>
@@ -209,16 +209,18 @@ async function onDateClick(info) {
     $("#horasDisponibles").empty();
     $("#serviciosDisponibles").empty();
     
-    let arr = await removeHoursBookedfromthatday(day.hours, date);
+    let arr = [...day.hours];
+    
+    arr = additionalHalfHourSlots(arr, date, day.hours);
+    
+    arr = arr.filter(hour => !AVOID_HOURS.includes(moment(hour, 'h:mm a').format('HH:mm')));
+    
+    arr = await removeHoursBookedfromthatday(arr, date);
     if (arr.length == 0) {
         $("#horasDisponibles").append(`
             <p class="text-center text-muted">No hay horas disponibles</p>
         `);
     }
-    
-    arr = additionalHalfHourSlots(arr, date, day.hours);
-
-    arr = arr.filter(hour => !AVOID_HOURS.includes(moment(hour, 'h:mm a').format('HH:mm')));
 
     if (date.format('dddd') == 'viernes') {
         arr = arr.filter(hour => {
@@ -270,7 +272,6 @@ function showNocturnalSchedule(date) {
     }
 }
 
-
 var g_clientSelected;
 function agendarCita() {
     if (!checkCitaData()) {
@@ -298,6 +299,16 @@ function agendarCita() {
             numero: numero,
             precio: price
         },
+    }
+    // validate data before send
+    if(date == "" || title == "" || numero == "" || servicios.length == 0 || horaSeleccionada == "00:00 am"){
+        Swal.fire({
+            icon: 'error',
+            text: 'Por favor complete todos los campos',
+            background: bg,
+            color: color,
+        });
+        return;
     }
     const { data: event } = axios.post('/api/v1/event/book', data);
     modalAddEvent.hide();
@@ -397,6 +408,29 @@ function sentecesCase(str) {
     return str.toLowerCase().replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
 }
 
+const socket = io();
 
+socket.on('nueva-cita', (cita) => {
+    console.log('Nueva cita recibida:', cita);
+    removeCitaFromDialog(cita);
+});
+
+function removeCitaFromDialog(cita){
+    const date = moment(cita.start);
+    const now = moment();
+    if (date.isSame(now, 'day')) {
+        const start = moment(cita.start).format('h-mm');
+        $(`#hora-div-${start}`).remove();
+        if($("#horasDisponibles").children().length == 0){
+            $("#horasDisponibles").append(`
+                <p class="text-center text-muted">No hay horas disponibles</p>
+            `);
+        }
+        if(horaSeleccionada == date.format('h:mm a')){
+            horaSeleccionada = "00:00 am";
+            $("#timeSelected").html("00:00 am");
+        }
+    }
+}
 
 document.addEventListener('DOMContentLoaded', init);

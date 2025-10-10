@@ -49,23 +49,28 @@ exports.getMonth = async (req, res) => {
     res.json(events);
 };
 exports.create = async (req, res) => {
+    const io = req.app.get('socketio');
     if (req.body.title != 'Cerrado') {
         const client = await addClient(req.body);
         req.body.title = client.nombre;
         const event = await Event.create(req.body);
+        io.emit('nueva-cita', event);
         res.json(event);
     } else {
         const event = await Event.create(req.body);
+        io.emit('nueva-cita', event);
         // await sendTelegramMessage(req.body);
         res.json(event);
     }
 };
 exports.createClient = async (req, res) => {
+    const io = req.app.get('socketio');
     const client = await addClient(req.body);
     req.body.title = client.nombre;
     const event = await Event.create(req.body);
     await sendWhatsappMessage(req.body);
     // await sendTelegramMessage(req.body);
+    io.emit('nueva-cita', event);
     res.json(event);
 };
 exports.update = async (req, res) => {

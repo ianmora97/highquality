@@ -61,7 +61,13 @@ if(process.env.NODE_ENV === 'prod'){
     });
 }
 
+const { Server } = require('socket.io');
+const io = new Server(server);
+io.on('connection', (socket) => {});
+app.set('socketio', io);
+
 module.exports = {
     app,
-    server
+    server,
+    io
 }
