@@ -56,7 +56,7 @@ exports.create = async (req, res) => {
         res.json(event);
     } else {
         const event = await Event.create(req.body);
-        await sendTelegramMessage(req.body);
+        // await sendTelegramMessage(req.body);
         res.json(event);
     }
 };
@@ -65,7 +65,7 @@ exports.createClient = async (req, res) => {
     req.body.title = client.nombre;
     const event = await Event.create(req.body);
     await sendWhatsappMessage(req.body);
-    await sendTelegramMessage(req.body);
+    // await sendTelegramMessage(req.body);
     res.json(event);
 };
 exports.update = async (req, res) => {

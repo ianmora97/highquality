@@ -14,7 +14,7 @@ router.get('/reservar', async (req, res) => {
 });
 
 router.get('/galeria', async (req, res) => {
-    res.render('client/index',{
+    res.render('client/gallery',{
         tab: 'galeria'
     });
 });

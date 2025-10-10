@@ -14,18 +14,26 @@
 <div class="modal fade" id="addEvent" tabindex="-1" aria-labelledby="addEventLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="addEventLabel">
-                    <span class="d-block mb-1">
-                        <i class="fa-duotone fa-calendar-plus"></i> Agendar Cita
+            <div class="modal-header flex-column text-center align-items-center border-0">
+                <h2 class="modal-title fs-5 fw-bold d-block mb-1" id="addEventLabel">
+                    <i class="fa-duotone fa-calendar-plus"></i> Agendar Cita 
+                </h2>
+                <div id="noctural" style="display: none;">
+                    <span class="badge bg-dark text-success">
+                        <i class="fa-duotone fa-moon-stars"></i> Citas cada 30 min activo
                     </span>
-                    <small class="d-block small text-muted">
+                    <p class="small text-muted mb-0">30 min por turno disponibles a partir de medianoche.</p>
+                </div>
+                <hr class="d-block w-100">
+                <div class="d-block">
+                    <small class="d-block small text-white lead">
                         <i class="fa-duotone fa-calendar-days text-gold"></i> <span id="dateSelected" class="text-capitalize"></span> 
                         <i class="fa-duotone fa-clock text-maps"></i> <span id="timeSelected" class="text-uppercase"></span>
                     </small>
-                </h1>
-                <button type="button" class="btn-close btn-close-white" 
+                </div>
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" 
                 data-bs-dismiss="modal" aria-label="Close"></button>
+                <hr class="d-block w-100 mb-0">
             </div>
             <div class="modal-body px-1">
                 <div class="row mx-0 g-3">
@@ -36,9 +44,13 @@
                             <hr>
                             <i class="fa-solid fa-scissors text-info"></i> <span class="mb-1 d-inline-block">Servicios:</span>
                             <div id="serviciosDisponibles" class="d-flex gap-2 py-2 flex-wrap"></div>
-                            <p class="text-end">
-                                Precio Final: ₡<span class="fw-bold" id="precioFinalModal"></span> <i class="fa-duotone fa-coins text-gold"></i>
-                            </p>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">Precio Final:</span>
+                                <p class="mb-0">
+                                     ₡<span class="fw-bold" id="precioFinalModal"></span> <i class="fa-duotone fa-coins text-gold"></i>
+                                </p>
+                            </div>
                             <hr>
                             <div class="mb-2">
                                 <label for="nombreCita" class="form-label">Nombre</label>
@@ -53,9 +65,9 @@
                 </div>
                 
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-success" onclick="agendarCita()" style="color: white;">
+            <div class="modal-footer p-0 d-flex justify-content-between gap-0 position-relative">
+                <button type="button" class="btn btn-dark flex-fill" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-success flex-fill" onclick="agendarCita()" style="color: white;">
                     <i class="fa-duotone fa-circle-plus"></i> Agendar Cita
                 </button>
             </div>

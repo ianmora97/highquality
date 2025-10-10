@@ -1,4 +1,4 @@
-async function init(){
+async function init() {
     await bringServices();
     createCalendar();
 }
@@ -20,12 +20,19 @@ const DAYS_MAP_EN_ES = {
     "Saturday": "Sábado",
     "Sunday": "Domingo"
 };
+
+
+const AVOID_HOURS = ["13:30", "15:00", "19:30"];
+
+const MIN_HALF = "00:00";
+const MAX_HALF = "23:00";
+
 var g_servicios = new Map();
 var g_horarios = new Map();
-async function bringServices(){
+async function bringServices() {
     const { data } = await axios.get('/api/v1/services');
     g_servicios.clear();
-    data.forEach((e,i) => {
+    data.forEach((e, i) => {
         g_servicios.set(e._id, e);
     });
     const { data: horarios } = await axios.get('/api/v1/horario');
@@ -34,19 +41,20 @@ async function bringServices(){
         g_horarios.set(e.day, e);
     });
 }
-function showHorario(e,i){
+function showHorario(e, i) {
     const HORA_FORMAT = moment(e, 'h:mm a').format('h-mm');
+    const isHalfHour = e.includes('30') ? "lightskin" : "gold";
     $("#horasDisponibles").append(`
-        <div class="d-inline-block animate__animated animate__zoomIn animate__fast" style="animation-delay:${i*40}ms;">
+        <div class="d-inline-block animate__animated animate__zoomIn animate__fast" style="animation-delay:${i * 40}ms;">
             <input type="radio" name="horaDeCitaSelect" class="btn-check" id="hora-cita-${HORA_FORMAT}" 
             onclick="changeHora('${e}')" autocomplete="off">
-            <label class="btn btn-outline-gold mt-2" for="hora-cita-${HORA_FORMAT}">${e}</label>
+            <label class="btn btn-outline-${isHalfHour} mt-2" for="hora-cita-${HORA_FORMAT}">${e}</label>
         </div>
     `);
 }
-function showServicio(e,i){
+function showServicio(e, i) {
     $("#serviciosDisponibles").append(`
-        <div class="animate__animated animate__zoomIn animate__fast" style="animation-delay:${i*40}ms;">
+        <div class="animate__animated animate__zoomIn animate__fast" style="animation-delay:${i * 40}ms;">
             <input type="checkbox" class="btn-check" id="service-checkbox-${e.name}" data-precio="${e.price}" 
             onclick="addServicioToArray('${e.name}','${e.price}')" autocomplete="off">
             <label class="btn btn-outline-info" id="service-checkbox-label-${e.name}" for="service-checkbox-${e.name}">${e.name}</label>
@@ -54,22 +62,22 @@ function showServicio(e,i){
     `);
 }
 var g_serviciosTempCheck = new Map();
-function addServicioToArray(servicio, precio){
-    if(!g_serviciosTempCheck.has(servicio)){
+function addServicioToArray(servicio, precio) {
+    if (!g_serviciosTempCheck.has(servicio)) {
         g_serviciosTempCheck.set(servicio, parseInt(precio));
-    }else{
+    } else {
         g_serviciosTempCheck.delete(servicio);
     }
     let total = 0;
     let combo = 0;
-    g_serviciosTempCheck.forEach((value, key)=>{
+    g_serviciosTempCheck.forEach((value, key) => {
         total += value;
     });
-    if(g_serviciosTempCheck.has('Corte') && g_serviciosTempCheck.has('Barba')){
+    if (g_serviciosTempCheck.has('Corte') && g_serviciosTempCheck.has('Barba')) {
         total -= 1000;
     }
-    if(g_serviciosTempCheck.has('Cejas')){
-        if(g_serviciosTempCheck.size > 1){
+    if (g_serviciosTempCheck.has('Cejas')) {
+        if (g_serviciosTempCheck.size > 1) {
             total -= 1000;
         }
     }
@@ -84,26 +92,26 @@ var slotDays = {
     min: '08:00:00',
     max: '22:00:00'
 };
-async function createCalendar(){
-    g_horarios.forEach((e,i) => {
-        if(!e.enable) hiddenDays.push(parseInt(moment(DAYS_MAP_EN_ES[e.day], 'dddd').format('d')));
-        else{
+async function createCalendar() {
+    g_horarios.forEach((e, i) => {
+        if (!e.enable) hiddenDays.push(parseInt(moment(DAYS_MAP_EN_ES[e.day], 'dddd').format('d')));
+        else {
             e.hours = sortHours(e.hours);
             const day = DAYS_MAP_EN_ES[e.day];
             const hours = e.hours;
             businessHours.push({
                 daysOfWeek: [parseInt(moment(day, 'dddd').format('d'))],
                 startTime: moment(hours[0], 'h:mm a').format('HH:mm'),
-                endTime: moment(hours[hours.length-1], 'h:mm a').format('HH:mm'),
+                endTime: moment(hours[hours.length - 1], 'h:mm a').format('HH:mm'),
             });
             slotDays.min = moment(hours[0], 'h:mm a').format('HH:mm:00');
-            slotDays.max = moment(hours[hours.length-1], 'h:mm a').format('HH:mm:00');
+            slotDays.max = moment(hours[hours.length - 1], 'h:mm a').format('HH:mm:00');
         }
     });
     renderCalendar();
 }
 var calendar;
-async function renderCalendar(){
+async function renderCalendar() {
     const calendarEl = document.getElementById('calendar');
     calendar = new FullCalendar.Calendar(calendarEl, {
         locale: 'es',
@@ -125,16 +133,16 @@ async function renderCalendar(){
                 dayMaxEventRows: 0
             },
         },
-        validRange:{
+        validRange: {
             start: moment().format('YYYY-MM-DD'),
             end: moment().add(1, 'year').format('YYYY-MM-DD')
         },
-        eventTimeFormat:{
+        eventTimeFormat: {
             hour: 'numeric',
             minute: '2-digit',
             hour12: true
         },
-        slotLabelFormat:{
+        slotLabelFormat: {
             hour: 'numeric',
             minute: '2-digit',
             omitZeroMinute: true,
@@ -157,7 +165,7 @@ async function renderCalendar(){
     });
     calendar.render();
 }
-function eventContent(info){
+function eventContent(info) {
     return {
         html: ''
     };
@@ -168,7 +176,7 @@ async function dateSet(info) {
     const end = moment(endStr).format('dddd D MMM');
     $("#date").html(`${start} - ${end}`);
 }
-async function removeHoursBookedfromthatday(arr, date){
+async function removeHoursBookedfromthatday(arr, date) {
     const hours = [...arr];
     date.hour(0o0);
     const { data: events } = await axios.get(`/api/v1/event?sort=${date.format()}`);
@@ -185,35 +193,87 @@ async function removeHoursBookedfromthatday(arr, date){
     const availableHours = hours.filter(hour => !bookedHours.includes(hour));
     return availableHours;
 }
+
 var currentDateSelected = '';
-async function onDateClick(info){
+async function onDateClick(info) {
     currentDateSelected = info.dateStr;
-    
+
     modalAddEvent.show();
+
+    
     const date = moment(info.dateStr);
     const day = g_horarios.get(DAYS_MAP_ES_EN[date.format('dddd')]);
 
+    showNocturnalSchedule(date);
+    
     $("#horasDisponibles").empty();
     $("#serviciosDisponibles").empty();
-    const arr = await removeHoursBookedfromthatday(day.hours, date);
-    if(arr.length == 0){
+    
+    let arr = await removeHoursBookedfromthatday(day.hours, date);
+    if (arr.length == 0) {
         $("#horasDisponibles").append(`
             <p class="text-center text-muted">No hay horas disponibles</p>
         `);
     }
-    arr.forEach((e,i) => {
-        showHorario(e,i);
+    
+    arr = additionalHalfHourSlots(arr, date, day.hours);
+
+    arr = arr.filter(hour => !AVOID_HOURS.includes(moment(hour, 'h:mm a').format('HH:mm')));
+
+    if (date.format('dddd') == 'viernes') {
+        arr = arr.filter(hour => {
+            // remove 3:00pm and 3:30pm
+            const hour24 = moment(hour, 'h:mm a').format('HH:mm');
+            return hour24 != '15:00' && hour24 != '15:30';
+        });
+    }
+
+    arr.forEach((e, i) => {
+        showHorario(e, i);
     });
-    g_servicios.forEach((e,i) => {
-        showServicio(e,i);
+    
+    g_servicios.forEach((e, i) => {
+        showServicio(e, i);
     });
 
     $("#dateSelected").html(date.format('dddd DD MMMM'));
     $("#timeSelected").html(date.format('hh:mm a'));
 }
+function additionalHalfHourSlots(arr, date, day) {
+    // If the selected date is today, and the current time is between 12:00 PM and 1:00 PM, add a 30-minute slot from now
+    const now = moment();
+    if (date.isSame(now, 'day')) {
+        const hour = now.format('HH:mm');
+        if (hour >= MIN_HALF && hour <= MAX_HALF) {
+            day.forEach(e => {
+                const time = moment(e, 'h:mm a');
+                const timePlus30 = moment(e, 'h:mm a').add(30, 'minutes');
+                if (!day.includes(timePlus30.format('h:mm a'))) {
+                    arr.push(timePlus30.format('h:mm a'));
+                }
+            });
+            arr = sortHours(arr);
+        }
+    }
+    return arr;
+}
+function showNocturnalSchedule(date) {
+    if (!date.isSame(moment(), 'day')) {
+        $("#noctural").hide();
+        return;
+    }
+    const now = moment();
+    const hour = now.format('HH:mm');
+    if (hour >= MIN_HALF && hour <= MAX_HALF) {
+        console.log("It's after midnight, enabling 30 min events for today");
+        $("#noctural").show();
+    }
+}
+
+
 var g_clientSelected;
-function agendarCita(){
-    if(!checkCitaData()){
+function agendarCita() {
+    if (!checkCitaData()) {
         return;
     }
     const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
@@ -224,7 +284,7 @@ function agendarCita(){
     const numero = $("#numeroTelefono").val();
     const servicios = [];
     let price = 0;
-    g_serviciosTempCheck.forEach((value, key)=>{
+    g_serviciosTempCheck.forEach((value, key) => {
         servicios.push(key);
         price += parseInt(value);
     });
@@ -253,8 +313,8 @@ function agendarCita(){
         onClose: reloadData
     });
     Swal.fire({
-        title:'Cita Agregada!',
-        icon:'success',
+        title: 'Cita Agregada!',
+        icon: 'success',
         html: `
         <h5>🚨Politica de citas🚨</h5>
         <p>✅ Estar 5 min antes de la hora de la cita</p>
@@ -272,17 +332,17 @@ function agendarCita(){
         color: color,
         onClose: reloadData
     });
-    
+
 }
-function reloadData(){
+function reloadData() {
     location.reload();
 }
-function checkCitaData(){
+function checkCitaData() {
     const title = $("#nombreCita").val();
     const numero = $("#numeroTelefono").val();
     const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
     const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
-    if(horaSeleccionada == "00:00 am"){
+    if (horaSeleccionada == "00:00 am") {
         Swal.fire({
             icon: 'error',
             text: 'Seleccione una hora',
@@ -290,7 +350,7 @@ function checkCitaData(){
             color: color,
         });
         return false;
-    }else if(g_serviciosTempCheck.size == 0){
+    } else if (g_serviciosTempCheck.size == 0) {
         Swal.fire({
             icon: 'error',
             text: 'Seleccione un servicio',
@@ -298,7 +358,7 @@ function checkCitaData(){
             color: color,
         });
         return false;
-    }else if(title == ""){
+    } else if (title == "") {
         Swal.fire({
             icon: 'error',
             text: 'Digite un nombre',
@@ -306,7 +366,7 @@ function checkCitaData(){
             color: color,
         });
         return false;
-    }else if(numero == ""){
+    } else if (numero == "") {
         Swal.fire({
             icon: 'error',
             text: 'Digite un número de teléfono',
@@ -318,7 +378,7 @@ function checkCitaData(){
     return true;
 }
 var horaSeleccionada = "00:00 am";
-function changeHora(hora){
+function changeHora(hora) {
     $("#timeSelected").html(hora);
     horaSeleccionada = hora;
 }
@@ -330,10 +390,13 @@ function sortHours(hours) {
     });
     return sortedHours;
 }
-function toCRC(number){
+function toCRC(number) {
     return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(number).replace(/\D00(?=\D*$)/, "");
 }
-function sentecesCase(str){
+function sentecesCase(str) {
     return str.toLowerCase().replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
 }
+
+
+
 document.addEventListener('DOMContentLoaded', init);

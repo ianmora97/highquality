@@ -104,7 +104,7 @@ async function agregarHora(){
         }
     });
     if (date) {
-        const formatDate = moment(date, "HH:mm").format("h:00 a");
+        const formatDate = moment(date, "HH:mm").format("h:mm a");
         
         g_horarios.get(id).hours.push(formatDate);
 

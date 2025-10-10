@@ -9,8 +9,8 @@ const https = require('https');
 var cookieParser = require('cookie-parser')
 const {cert} = require('./backend/middlewares/https');
 const helmet = require('helmet');
-const {createTelegramMessagesCron} = require('./backend/helpers/cron');
-createTelegramMessagesCron();
+// const {createTelegramMessagesCron} = require('./backend/helpers/cron');
+// createTelegramMessagesCron();
 
 // ? Settings
 app.set('port', process.env.PORT);

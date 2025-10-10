@@ -66,6 +66,7 @@ exports.getMonth = async (month) => {
 exports.create = async (event) => {
     event.createdAt = moment().format();
     event.updatedAt = moment().format();
+    console.log(event);
     const newEvent = new Event(event);
     await newEvent.save();
     return newEvent;
@@ -85,7 +86,7 @@ exports.delete = async (id) => {
 exports.pagar = async (id, monto) => {
     if(monto == 0){
         const event = await Event.findByIdAndUpdate(id, {
-            'extendedProps.precio': monto,
+            'extendedProps.precio': parseInt(monto),
             'extendedProps.estado': 'POR PAGAR',
             backgroundColor: '#6c1313',
             borderColor: '#eb5d5d',
@@ -94,7 +95,7 @@ exports.pagar = async (id, monto) => {
         return event;
     }else{
         const event = await Event.findByIdAndUpdate(id, {
-            'extendedProps.precio': monto,
+            'extendedProps.precio': parseInt(monto),
             'extendedProps.estado': 'PAGO',
             backgroundColor: '#064724',
             borderColor: '#44c780',
