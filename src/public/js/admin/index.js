@@ -151,8 +151,8 @@ const modalAddEvent = new bootstrap.Modal(document.getElementById('addEvent'), {
 var businessHours = [];
 var hiddenDays = [];
 var slotDays = {
-    min: '08:00:00',
-    max: '22:00:00'
+    min: '09:00:00',
+    max: '20:00:00'
 };
 var expected_view = 'timeGridWeek';
 async function createCalendar() {
