@@ -167,8 +167,8 @@ async function createCalendar() {
                 startTime: moment(hours[0], 'h:mm a').format('HH:mm'),
                 endTime: moment(hours[hours.length - 1], 'h:mm a').add(1, 'hour').format('HH:mm'),
             });
-            slotDays.min = moment(hours[0], 'h:mm a').format('HH:mm:00');
-            slotDays.max = moment(hours[hours.length - 1], 'h:mm a').add(1, 'hour').format('HH:mm:00');
+            // slotDays.min = moment(hours[0], 'h:mm a').format('HH:mm:00');
+            // slotDays.max = moment(hours[hours.length - 1], 'h:mm a').add(1, 'hour').format('HH:mm:00');
         }
     });
     let viewport = $(window).width();
