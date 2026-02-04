@@ -86,6 +86,8 @@ function fillClients(data) {
 async function addHalfHourtoMap() {
     g_horarios.forEach((e) => {
         let hours = e.hours;
+        hours = sortHours(hours);
+        e.hours = hours;
         const length = hours.length;
         for (let i = 0; i < (length - 1); i++) {
             const h = hours[i];
@@ -93,6 +95,7 @@ async function addHalfHourtoMap() {
             e.hours.push(half);
         }
     });
+    console.log("Horarios con media hora añadida", g_horarios);
 }
 function addHalfHour(arr) {
     const array = [];
@@ -173,7 +176,7 @@ async function createCalendar() {
     });
     let viewport = $(window).width();
     if (viewport < 600) {
-        expected_view = 'dayGridFourWeek';
+        expected_view = 'dayGridThreeWeek';
     }
     renderCalendar();
 }
@@ -204,6 +207,12 @@ async function renderCalendar() {
                 titleFormat: { month: 'long' },
                 dayMaxEventRows: 0,
                 dayHeaderFormat: { weekday: 'long' }
+            },
+            dayGridThreeWeek: {
+                titleFormat: { month: 'long' },
+                type: 'timeGridWeek',
+                duration: { days: 3 },
+                dayMaxEventRows: 0
             },
             dayGridFourWeek: {
                 titleFormat: { month: 'long' },
@@ -846,8 +855,6 @@ function addNextAppointmentToNavbar() {
     axios.get(`/api/v1/event?sort=${today}&onlyThisDay=true`).then(({ data }) => {
         const currentAppointment = data.filter(e => moment(e.start).isSame(now, 'hour'));
         const nextAppointment = data.filter(e => moment(e.start).isSame(now.add(30, 'minutes'), 'hour'));
-        console.log("Current Appointment", currentAppointment);
-        console.log("Next Appointment", nextAppointment);
 
         if (currentAppointment.length > 0) {
             const event = currentAppointment[0];
@@ -855,10 +862,11 @@ function addNextAppointmentToNavbar() {
             $("#currentAppointment").html(`${title} - ${moment(start).format('h:mm a')} - ${extendedProps.servicios.join(', ')}`);
         }
         if (nextAppointment.length > 0) {
-            console.log("Next Appointment", nextAppointment);
             const event = nextAppointment[0];
             const { title, start, extendedProps } = event;
             $("#nextAppointment").html(`${title} - ${moment(start).format('h:mm a')} - ${extendedProps.servicios.join(', ')}`);
+        }else if(nextAppointment.length == 0){
+            $("#nextAppointment").html(`No hay citas próximas`);
         }
         
     });
