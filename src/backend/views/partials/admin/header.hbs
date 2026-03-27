@@ -1,0 +1,46 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-fore">
+    <div class="container">
+        <a class="navbar-brand nautigal" href="/dashboard/panel">
+            <img src="/images/simple-logo.png" alt="HighQuality Barber Logo" width="50" height="50" class="d-inline-block align-text-top">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" 
+        aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse inter" id="navbarNavAltMarkup">
+            <div class="nav nav-pills w-100 gap-3 ms-0 ms-md-4">
+                <a class="nav-link" id="tab-panel" href="/dashboard/panel">
+                    <i class="fa-duotone fa-calendar-days"></i> Citas
+                </a>
+                <a class="nav-link" id="tab-horarios" href="/dashboard/horarios">
+                    <i class="fa-duotone fa-clock"></i> Horario
+                </a>
+                <a class="nav-link" id="tab-servicios" href="/dashboard/servicios">
+                    <i class="fa-duotone fa-scissors"></i> Servicios
+                </a>
+                <a class="nav-link" id="tab-clientes" href="/dashboard/clientes">
+                    <i class="fa-duotone fa-users"></i> Clientes
+                </a>
+                <a class="nav-link" id="tab-reviews" href="/dashboard/reviews">
+                    <i class="fa-solid fa-star"></i> Reviews
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+    const CURRENT_PAGE = "{{tab}}";
+    $(document).ready(function() {
+        $(`#tab-${CURRENT_PAGE}`).addClass("active");
+        $(`#tab-${CURRENT_PAGE}`).attr("aria-current", "page");
+        anime({
+            targets: '.nav-link',
+            translateY: [-10, 0],
+            opacity: [0, 1],
+            delay: anime.stagger(20),
+            easing: 'easeInOutSine'
+        })
+    });
+
+</script>

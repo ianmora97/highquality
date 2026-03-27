@@ -1,17 +1,20 @@
-$primary: #c46d09;
-$secondary: #503d00;
-$third: #1c1c1c;
+$primary: #3004f3;
+$secondary: #f8272e;
+$third: #1f203a;
 
 $gold: #F4C82C;
 $maps: #e44e4e;
+$lightskin: #ffe1b3;
+
 
 $info: #3086e7;
-$success: #2ecc71;
+$success: #14b73a;
 $warning: #f1c40f;
 $danger: #e74c3c;
 
 $light: #f1f1f1;
-$dark: #111111;
+$dark: #141414;
+$fore: #0d0d0d;
 
 $body-bg: $dark;
 $body-color: $light;
@@ -28,6 +31,8 @@ $theme-colors: (
     "warning": $warning,
     "info": $info,
     "dark": $dark,
+    "fore": $fore,
+    "lightskin": $lightskin,
     "light": $light,
     "gray": $gray,
     "gray-dark": $gray-dark,
@@ -35,7 +40,7 @@ $theme-colors: (
     "maps": $maps
 );
 
-$font-family-base: 'Roboto Slab', serif;
+$font-family-base: 'Inter', serif;
 $font-size-base: .885rem;
 
 @for $i from 1 through 10 {
@@ -50,6 +55,9 @@ $font-size-base: .885rem;
   }
   .top-#{$i}{
     top: $i * 10% !important;
+  }
+  .offset-left-#{$i}{
+    margin-left: $i * 0.5rem !important;
   }
 }
 
@@ -90,7 +98,6 @@ $input-padding-y-lg: .6rem;
 
 $btn-font-size-lg: calc($font-size-base + 2px);
 
-$box-shadow:0 5px 20px -5px rgba(darken($primary, 30%), 0.3);
 
 $input-btn-border-width: 1px;
 
@@ -100,6 +107,8 @@ $input-border-color: lighten($dark, 10%);
 $input-color: $light;
 $input-group-addon-bg: $body-bg;
 $input-group-addon-color: $light;
+$input-focus-box-shadow: 0 0 0 0.1rem rgba($primary, 0.25);
+$form-select-focus-box-shadow: 0 0 0 0.1rem rgba($primary, 0.25);
 
 $input-disabled-bg: $dark;
 
@@ -120,6 +129,13 @@ $breadcrumb-divider: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/
 
 $dropdown-bg: white;
 
+$modal-header-border-color: $dark;
+$modal-content-color: $light;
+$modal-backdrop-opacity: 0.4;
+$modal-content-border-radius: 1rem;
+$modal-content-bg: $fore;
+$modal-show-transition: transform .4s ease-out;
+
 ::selection {
     background-color: rgba($primary, 0.4) !important;
     color: $light !important;
@@ -127,8 +143,18 @@ $dropdown-bg: white;
 img{
     user-select: none !important;
 }
+$table-border-color: $dark;
+$table-bg: $fore;
+
 thead, tbody, tfoot, tr, td, th{
   white-space: nowrap;
+}
+
+thead th:first-child{
+  border-top-left-radius: 0.5rem;
+}
+thead th:last-child{
+  border-top-right-radius: 0.5rem;
 }
 a{
   text-decoration: none !important;
@@ -138,4 +164,23 @@ a{
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6{
 //   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
+}
+.opensans{
+  font-family: 'Open Sans', sans-serif !important;
+  font-style: normal;
+}
+.inter{
+  font-family: 'Inter', sans-serif !important;
+}
+.nautigal{
+  font-family: "The Nautigal", serif;
+}
+.playfair-display {
+  font-family: "Playfair Display", serif !important;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+.bebas{
+  font-family: "Bebas Neue", cursive;
+  letter-spacing: 1px;
 }

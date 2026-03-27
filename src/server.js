@@ -7,8 +7,10 @@ const path = require('node:path');
 const http = require('http');
 const https = require('https');
 var cookieParser = require('cookie-parser')
-// const {toHttps,cert} = require('./backend/middlewares/security/https');
+const {cert} = require('./backend/middlewares/https');
 const helmet = require('helmet');
+// const {createTelegramMessagesCron} = require('./backend/helpers/cron');
+// createTelegramMessagesCron();
 
 // ? Settings
 app.set('port', process.env.PORT);
@@ -39,9 +41,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 if(process.env.NODE_ENV === 'prod'){
-    // ? Security and HTTPS
     app.enable('trust proxy');
-    // app.use(toHttps);
 }
 
 // ? Routes
@@ -61,20 +61,13 @@ if(process.env.NODE_ENV === 'prod'){
     });
 }
 
-// ? Socket.io
-var io = require('socket.io')(server);
-io.on('connection', (socket) =>{
-    console.log('[OK] Socket connected', socket.id);
-    socket.on('reserva:new', (data) => {
-        io.sockets.emit('reserva:new',data);
-    });
-    socket.on('reserva:delete', (data) => {
-        io.sockets.emit('reserva:delete',data);
-    });
-    socket.on('estado:update', (data) => {
-        io.sockets.emit('estado:update',data);
-    });
-});
-// on message
-
+const { Server } = require('socket.io');
+const io = new Server(server);
+io.on('connection', (socket) => {});
 app.set('socketio', io);
+
+module.exports = {
+    app,
+    server,
+    io
+}

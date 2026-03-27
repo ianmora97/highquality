@@ -1,0 +1,72 @@
+<script src="/scripts/datatables.net/js/dataTables.min.js"></script>
+<script src="/scripts/datatables.net-bs5/js/dataTables.bootstrap5.min.js"></script>
+<script src="/scripts/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js"></script>
+<script src="/scripts/datatables.net-fixedheader-bs5/js/fixedHeader.bootstrap5.min.js"></script>
+<script src="/scripts/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/scripts/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js"></script>
+
+<link rel="stylesheet" href="/scripts/datatables.net-bs5/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="/scripts/datatables.net-fixedheader-bs5/css/fixedHeader.bootstrap5.min.css">
+<link rel="stylesheet" href="/scripts/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css">
+
+<div class="container-fluid">
+    <div class="row mx-0 g-3 mt-2">
+        <section class="col-12 animate__animated animate__fadeInUp">
+            <div class="bg-fore shadow rounded-3 p-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="fw-bold"><i class="fa-duotone fa-users text-primary"></i> Clientes</h1>
+                    <small class="text-light mb-1">Todos los clientes registrados</small>
+                    <div class="d-flex justify-content-start align-items-center">
+                        <p class="text-muted small mt-1 mb-0 me-3"><i class="fa-solid fa-clock"></i> Actualizado hace: <span id="lastUpdated" class="text-primary">1 seg</span></p>
+                    </div>
+                </div>
+                <h1 class="display-2 fw-bold mb-0">
+                    <span id="totalitems" class="text-gold">20</span>
+                </h1>
+            </div>
+        </section>
+
+        <section class="col-12 animate__animated animate__fadeInUp">
+            <div class="table-container position-relative bg-fore rounded-3" 
+            id="table-container">
+                <table style="margin: 0 !important;" 
+                class="table table-custom table-striped table-responsive nowrap align-middle position-relative w-100" 
+                id="table">
+                    <thead>
+                        <tr id="thead">
+                            <th scope="col" data-priority="1"><i class="fa-duotone fa-id-card"></i> Nombre</th>
+                            <th scope="col" data-priority="2"><i class="fa-duotone fa-calendar-days"></i> Citas</th>
+                            <th scope="col" data-priority="3"><i class="fa-duotone fa-phone"></i> Telefono</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody">
+                        <tr class="placeholder-glow">
+                            <td><span class="placeholder col-10"></span></td>
+                            <td><span class="placeholder col-10"></span></td>
+                            <td><span class="placeholder col-10"></span></td>
+                        </tr>
+                        <tr class="placeholder-glow">
+                            <td><span class="placeholder col-10"></span></td>
+                            <td><span class="placeholder col-10"></span></td>
+                            <td><span class="placeholder col-10"></span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <section class="col-12 animate__animated animate__fadeInUp">
+            <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded-3 bg-fore">
+                <small class="text-muted" id="info">
+                    <div class="placeholder-glow">
+                        <span class="placeholder col-12">-o-o-o-o-o-o-o-o-o-o-</span>
+                    </div>
+                </small>
+                <div class="pagination-tables" id="pagination"></div>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<script src="/js/admin/clientes.js"></script>
