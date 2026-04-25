@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@config "../../../tailwind.config.js";
+
+@layer base {
+  body {
+    @apply bg-neutral text-white font-body antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headings;
+  }
+}
+
+@layer components {
+  /* Common UI Elements adhering to the iOS-style rounded specs */
+  .btn-primary {
+    @apply bg-primary text-white font-body px-6 py-3 rounded-ios hover:opacity-90 transition-all font-semibold active:scale-95;
+  }
+  
+  .card {
+    @apply bg-secondary rounded-ios-lg p-6 shadow-xl border border-white/5;
+  }
+
+  .input-dark {
+    @apply bg-neutral border border-white/10 rounded-ios px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors w-full;
+  }
+}

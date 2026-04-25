@@ -124,7 +124,7 @@
 
     .form-input:focus {
         background: rgba(31, 32, 58, 0.6);
-        border-color: #3004f3;
+        border-color: #FF5E00;
         box-shadow: 0 0 0 3px rgba(48, 4, 243, 0.15);
         transform: translateY(-2px);
     }
@@ -144,13 +144,13 @@
     }
 
     .form-group:focus-within .input-icon {
-        color: #3004f3;
+        color: #FF5E00;
     }
 
     .btn-login {
         width: 100%;
         padding: 1rem;
-        background: linear-gradient(135deg, #3004f3 0%, #5a3ef5 100%);
+        background: linear-gradient(135deg, #FF5E00 0%, #E49901 100%);
         border: none;
         border-radius: 12px;
         color: #f1f1f1;
@@ -209,7 +209,7 @@
     .accent-line {
         width: 60px;
         height: 3px;
-        background: linear-gradient(90deg, #3004f3, #F4C82C);
+        background: linear-gradient(90deg, #FF5E00, #F4C82C);
         margin: 0 auto 1.5rem;
         border-radius: 2px;
     }
@@ -236,7 +236,7 @@
             <p class="login-subtitle">Admin Login</p>
         </div>
 
-        <form action="/dashboard/Login" method="post" id="loginForm">
+        <form action="/admin/login" method="post" id="loginForm">
             <div class="form-group">
                 <i class="input-icon fas fa-user"></i>
                 <input 
@@ -337,7 +337,7 @@
             particle.style.top = y + 'px';
             particle.style.width = '4px';
             particle.style.height = '4px';
-            particle.style.background = '#3004f3';
+            particle.style.background = '#FF5E00';
             particle.style.borderRadius = '50%';
             particle.style.pointerEvents = 'none';
             particle.style.zIndex = '999';

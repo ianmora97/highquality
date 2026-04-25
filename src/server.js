@@ -40,6 +40,20 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+const session = require('express-session');
+const MongoStore = require('connect-mongo').MongoStore;
+const passport = require('passport');
+
+app.use(session({
+    secret: process.env.SECRET || 'secret',
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+    cookie: { secure: process.env.NODE_ENV === 'prod' }
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
 if(process.env.NODE_ENV === 'prod'){
     app.enable('trust proxy');
 }
@@ -47,8 +61,10 @@ if(process.env.NODE_ENV === 'prod'){
 // ? Routes
 app.use(require('./backend/routes/render.routes'));
 app.use('/scripts',require('./backend/routes/static.routes'));
-app.use('/dashboard', require('./backend/routes/admin.routes.js'));
+app.use('/admin', require('./backend/routes/admin.routes.js'));
 app.use('/api/v1', require('./backend/routes/api.routes.js'));
+app.use('/api/v2', require('./backend/routes/api.v2.routes.js'));
+app.use('/api/v2/finances', require('./backend/routes/api.v2.finances.js'));
 
 // ? Start the server
 var server = http.createServer(app).listen(app.get('port'), () => {

@@ -1,79 +1,394 @@
-<script src="/scripts/@fullcalendar/core/index.global.min.js"></script>
-<script src="/scripts/@fullcalendar/daygrid/index.global.min.js"></script>
-<script src="/scripts/@fullcalendar/list/index.global.min.js"></script>
-<script src="/scripts/@fullcalendar/timegrid/index.global.min.js"></script>
-<script src="/scripts/@fullcalendar/interaction/index.global.min.js"></script>
-<script src="/scripts/@fullcalendar/bootstrap5/index.global.min.js"></script>
-<script src="/scripts/@fullcalendar/moment/index.global.min.js"></script>
+{{! src/backend/views/client/reservar.hbs }}
 
-<div class="bg-fore p-3 shadow mt-3">
-    <p class="small text-muted text-center d-block mb-1" id="date">-</p>
-    <div id="calendar" class="text-capitalize"></div>
-</div>
-
-<div class="modal fade" id="addEvent" tabindex="-1" 
-aria-labelledby="addEventLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg modal-fullscreen-md-down">
-        <div class="modal-content">
-            <div class="modal-header flex-column text-center align-items-center border-0">
-                <h2 class="modal-title fs-5 fw-bold d-block mb-1" id="addEventLabel">
-                    <i class="fa-duotone fa-calendar-plus"></i> Agendar Cita 
-                </h2>
-                <div id="noctural" style="display: none;">
-                    <span class="badge bg-dark text-success">
-                        <i class="fa-duotone fa-moon-stars"></i> Citas cada 30 min activo
-                    </span>
-                    <p class="small text-muted mb-0">30 min por turno disponibles a partir de medianoche.</p>
-                </div>
-                <hr class="d-block w-100">
-                <div class="d-block">
-                    <small class="d-block small text-white lead">
-                        <i class="fa-duotone fa-calendar-days text-gold"></i> <span id="dateSelected" class="text-capitalize"></span> 
-                        <i class="fa-duotone fa-clock text-maps"></i> <span id="timeSelected" class="text-uppercase"></span>
-                    </small>
-                </div>
-                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" 
-                data-bs-dismiss="modal" aria-label="Close"></button>
-                <hr class="d-block w-100 mb-0">
+<div class="min-h-screen bg-zinc-950 pt-20 pb-safe" x-data="bookingWizard()" x-init="initWizard()">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+        
+        <!-- Header / Progress -->
+        <div class="mb-10 text-center">
+            <h1 class="text-3xl font-bold text-white mb-2">Reserva tu Espacio</h1>
+            <p class="text-gray-400 text-sm">Asegura tu momento de estilo y relajación.</p>
+            
+            <!-- Progress Bar -->
+            <div class="mt-8 flex justify-between items-center relative">
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-zinc-800 rounded z-0"></div>
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-primary to-[#F4C82C] rounded z-0 transition-all duration-500 ease-out" 
+                     x-bind:style="'width: ' + ((step - 1) * 33.33) + '%'"></div>
+                
+                <!-- Steps Indicators -->
+                <template x-for="i in 4">
+                    <div class="relative z-10 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-colors duration-300"
+                         x-bind:class="{
+                            'bg-primary border-primary text-white': step >= i,
+                            'bg-zinc-900 border-zinc-700 text-gray-500': step < i
+                         }">
+                        <span x-text="i"></span>
+                    </div>
+                </template>
             </div>
-            <div class="modal-body px-1">
-                <div class="row mx-0 g-3">
-                    <div class="col-12">
-                        <div id="citaSelection" class="animate__animated animate__fadeIn">
-                            <i class="fa-duotone fa-clock text-gold"></i> <span class="mb-1 d-inline-block">Hora de la Cita:</span>
-                            <div id="horasDisponibles"></div>
-                            <hr>
-                            <i class="fa-solid fa-scissors text-info"></i> <span class="mb-1 d-inline-block">Servicios:</span>
-                            <div id="serviciosDisponibles" class="d-flex gap-2 py-2 flex-wrap"></div>
-                            <hr>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-bold">Precio Final:</span>
-                                <p class="mb-0">
-                                     ₡<span class="fw-bold" id="precioFinalModal"></span> <i class="fa-duotone fa-coins text-gold"></i>
-                                </p>
+            
+            <!-- Step Labels -->
+            <div class="flex justify-between text-[10px] md:text-xs font-semibold text-gray-500 mt-2 uppercase tracking-wide">
+                <span :class="{'text-primary drop-shadow-[0_0_5px_rgba(255,94,0,0.8)]': step >= 1}">Servicio</span>
+                <span :class="{'text-primary drop-shadow-[0_0_5px_rgba(255,94,0,0.8)]': step >= 2}">Fecha</span>
+                <span :class="{'text-primary drop-shadow-[0_0_5px_rgba(255,94,0,0.8)]': step >= 3}">Datos</span>
+                <span :class="{'text-primary drop-shadow-[0_0_5px_rgba(255,94,0,0.8)]': step >= 4}">Confirmar</span>
+            </div>
+        </div>
+
+        <!-- Forms Container (Glassmorphism) -->
+        <div class="bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden min-h-[400px]">
+
+            <!-- Blobs estéticos de fondo -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -z-10 animate-pulse"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-[#F4C82C]/10 rounded-full blur-3xl -z-10 animate-pulse" style="animation-delay: 2s;"></div>
+
+            <!-- STEP 1: Servicios -->
+            <div x-show="step === 1" x-transition.opacity.duration.300ms>
+                <h2 class="text-xl font-bold text-white mb-6">Selecciona el Servicio</h2>
+                
+                <div class="space-y-4">
+                    <template x-for="service in services" :key="service.id">
+                        <label class="block relative cursor-pointer group">
+                            <input type="radio" name="service" :value="service.id" class="peer sr-only" @change="selectService(service.id, service.name, service.price, service.duration)">
+                            <div class="p-4 rounded-2xl bg-zinc-800/50 border border-white/5 peer-checked:border-primary peer-checked:bg-primary/10 transition-all hover:bg-zinc-800 flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-full bg-zinc-700 flex items-center justify-center text-white peer-checked:bg-primary transition-colors">
+                                        <i class="fas fa-cut"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-white group-hover:text-[#F4C82C] transition-colors" x-text="service.name"></h3>
+                                        <p class="text-xs text-gray-400" x-text="service.description + ' • ' + service.duration + ' min'"></p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="block font-bold text-white" x-text="'₡' + service.price.toLocaleString('es-CR')"></span>
+                                    <i class="fas fa-check-circle text-primary opacity-0 peer-checked:opacity-100 transition-opacity text-xl"></i>
+                                </div>
                             </div>
-                            <hr>
-                            <div class="mb-2">
-                                <label for="nombreCita" class="form-label">Nombre</label>
-                                <input type="text" class="form-control form-control-lg" id="nombreCita" placeholder="Nombre" autocomplete="name">
-                            </div>
-                            <div>
-                                <label for="numeroTelefono" class="form-label">Número de Teléfono</label>
-                                <input type="number" class="form-control form-control-lg" id="numeroTelefono" placeholder="80808080" autocomplete="tel">
-                            </div>
+                        </label>
+                    </template>
+                </div>
+                
+                <!-- Loading State placeholder -->
+                <div x-show="loadingServices" class="py-10 text-center">
+                    <i class="fas fa-spinner fa-spin text-3xl text-primary"></i>
+                    <p class="mt-2 text-sm text-gray-400">Cargando catálogo...</p>
+                </div>
+            </div>
+
+            <!-- STEP 2: Fechas y Horas -->
+            <div x-show="step === 2" x-transition.opacity.duration.300ms style="display: none;">
+                <h2 class="text-xl font-bold text-white mb-2">Selecciona Fecha y Hora</h2>
+                <p class="text-sm text-[#F4C82C] mb-6 flex items-center gap-2"><i class="fas fa-cut"></i> <span x-text="selectedService?.name"></span></p>
+
+                <!-- Fechas (Horizontal Scroll) -->
+                <div class="flex gap-3 overflow-x-auto pb-4 snap-x hide-scrollbar mb-4">
+                    <template x-for="day in availableDays" :key="day.dateStr">
+                        <button @click="selectDate(day.dateStr)" 
+                                class="snap-center shrink-0 w-20 py-3 rounded-2xl border transition-all flex flex-col items-center justify-center"
+                                :class="selectedDate === day.dateStr ? 'bg-primary border-primary shadow-[0_4px_15px_rgba(255,94,0,0.4)]' : 'bg-zinc-800/50 border-white/10 hover:border-gray-500'">
+                            <span class="text-xs font-semibold uppercase" :class="selectedDate === day.dateStr ? 'text-blue-100' : 'text-gray-400'" x-text="day.dayName"></span>
+                            <span class="text-xl font-bold mt-1" :class="selectedDate === day.dateStr ? 'text-white' : 'text-white'" x-text="day.dayNum"></span>
+                            <span class="text-[10px]" :class="selectedDate === day.dateStr ? 'text-blue-200' : 'text-gray-500'" x-text="day.month"></span>
+                        </button>
+                    </template>
+                </div>
+
+                <hr class="border-white/5 my-4">
+
+                <!-- Horas (Grid) -->
+                <div class="min-h-[150px]">
+                    <div x-show="loadingSlots" class="py-8 text-center flex flex-col items-center justify-center">
+                        <i class="fas fa-circle-notch fa-spin text-2xl text-primary mb-2"></i>
+                        <p class="text-sm text-gray-400">Buscando espacios...</p>
+                    </div>
+                    
+                    <div x-show="!loadingSlots && slots.length === 0" class="py-8 text-center">
+                        <i class="fas fa-calendar-times text-4xl text-zinc-700 mb-3"></i>
+                        <p class="text-gray-400 text-sm">No hay espacios disponibles este día.</p>
+                        <p class="text-[11px] text-gray-500 mt-1">Intenta seleccionando otra fecha.</p>
+                    </div>
+
+                    <div x-show="!loadingSlots && slots.length > 0" class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                        <template x-for="slot in slots" :key="slot.time">
+                            <button @click="selectSlot(slot.time)" 
+                                    class="py-2.5 rounded-xl border font-medium text-sm transition-all"
+                                    :class="selectedSlot === slot.time ? 'bg-primary border-primary text-white shadow-lg' : 'bg-zinc-800/30 border-white/10 text-gray-300 hover:border-gray-400'">
+                                <span x-text="slot.label"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: Datos de Cliente -->
+            <div x-show="step === 3" x-transition.opacity.duration.300ms style="display: none;">
+                <h2 class="text-xl font-bold text-white mb-2">Tus Datos</h2>
+                <div class="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700 mb-6 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs text-gray-400">Fecha y Hora</p>
+                        <p class="font-semibold text-white text-sm" x-text="selectedDate + ' a las ' + selectedSlotLabel"></p>
+                    </div>
+                    <button @click="step = 2" class="text-primary text-sm font-medium"><i class="fas fa-edit"></i> Editar</button>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Nombre Completo</label>
+                        <div class="relative">
+                            <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                            <input type="text" x-model="clientData.name" placeholder="P. ej. Juan Pérez" class="w-full bg-zinc-900 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-[#FF5E00] transition-all">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">WhatsApp (Teléfono)</label>
+                        <div class="relative">
+                            <i class="fab fa-whatsapp absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                            <input type="tel" x-model="clientData.phone" placeholder="88888888" class="w-full bg-zinc-900 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-[#FF5E00] transition-all">
+                        </div>
+                        <p class="text-[10px] text-gray-500 mt-1"><i class="fas fa-info-circle"></i> Usaremos este número para enviarte confirmaciones de tu cita.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4: Checkout y Confirmación -->
+            <div x-show="step === 4" x-transition.opacity.duration.300ms style="display: none;">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center text-primary text-2xl mx-auto mb-4 border border-primary/50">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">Revisión Final</h2>
+                    <p class="text-sm text-gray-400">Todo listo, solo verifica la información.</p>
+                </div>
+
+                <!-- Ticket visual -->
+                <div class="bg-zinc-800 rounded-2xl p-5 border-l-4 border-l-[#F4C82C] relative overflow-hidden shadow-inner">
+                    <div class="absolute -right-6 -top-6 text-9xl text-zinc-700/20"><i class="fas fa-cut"></i></div>
+                    
+                    <div class="relative z-10 space-y-3">
+                        <div class="flex justify-between border-b border-white/5 pb-2">
+                            <span class="text-gray-400 text-sm">Servicio</span>
+                            <span class="text-white font-semibold text-right" x-text="selectedService?.name"></span>
+                        </div>
+                        <div class="flex justify-between border-b border-white/5 pb-2">
+                            <span class="text-gray-400 text-sm">Costo</span>
+                            <span class="text-[#F4C82C] font-semibold">₡<span x-text="selectedService?.price.toLocaleString('es-CR')"></span></span>
+                        </div>
+                        <div class="flex justify-between border-b border-white/5 pb-2">
+                            <span class="text-gray-400 text-sm">Fecha y Hora</span>
+                            <span class="text-white font-bold" x-text="selectedDate + ' - ' + selectedSlotLabel"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400 text-sm">Cliente</span>
+                            <span class="text-white" x-text="clientData.name"></span>
                         </div>
                     </div>
                 </div>
-                
+
+                <div x-show="reservationError" class="mt-4 p-3 bg-red-500/10 border border-red-500/50 rounded-xl text-red-400 text-xs text-center break-words">
+                    <i class="fas fa-exclamation-triangle"></i> <span x-text="reservationError"></span>
+                </div>
             </div>
-            <div class="modal-footer p-0 d-flex justify-content-between gap-0 position-relative">
-                <button type="button" class="btn btn-dark flex-fill" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-success flex-fill" onclick="agendarCita()" style="color: white;">
-                    <i class="fa-duotone fa-circle-plus"></i> Agendar Cita
+
+            <!-- CONTROLES COMUNES (Botones Flotantes Bottom) -->
+            <div class="mt-8 pt-4 border-t border-white/5 flex gap-3">
+                <button x-show="step > 1" @click="prevStep()" class="px-5 py-3 rounded-xl border border-white/10 text-white font-medium hover:bg-zinc-800 transition-colors w-1/3">
+                    Atrás
+                </button>
+                
+                <button x-show="step < 4" 
+                        @click="nextStep()" 
+                        :disabled="!canProceed()"
+                        class="flex-1 py-3 rounded-xl text-white font-bold transition-all shadow-lg flex justify-center items-center gap-2"
+                        :class="canProceed() ? 'bg-gradient-to-r from-primary to-tertiary shadow-[#FF5E00]/30 hover:scale-[1.02]' : 'bg-zinc-700 text-gray-400 cursor-not-allowed shadow-none'">
+                    <span>Siguiente</span> <i class="fas fa-arrow-right text-sm"></i>
+                </button>
+
+                <button x-show="step === 4" 
+                        @click="submitReservation()" 
+                        :disabled="isSubmitting"
+                        class="flex-1 py-3 rounded-xl text-zinc-950 font-bold bg-gradient-to-r from-[#F4C82C] to-yellow-500 hover:scale-[1.02] shadow-[0_0_20px_rgba(244,200,44,0.3)] transition-all flex justify-center items-center gap-2">
+                    
+                    <span x-show="!isSubmitting">Confirmar Cita</span>
+                    <i x-show="!isSubmitting" class="fas fa-check"></i>
+                    
+                    <span x-show="isSubmitting">Procesando...</span>
+                    <i x-show="isSubmitting" class="fas fa-circle-notch fa-spin"></i>
                 </button>
             </div>
-        </div>
+
+        </div> <!-- End Forms container -->
+        
     </div>
 </div>
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-<script src="/js/client/reserva.js"></script>
+
+<style>
+    /* Ocultar barra de scroll en contenedor horizontal (fechas) */
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+
+<script>
+    function bookingWizard() {
+        return {
+            step: 1,
+            
+            // Step 1 Data
+            services: [],
+            loadingServices: false,
+            selectedService: null, // {id, name, price, duration}
+            
+            // Step 2 Data
+            availableDays: [],
+            selectedDate: null, // 'YYYY-MM-DD'
+            slots: [], // [{time: '09:00', label: '09:00 AM'}]
+            selectedSlot: null, // '09:00'
+            selectedSlotLabel: '',
+            loadingSlots: false,
+            
+            // Step 3 Data
+            clientData: {
+                name: '',
+                phone: ''
+            },
+            
+            // Step 4 Data
+            isSubmitting: false,
+            reservationError: null,
+
+            initWizard() {
+                this.generateDays();
+                if(this.availableDays.length > 0) {
+                    this.selectedDate = this.availableDays[0].dateStr;
+                }
+                this.fetchServices();
+            },
+
+            async fetchServices() {
+                this.loadingServices = true;
+                try {
+                    const res = await axios.get('/api/v2/services');
+                    this.services = res.data.services;
+                } catch(e) {
+                    console.error("Error loading services", e);
+                } finally {
+                    this.loadingServices = false;
+                }
+            },
+
+            generateDays() {
+                moment.locale('es');
+                const days = [];
+                for(let i=0; i<14; i++) {
+                    const m = moment().add(i, 'days');
+                    days.push({
+                        dateStr: m.format('YYYY-MM-DD'),
+                        dayName: i === 0 ? 'Hoy' : (i === 1 ? 'Mñn' : m.format('ddd')),
+                        dayNum: m.format('DD'),
+                        month: m.format('MMM')
+                    });
+                }
+                this.availableDays = days;
+            },
+
+            selectService(id, name, price, duration) {
+                this.selectedService = { id, name, price, duration };
+            },
+
+            selectDate(dateStr) {
+                this.selectedDate = dateStr;
+                this.selectedSlot = null;
+                this.selectedSlotLabel = '';
+                this.fetchSlots(dateStr);
+            },
+
+            selectSlot(time) {
+                this.selectedSlot = time;
+                const slotObj = this.slots.find(s => s.time === time);
+                this.selectedSlotLabel = slotObj ? slotObj.label : time;
+            },
+
+            async fetchSlots(date) {
+                if(!this.selectedService) return;
+                
+                this.loadingSlots = true;
+                this.slots = [];
+                
+                try {
+                    // Llamada al endpoint backend V2: SlotEngine
+                    const res = await axios.get(`/api/v2/slots?date=${date}&duration=${this.selectedService.duration}`);
+                    this.slots = res.data.slots;
+                } catch (error) {
+                    console.error("Error cargando slots:", error);
+                    Swal.fire('Error', 'No pudimos cargar los horarios disponibles', 'error');
+                } finally {
+                    this.loadingSlots = false;
+                }
+            },
+
+            canProceed() {
+                if (this.step === 1) return this.selectedService !== null;
+                if (this.step === 2) return this.selectedDate !== null && this.selectedSlot !== null;
+                if (this.step === 3) return this.clientData.name.trim() !== '' && this.clientData.phone.trim().length >= 8;
+                return true;
+            },
+
+            nextStep() {
+                if (!this.canProceed()) return;
+                
+                if (this.step === 1 && this.slots.length === 0) {
+                    // Cargar slots si es primera vez que avanzamos al step 2
+                    this.fetchSlots(this.selectedDate);
+                }
+                
+                this.step++;
+                // Scroll arriba form
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            },
+
+            prevStep() {
+                if (this.step > 1) this.step--;
+                this.reservationError = null;
+            },
+
+            async submitReservation() {
+                this.isSubmitting = true;
+                this.reservationError = null;
+                
+                try {
+                    const payload = {
+                        date: this.selectedDate,
+                        time: this.selectedSlot,
+                        serviceId: this.selectedService.id,
+                        client: this.clientData
+                    };
+                    
+                    const res = await axios.post('/api/v2/appointments', payload);
+                    
+                    Swal.fire({
+                        title: '¡Reserva Confirmada!',
+                        text: `Te esperamos el ${moment(this.selectedDate).format('DD [de] MMMM')} a las ${this.selectedSlotLabel}.`,
+                        icon: 'success',
+                        background: '#18181b', // zinc-900
+                        color: '#fff',
+                        confirmButtonColor: '#FF5E00'
+                    }).then(() => {
+                        window.location.href = '/';
+                    });
+                    
+                } catch (error) {
+                    console.error(error);
+                    this.reservationError = error.response?.data?.error || error.message || 'Error al procesar reserva. Intenta de nuevo.';
+                } finally {
+                    this.isSubmitting = false;
+                }
+            }
+        }
+    }
+</script>

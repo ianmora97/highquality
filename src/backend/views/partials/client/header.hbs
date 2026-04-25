@@ -1,32 +1,54 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-fore py-0">
-    <div class="container">
-        <a class="navbar-brand" href="/">
-            <img src="/images/simple-logo.png" alt="Logo" width="60">
+<!-- Top Header - Minimalist and Clean -->
+<header class="fixed top-0 w-full z-40 bg-zinc-950/80 backdrop-blur-md border-b border-white/5">
+    <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-3">
+            <img src="/images/simple-logo.png" alt="High Quality Logo" class="h-10 w-10 object-contain drop-shadow-[0_0_8px_rgba(48,4,243,0.5)]">
+            <span class="nautigal text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">HighQuality</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" 
-        aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse inter" id="navbarNavAltMarkup">
-            <div class="nav nav-pills-home w-100 gap-1 ms-4 d-flex justify-content-end flex-fill">
-                <a class="nav-link" id="tab-inicio" href="/">
-                    Inicio
-                </a>
-                <a class="nav-link" id="tab-reservar" href="/reservar">
-                    Reservar
-                </a>
-                <a class="nav-link" id="tab-galeria" href="/galeria">
-                    Galeria
-                </a>
-            </div>
-        </div>
+        
+        <!-- Desktop Navigation (Hidden on Mobile) -->
+        <nav class="hidden md:flex items-center gap-6 font-medium text-sm">
+            <a href="/" class="transition-colors hover:text-primary {{#ifCond tab '==' 'inicio'}}text-primary{{else}}text-gray-400{{/ifCond}}">Inicio</a>
+            <a href="/servicios" class="transition-colors hover:text-primary {{#ifCond tab '==' 'servicios'}}text-primary{{else}}text-gray-400{{/ifCond}}">Servicios</a>
+            <a href="/galeria" class="transition-colors hover:text-primary {{#ifCond tab '==' 'galeria'}}text-primary{{else}}text-gray-400{{/ifCond}}">Galería</a>
+            <a href="/reservar" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-primary to-tertiary text-white shadow-lg shadow-[#FF5E00]/25 hover:scale-105 transition-transform">
+                <i class="fas fa-calendar-check mr-2"></i> Reservar
+            </a>
+        </nav>
+    </div>
+</header>
+
+<!-- Bottom Navigation Bar (Mobile Only - iOS App Style) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-zinc-950/90 backdrop-blur-xl border-t border-white/10 pb-safe">
+    <div class="flex justify-around items-center h-16 px-2">
+        <a href="/" class="flex flex-col items-center justify-center w-full h-full gap-1 transition-colors {{#ifCond tab '==' 'inicio'}}text-primary{{else}}text-gray-500 hover:text-gray-300{{/ifCond}}">
+            <i class="fas fa-home text-lg"></i>
+            <span class="text-[10px] font-medium tracking-wide">Inicio</span>
+        </a>
+        <a href="/servicios" class="flex flex-col items-center justify-center w-full h-full gap-1 transition-colors {{#ifCond tab '==' 'servicios'}}text-primary{{else}}text-gray-500 hover:text-gray-300{{/ifCond}}">
+            <i class="fas fa-list text-lg"></i>
+            <span class="text-[10px] font-medium tracking-wide">Servicios</span>
+        </a>
+        <!-- Reserve FAB (Floating Action Button style) in center -->
+        <a href="/reservar" class="relative -top-5 flex flex-col items-center justify-center w-14 h-14 rounded-full bg-gradient-to-tr from-primary to-[#F4C82C] text-white shadow-[0_4px_20px_rgba(255,94,0,0.5)] border-4 border-zinc-950 transition-transform hover:scale-105 active:scale-95">
+            <i class="fas fa-plus text-xl"></i>
+        </a>
+        <a href="/galeria" class="flex flex-col items-center justify-center w-full h-full gap-1 transition-colors {{#ifCond tab '==' 'galeria'}}text-primary{{else}}text-gray-500 hover:text-gray-300{{/ifCond}}">
+            <i class="fas fa-image text-lg"></i>
+            <span class="text-[10px] font-medium tracking-wide">Galería</span>
+        </a>
+        <a href="#" class="flex flex-col items-center justify-center w-full h-full gap-1 transition-colors {{#ifCond tab '==' 'perfil'}}text-primary{{else}}text-gray-500 hover:text-gray-300{{/ifCond}}">
+            <i class="fas fa-user-circle text-lg"></i>
+            <span class="text-[10px] font-medium tracking-wide">Mi Perfil</span>
+        </a>
     </div>
 </nav>
 
-<script>
-    const CURRENT_PAGE = "{{tab}}";
-    $(document).ready(function() {
-        $(`#tab-${CURRENT_PAGE}`).addClass("active");
-        $(`#tab-${CURRENT_PAGE}`).attr("aria-current", "page");
-    });
-</script>
+<!-- Push content below header and above bottom bar on mobile -->
+<div class="h-16 w-full"></div>
+<div class="md:hidden h-16 w-full invisible"></div> <!-- Bottom padding exclusively for mobile spacing --><style>
+    /* Support for iOS safe area (Home indicator) */
+    .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+</style>

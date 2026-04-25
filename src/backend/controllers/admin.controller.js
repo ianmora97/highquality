@@ -1,5 +1,6 @@
 const Admin = require('../models/admin/admin.model');
-const { sign } = require('../helpers/cipher')
+const UserV2 = require('../models/v2/User');
+const { sign } = require('../helpers/cipher');
 
 exports.get = async (req, res) => {
     const admins = await Admin.get();
@@ -7,19 +8,26 @@ exports.get = async (req, res) => {
 };
 
 exports.auth = async (req, res) => {
-    const {user, password} = req.body;
-    const admin = await Admin.auth(user, password);
-
-    if(admin){
-        const token = await sign({
-            _id: admin._id,
-            user: admin.user,
-            name: admin.name
-        });
-        res.cookie('signature', token, { maxAge: 1000 * 60 * 60 * 24, httpOnly: true });
-        res.redirect('/dashboard/panel')
-    }else{
-        res.json({error: 'Usuario o contraseña incorrectos'});
+    const { user, password } = req.body;
+    
+    try {
+        const adminUser = await UserV2.findOne({ username: user, active: true });
+        
+        if (adminUser && await adminUser.comparePassword(password)) {
+            const token = await sign({
+                _id: adminUser._id,
+                user: adminUser.username,
+                name: adminUser.name,
+                role: adminUser.role
+            });
+            res.cookie('signature', token, { maxAge: 1000 * 60 * 60 * 24, httpOnly: true });
+            res.redirect('/admin/panel');
+        } else {
+            res.json({ error: 'Usuario o contraseña incorrectos' });
+        }
+    } catch (error) {
+        console.error("Admin Login Error:", error);
+        res.json({ error: 'Hubo un error al procesar el inicio de sesión' });
     }
 };
 

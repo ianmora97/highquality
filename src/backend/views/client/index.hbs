@@ -1,189 +1,192 @@
-<link rel="stylesheet" href="/scripts/@splidejs/splide/dist/css/splide.min.css"></link>
-<script src="/scripts/@splidejs/splide/dist/js/splide.min.js"></script>
-<script src="/scripts/@splidejs/splide-extension-auto-scroll/dist/js/splide-extension-auto-scroll.min.js"></script>
+{{! src/backend/views/client/index.hbs }}
 
-<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-
-<style>
-    body{
-        /* background-image: url('/images/fma-landing-page.jpeg');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed; */
-        background-color: black;
-    }
-</style>
-
-<article>
-    <section class="d-flex justify-content-start align-items-lg-center bg-fma-homepage p-5" 
-    data-aos="zoom-out" data-aos-duration="1500">
-        <div class="ps-5" data-aos="fade-left" data-aos-duration="1500">
-            <!-- <img src="/images/logo-tr.png" alt="Pole Image" width="150px"> -->
-            <h1 class="display-1 bebas text-uppercase" >
-                <span class="d-block">More <span class="text-gold">than</span></span>
-                <span class="d-block ">just a</span>
-                <span class="d-block text-gold">haircut</span>
-            </h1>
-            <a href="/reservar" class="btn btn-secondary rounded-pill btn-lg" >
-                <i class="fa-solid fa-scissors"></i> Reservar cita
-            </a>
-        </div>
-    </section>
-
-    <!-- <section class="bg-black">
-        <div id="citasdisponibles">
-        </div>
-            <div class="border border-gold rounded-3 p-3" style="width: 200px;">
-                <h6 class="fw-bold"><i class="fa-duotone fa-calendar-days"></i> Sabado</h6>
-
-            </div>
-    </section> -->
-    <section class="bg-light py-5">
-        <div class="d-lg-flex justify-content-center align-items-center gap-3">
-            <div class="col-lg-3" data-aos="fade-right">
-                <h1 class="fw-bold text-center text-dark text-uppercase bebas">Calidad y Experiencia</h1>
-                <div class="mostache-hr hr-black my-3">
-                    <div class="mostache-hr-inner"></div>
-                    <img src="/images/icons/mostacho.png" alt="moustache">
-                    <div class="mostache-hr-inner"></div>
-                </div>
-                <p class="text-center text-dark lead">High Quality Studio se dedica a brindarles a nuestros clientes un excelente corte de cabello y un servicio premium a un precio asequible.</p>
-            </div>
-            <div class="d-flex d-lg-block justify-content-center" data-aos="fade-left">
-                <img src="/images/brocha.png" alt="moustache">
-            </div>
-        </div>
-    </section>
-    <section class="bg-image-wood py-5 position-relative">
-        <div class="backdrop-image" style="z-index: 1;"></div>
-        
-        <div class="position-relative py-4" style="z-index: 2;">
-            <h1 class="fw-bold text-center bebas">Servicios</h1>
-            <div class="mostache-hr hr-light my-4">
-                <div class="mostache-hr-inner"></div>
-                <img src="/images/icons/mostacho.png" alt="moustache">
-                <div class="mostache-hr-inner"></div>
-            </div>
-            <p class="text-center text-white w-60 d-block mx-auto my-4">
-                Nuestro objetivo es ayudar a hombres, adolescentes y niños a verse y sentirse lo mejor posible. Queremos convertirte en un cliente de por vida.
-                Conoce los servicios que ofrecemos
-            </p>
-            <div class="d-flex justify-content-center align-items-center flex-wrap gap-2 my-5">
-                <div class="card-service" data-aos="fade-down" data-aos-delay="0">
-                    <img src="/images/cortes/taper_fade.jpeg" alt="Corte de pelo 1">
-                    <div class="text-center mt-5">
-                        <h4 class="fw-bold mb-1 bebas">Modernos</h4>
-                        <p class=""></p>
-                    </div>
-                </div>
-                
-                <div class="card-service" data-aos="fade-down" data-aos-delay="100">
-                    <img src="/images/cortes/corte1.jpg" alt="Corte de pelo 2">
-                    <div class="text-center mt-5">
-                        <h4 class="fw-bold mb-1 bebas">Clasicos</h4>
-                        <p class=""></p>
-                    </div>
-                </div>
-                
-                <div class="card-service" data-aos="fade-down" data-aos-delay="200">
-                    <img src="/images/cortes/corte2.jpg" alt="Corte de pelo 3">
-                    <div class="text-center mt-5">
-                        <h4 class="fw-bold mb-1 bebas">Diseños</h4>
-                        <p class=""></p>
-                    </div>
-                </div>
-                
-                <div class="card-service" data-aos="fade-down" data-aos-delay="300">
-                    <img src="/images/cortes/corte3.jpg" alt="Corte de pelo 4">
-                    <div class="text-center mt-5">
-                        <h4 class="fw-bold mb-1 bebas">Corte de Niño</h4>
-                        <p class=""></p>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- <a href="/servicios" class="mt-4 mx-auto d-block text-decoration-underline text-gold text-center" style="width: 120px;">
-                Ver mas
-            </a> -->
-        </div>
-    </section>
-
-    <div class="container mt-5">
-        <h1 class="fw-bold bebas">Reviews</h1>
-        <hr>
-        <section class="splide" id="opinionesCarousel">
-            <div class="splide__track">
-                <ul class="splide__list" id="opinionesList">
-                </ul>
-            </div>
-        </section>
+<!-- Hero Section -->
+<section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+    <!-- Background video/image wrapper -->
+    <div class="absolute inset-0 z-0 bg-zinc-950">
+        <!-- Placeholder for background texture/image, replace with sharp dark barber image if available -->
+        <div class="absolute inset-0 opacity-40 mix-blend-overlay bg-[url('/images/barber-bg.jpg')] bg-cover bg-center"></div>
+        <!-- Gradient Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-zinc-950 via-transparent to-zinc-950/50"></div>
     </div>
-    <section class="container my-5">
-        <h2 class="fw-bold bebas">Deja tu opinión</h2>
-        <hr>
-        <div class="bg-dark rounded-3 shadow p-3">
-            <form action="/api/v1/review/test" method="post" id="formOpinion">
-                <input type="number" class="form-control" name="stars" id="stars" aria-describedby="starsId" hidden/>
-                <div class="d-flex justify-content-start align-items-center gap-2 mb-3">
-                    <button type="button" class="btn btn-star-ranking" onclick="addStar(1, this)">
-                        <i class="fa-regular fa-star"></i>
-                    </button>
-                    <button type="button" class="btn btn-star-ranking" onclick="addStar(2, this);">
-                        <i class="fa-regular fa-star"></i>
-                    </button>
-                    <button type="button" class="btn btn-star-ranking" onclick="addStar(3, this);">
-                        <i class="fa-regular fa-star"></i>
-                    </button>
-                    <button type="button" class="btn btn-star-ranking" onclick="addStar(4, this);">
-                        <i class="fa-regular fa-star"></i>
-                    </button>
-                    <button type="button" class="btn btn-star-ranking" onclick="addStar(5, this);">
-                        <i class="fa-regular fa-star"></i>
-                    </button>
-                </div>
-                <div class="mb-3">
-                    <label for="nombre" class="form-label">Nombre</label>
-                    <input type="text" class="form-control" name="nombre" id="nombre" aria-describedby="nombreId" placeholder="Nombre"/>
-                </div>
-                <div class="mb-3">
-                    <label for="opinion" class="form-label">Opiniones</label>
-                    <textarea class="form-control" name="opinion" id="opinion" rows="3" placeholder="Review..."></textarea>
-                </div>
-                <small id="feedbackerror" class="text-danger d-block my-2"></small>
-                <button type="submit" class="btn btn-success text-white">
-                    <i class="fa-solid fa-paper-plane"></i> Enviar
-                </button>
-            </form>
-        </div>
-    </section>
-    <section class="bg-fore p-3">
-        <img src="/images/logo-tr.png" alt="Logo the HighQuality Studio" class="mx-auto d-block" width="250px">
+
+    <!-- Hero Content -->
+    <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
+        <span class="inline-block py-1 px-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[#F4C82C] text-xs font-semibold tracking-widest uppercase mb-6" x-data x-init="anime({targets: $el, opacity: [0,1], translateY: [20,0], duration: 1000, easing: 'easeOutExpo'})">
+            Premium Experience
+        </span>
         
-        <div class="d-flex justify-content-center align-items-center gap-3 py-3">
-            <a href="tel:+50672451908" 
-            class="btn btn-socials" target="_blank">
-                <i class="fa-duotone fa-phone fa-2xl"></i>
+        <h1 class="text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tight leading-tight mb-6 drop-shadow-2xl" id="hero-title">
+            ELEVA TU<br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-tertiary">ESTILO.</span>
+        </h1>
+        
+        <p class="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-gray-300 font-light" id="hero-desc">
+            Más que un corte de cabello, una experiencia diseñada para caballeros que exigen perfección, detalle y máxima calidad.
+        </p>
+        
+        <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center" id="hero-btns">
+            <a href="/reservar" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-primary to-tertiary text-white font-bold text-lg shadow-[0_0_40px_rgba(255,94,0,0.4)] hover:shadow-[0_0_60px_rgba(255,94,0,0.6)] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3">
+                <i class="fas fa-calendar-check"></i>
+                Agendar Cita
             </a>
-            <a href="https://www.instagram.com/high_quality_barber.cr" 
-            class="btn btn-socials" target="_blank">
-                <i class="fa-brands fa-instagram fa-2xl"></i>
+            <a href="/servicios" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 text-white font-medium hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
+                Ver Servicios
             </a>
-            <a href="https://wa.me/50672451908?text=Quiero%20sacar%20una%20cita" 
-            class="btn btn-socials" target="_blank">
-                <i class="fa-brands fa-whatsapp fa-2xl"></i>
-            </a>
-            <a href="https://maps.app.goo.gl/og9Jny78AHMnbg2z7" 
-            class="btn btn-socials" target="_blank">
-                <i class="fa-brands fa-google fa-2xl"></i>
+        </div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="absolute bottom-24 md:bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-50">
+        <i class="fas fa-chevron-down text-2xl text-white"></i>
+    </div>
+</section>
+
+<!-- Featured Services Preview -->
+<section class="py-20 bg-zinc-950 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-end mb-12">
+            <div>
+                <h2 class="text-xs font-bold tracking-widest text-primary uppercase mb-2">Nuestro Arte</h2>
+                <h3 class="text-3xl md:text-4xl font-bold text-white">Servicios Estelares</h3>
+            </div>
+            <a href="/servicios" class="hidden md:flex text-gray-400 hover:text-white transition-colors items-center gap-2 text-sm font-medium">
+                Ver todos <i class="fas fa-arrow-right"></i>
             </a>
         </div>
 
-        <p class="text-center text-muted small my-3">HighQuality Studio &copy; 2025 - by IM Labs</p>
-    </section>
-</article>
+        <!-- Grid Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1 -->
+            <div class="group relative rounded-3xl overflow-hidden bg-zinc-900 border border-white/5 hover:border-primary/50 transition-colors duration-500">
+                <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent z-10 transition-opacity group-hover:opacity-80"></div>
+                <!-- Placeholder Image -->
+                <div class="h-64 w-full bg-zinc-800 flex items-center justify-center">
+                    <i class="fas fa-cut text-5xl text-zinc-700"></i>
+                </div>
+                <div class="absolute inset-0 z-20 p-6 flex flex-col justify-end">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-xl font-bold text-white">Corte Premium + Barba</h4>
+                        <span class="text-[#F4C82C] font-semibold">₡12,000</span>
+                    </div>
+                    <p class="text-sm text-gray-400 line-clamp-2">Corte VIP con asesoría de imagen, arreglo de barba con toalla caliente, vapor ozono y black mask.</p>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="group relative rounded-3xl overflow-hidden bg-zinc-900 border border-white/5 hover:border-primary/50 transition-colors duration-500 mt-0 md:-mt-8">
+                <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent z-10 transition-opacity group-hover:opacity-80"></div>
+                <div class="h-64 w-full bg-zinc-800 flex items-center justify-center">
+                    <i class="fas fa-spray-can text-5xl text-zinc-700"></i>
+                </div>
+                <div class="absolute inset-0 z-20 p-6 flex flex-col justify-end">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-xl font-bold text-white">Corte Sencillo Barber</h4>
+                        <span class="text-[#F4C82C] font-semibold">₡7,000</span>
+                    </div>
+                    <p class="text-sm text-gray-400 line-clamp-2">Corte clásico o degradado moderno, terminado con navaja, polvos texturizadores y aftershave.</p>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="group relative rounded-3xl overflow-hidden bg-zinc-900 border border-white/5 hover:border-primary/50 transition-colors duration-500">
+                <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent z-10 transition-opacity group-hover:opacity-80"></div>
+                <div class="h-64 w-full bg-zinc-800 flex items-center justify-center">
+                    <i class="fas fa-child text-5xl text-zinc-700"></i>
+                </div>
+                <div class="absolute inset-0 z-20 p-6 flex flex-col justify-end">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-xl font-bold text-white">Corte Niños</h4>
+                        <span class="text-[#F4C82C] font-semibold">₡6,000</span>
+                    </div>
+                    <p class="text-sm text-gray-400 line-clamp-2">Atención especial para los más pequeños, garantizando un estilo genial con paciencia y profesionalismo.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center md:hidden">
+            <a href="/servicios" class="inline-block py-3 px-6 rounded-xl border border-white/10 text-white font-medium w-full text-center">Ver todos los servicios</a>
+        </div>
+    </div>
+</section>
+
+<!-- Stats / Trust Section -->
+<section class="py-16 border-y border-white/5 bg-gradient-to-b from-zinc-950 to-[#0a0a0f]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-white/5">
+            <div>
+                <p class="text-4xl font-black text-white mb-1"><span class="text-primary">+</span>1500</p>
+                <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Clientes Felices</p>
+            </div>
+            <div>
+                <p class="text-4xl font-black text-white mb-1"><span class="text-primary">#</span>1</p>
+                <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">En Hatillo 5</p>
+            </div>
+            <div>
+                <p class="text-4xl font-black text-white mb-1">5<span class="text-[#F4C82C]"><i class="fas fa-star text-2xl"></i></span></p>
+                <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Clasificación</p>
+            </div>
+            <div>
+                <p class="text-4xl font-black text-white mb-1">4<span class="text-primary">+</span></p>
+                <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Años de Exp</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer Simple -->
+<footer class="bg-zinc-950 pt-20 pb-28 md:pb-10 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="text-center md:text-left">
+            <h2 class="nautigal text-4xl text-white mb-2">HighQuality</h2>
+            <p class="text-gray-500 text-sm">Tu estilo, nuestra pasión. Hatillo 5, San José.</p>
+        </div>
+        <div class="flex gap-4">
+            <a href="#" class="w-12 h-12 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-white hover:bg-primary hover:border-primary transition-colors">
+                <i class="fab fa-instagram text-xl"></i>
+            </a>
+            <a href="#" class="w-12 h-12 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-white hover:bg-[#25D366] hover:border-[#25D366] transition-colors">
+                <i class="fab fa-whatsapp text-xl"></i>
+            </a>
+            <a href="#" class="w-12 h-12 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-white hover:bg-primary hover:border-primary transition-colors">
+                <i class="fab fa-facebook-f text-xl"></i>
+            </a>
+        </div>
+    </div>
+    <div class="mt-12 text-center text-xs text-gray-600">
+        &copy; 2026 High Quality Studio. Todos los derechos reservados.
+    </div>
+</footer>
+
 <script>
-    AOS.init();
+    document.addEventListener('DOMContentLoaded', () => {
+        // Simple entrance animations for hero
+        anime({
+            targets: '#hero-title',
+            opacity: [0, 1],
+            translateY: [40, 0],
+            duration: 1200,
+            delay: 200,
+            easing: 'easeOutExpo'
+        });
+        
+        anime({
+            targets: '#hero-desc',
+            opacity: [0, 1],
+            translateY: [20, 0],
+            duration: 1200,
+            delay: 400,
+            easing: 'easeOutExpo'
+        });
+        
+        anime({
+            targets: '#hero-btns',
+            opacity: [0, 1],
+            translateY: [20, 0],
+            duration: 1200,
+            delay: 600,
+            easing: 'easeOutExpo'
+        });
+    });
 </script>
-<script src="/js/client/index.js"></script>

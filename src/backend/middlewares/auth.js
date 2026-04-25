@@ -13,7 +13,7 @@ async function verify(req, res, next) {
     const {signature} = req.cookies;
     jwt.verify(signature, SECRET, (err, decoded) => {
         if(err){
-            res.redirect('/dashboard');
+            res.redirect('/admin');
         }else{
             req.user = decoded;
             next();

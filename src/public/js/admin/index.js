@@ -148,9 +148,11 @@ function addServicioToArray(servicio, precio) {
     }
     $('#precioFinalModal').html(`${total}`);
 }
-const modalAddEvent = new bootstrap.Modal(document.getElementById('addEvent'), {
-    keyboard: false
-});
+// Replaced Bootstrap Modal with Alpine.js Drawer Dispatcher
+const modalAddEvent = {
+    show: () => window.dispatchEvent(new CustomEvent('open-booking-drawer')),
+    hide: () => window.dispatchEvent(new CustomEvent('close-booking-drawer'))
+};
 var businessHours = [];
 var hiddenDays = [];
 var slotDays = {

@@ -332,7 +332,7 @@ function agendarCita() {
         <p>✅ Despues de 10 min de atraso su cita queda totalmente anulada❌</p>
         <p>✅ Avisar al menos 4 horas antes que su persona no va a asistir a la cita respectiva</p>
         <p>✅ En su siguiente cita o de inmediato se cobrará
-        una penalidad de $2000 colones *50% del servicio * al no avisar que no asistirá a su cita
+        una penalidad de $2500 colones *50% del servicio * al no avisar que no asistirá a su cita
         (siendo conciente de qué está desperdiciando el tiempo y el trabajo).</p>
         `,
         showConfirmButton: true,

@@ -2,170 +2,308 @@
 <script src="/scripts/@fullcalendar/daygrid/index.global.min.js"></script>
 <script src="/scripts/@fullcalendar/timegrid/index.global.min.js"></script>
 <script src="/scripts/@fullcalendar/interaction/index.global.min.js"></script>
-<script src="/scripts/@fullcalendar/bootstrap5/index.global.min.js"></script>
 <script src="/scripts/@fullcalendar/moment/index.global.min.js"></script>
 <script src="/scripts/@fullcalendar/multimonth/index.global.min.js"></script>
 
-<script src="/scripts/chart.js/dist/chart.umd.js"></script>
-
-<script src="/scripts/@selectize/selectize/dist/js/selectize.min.js"></script>
-<link rel="stylesheet" href="/scripts/@selectize/selectize/dist/css/selectize.css">
-<link rel="stylesheet" href="/scripts/@selectize/selectize/dist/css/selectize.bootstrap5.css">
-
-<div class="container-md-fluid">
-    <div class="row mx-0 g-2 mt-2">
-        <div class="col-lg-4 col-7">
-            <div class="bg-secondary bg-opacity-10 p-3 rounded-3 shadow 
-                border-start border-4 border-secondary
-                animate__animated animate__fadeInDown">
-                <h1 class="display-5 fw-bold text-secondary" id="countGanancias">0</h1>
-                <h6 class=" "><i class="fa-duotone fa-coins text-secondary"></i> Ganancias de hoy</h6>
-            </div>
+<div x-data="adminDashboard()" class="w-full max-w-7xl mx-auto px-4 py-6">
+    <!-- Header / KPIs (V2 Powered by Alpine) -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <div class="card flex flex-col justify-center animate__animated animate__fadeInDown bg-zinc-900 border border-white/5">
+            <h6 class="text-xs text-gray-400 mb-1 uppercase tracking-wider"><i class="fa-solid fa-coins text-green-400 mr-1"></i> Caja (Efectivo/SINPE)</h6>
+            <h1 class="text-2xl md:text-3xl font-headings font-bold text-white" x-text="'₡' + metrics.totalRevenue.toLocaleString('es-CR')">₡0</h1>
+            <p class="text-[10px] text-gray-500 mt-1">Efectivo: <span x-text="'₡' + metrics.cashRevenue.toLocaleString('es-CR')"></span></p>
         </div>
-        <div class="col-lg-4 col-5">
-            <div class="bg-fore p-3 rounded-3 shadow 
-                border-start border-4 border-white 
-                animate__animated animate__fadeInDown"
-                style="animation-delay: 200ms;">
-                <h1 class=" display-5 fw-bold text-white" id="countCitas">0</h1>
-                <h6 class=""><i class="fa-duotone fa-clock"></i> Citas Hoy</h6>
-            </div>
+        <div class="card flex flex-col justify-center animate__animated animate__fadeInDown bg-zinc-900 border border-white/5" style="animation-delay: 100ms;">
+            <h6 class="text-xs text-gray-400 mb-1 uppercase tracking-wider"><i class="fa-solid fa-clock text-blue-400 mr-1"></i> Citas (Completas/Totales)</h6>
+            <h1 class="text-2xl md:text-3xl font-headings font-bold text-white">
+                <span x-text="metrics.completedAppointments"></span> / <span x-text="(metrics.completedAppointments + metrics.pendingAppointments)"></span>
+            </h1>
+            <p class="text-[10px] text-gray-500 mt-1">Nuevos Clientes Hoy: <span x-text="metrics.newClients"></span></p>
         </div>
-        <div class="col-lg-4 col-12">
-            <div class="bg-primary bg-opacity-10 p-3 rounded-3 shadow 
-                border-start border-4 border-primary 
-                animate__animated animate__fadeInDown"
-                style="animation-delay: 400ms;"
-                onclick="toggleChart()" 
-                role="button">
-                <h1 class=" display-5 fw-bold text-primary" id="countGananciasMes">₡0</h1>
-                <h6 class=""><i class="fa-duotone fa-sack-dollar text-primary"></i> Ganancias del Mes</h6>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="bg-success bg-opacity-10 p-3 rounded-3 shadow 
-                border-start border-4 border-success 
-                animate__animated animate__fadeInDown"
-                style="animation-delay: 600ms;">
-                <h6 class="fw-bold mb-1"><span class="text-success" id="currentAppointment"></span></h6>
-                <div class="text-muted">
-                    <p class="mb-0">Siguiente Cita: <span id="nextAppointment"></span></p>
+        <div class="card flex flex-col justify-center col-span-2 md:col-span-2 animate__animated animate__fadeInDown bg-gradient-to-r from-primary/20 to-transparent border border-primary/30" style="animation-delay: 200ms;">
+            <div class="flex justify-between items-center h-full">
+                <div>
+                    <h6 class="text-xs text-gray-400 mb-1 uppercase tracking-wider"><i class="fa-solid fa-cash-register text-[#F4C82C] mr-1"></i> Panel Financiero</h6>
+                    <p class="text-sm text-gray-300">Gestiona los pagos y cuadra la caja diaria al final del turno.</p>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-12" style="display: none;" id="gananciaspormes">
-            <div class="bg-fore p-2 rounded-3 shadow">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h3 class="fw-bold">Ganancias por Mes</h3>
-
-                </div>
-                <div class="w-100" style="height: 400px;">
-                    <canvas id="chartGanancias"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-12">
-            <div class="bg-fore px-md-3 py-3 rounded-3 shadow">
-                <p class="small text-muted text-center d-block mb-1" id="date">-</p>
-                <div id="calendar" class="text-capitalize"></div>
+                <button @click="isFinanceDrawerOpen = true" class="px-4 py-2 bg-primary hover:bg-blue-700 text-white rounded-lg text-sm font-bold shadow-lg transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-calculator"></i> Cierre de Caja
+                </button>
             </div>
         </div>
     </div>
-</div>
 
-<div class="modal fade" id="addEvent" tabindex="-1" 
-aria-labelledby="addEventLabel" aria-hidden="true"
-    data-bs-focus="false">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg modal-fullscreen-md-down">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="addEventLabel">
-                    <span class="d-block mb-1">
-                        <i class="fa-duotone fa-calendar-plus"></i> Agregar Evento
-                    </span>
-                    <small class="d-block small text-muted">
-                        <i class="fa-duotone fa-calendar-days text-gold"></i> <span id="dateSelected" class="text-capitalize"></span> 
-                        <i class="fa-duotone fa-clock text-maps"></i> <span id="timeSelected" class="text-uppercase"></span>
-                    </small>
-                </h1>
-                <button type="button" class="btn-close btn-close-white" 
-                data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body px-1">
-                <div class="row mx-0 g-3">
-                    <div class="col-12">
-                        <label for="opcionModal" class="form-label">Tipo de Evento</label>
-                        <select class="form-select form-select-lg" id="opcionModal" onchange="typeselection(this)">
-                            <option value="0" selected>Seleccione una opcion</option>
-                            <option value="cita">Cita</option>
-                            <option value="cerrado">Cerrado</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <hr class="my-1">
-                    </div>
-                    <div class="col-12">
-                        <!-- ! Cerrado -->
-                        <div id="cerradoSelection" class="animate__animated animate__fadeIn" style="display: none;">
-                            <div class="form-check form-switch mb-3">
-                                <input class="form-check-input" type="checkbox" role="switch" id="allDayClosed">
-                                <label class="form-check-label" for="allDayClosed">Todo el dia</label>
-                            </div>
-                            <label for="closedHours" class="form-label">Hora: Inicio - Final</label>
-                            <div class="input-group mb-3">
-                                <input type="time" class="form-control" id="closedHoursStart" placeholder="Inicio">
-                                <input type="time" class="form-control" id="closedHoursEnd" placeholder="Final">
-                            </div>
-                        </div>
-                        <!-- ? Servicios -->
-                        <div id="citaSelection" class="animate__animated animate__fadeIn" style="display: none;">
-                            <div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <label for="nombreCita" class="form-label">
-                                        <i class="fa-duotone fa-user text-secondary"></i> Cliente:
-                                    </label>
-                                    <p class="mb-0">
-                                        <i class="fa-duotone fa-mobile text-gold"></i> <span id="numeroTelefono"></span>
-                                    </p>
-                                </div>
-                                <div class="d-flex justify-content-start align-items-center">
-                                    <button class="btn btn-outline-secondary" onclick="addNewClientToList()">
-                                        <i class="fa-solid fa-plus"></i> Nuevo Cliente
-                                    </button>
-                                    <select id="clientsSelectize" class="flex-fill" placeholder="Nombre del cliente...">
-                                    </select>
-                                </div>
-                            </div>
-                            <hr>
-                            <i class="fa-duotone fa-clock text-gold"></i> <span class="mb-1 d-inline-block">Hora de la Cita:</span>
-                            <div id="horasDisponibles"></div>
-                            <hr>
-                            <i class="fa-duotone fa-scissors text-info"></i> <span class="mb-1 d-inline-block">Servicios:</span>
-                            <div id="serviciosDisponibles" class="d-flex gap-2 py-2 flex-wrap"></div>
-                            <p class="text-end">
-                                Precio Final: ₡<span class="fw-bold" id="precioFinalModal"></span> <i class="fa-duotone fa-coins text-gold"></i>
-                            </p>
-                        </div>
-                    </div>
-                </div>
+    <!-- Próxima Cita Alert -->
+    <div class="card bg-gradient-to-r from-secondary to-neutral border-l-4 border-l-tertiary mb-6 p-4 animate__animated animate__fadeInDown" style="animation-delay: 300ms;">
+        <h6 class="text-xs font-bold text-tertiary mb-1 uppercase tracking-wider">Próxima Cita</h6>
+        <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold text-white" id="currentAppointment">Cargando...</h3>
+            <span class="text-sm text-gray-400" id="nextAppointment">--:--</span>
+        </div>
+    </div>
+
+    <!-- Calendar Container -->
+    <div class="card !p-2 md:!p-6 mb-20 animate__animated animate__fadeInUp" style="animation-delay: 400ms;">
+        <p class="text-xs text-gray-500 text-center block mb-2" id="date">-</p>
+        <!-- FullCalendar Hook -->
+        <div id="calendar" class="w-full text-sm font-body"></div>
+    </div>
+
+    <!-- Mobile-First Drawer for Events (Alpine.js) -->
+    <template x-teleport="body">
+        <div x-show="isDrawerOpen" class="fixed inset-0 z-50 flex items-end justify-center sm:items-center" style="display: none;">
+            
+            <!-- Backdrop -->
+            <div x-show="isDrawerOpen" x-transition.opacity class="fixed inset-0 bg-neutral/80 backdrop-blur-sm" @click="closeDrawer()"></div>
+            
+            <!-- Drawer Surface -->
+            <div x-show="isDrawerOpen" 
+                 x-transition:enter="transition ease-out duration-300 transform"
+                 x-transition:enter-start="translate-y-full"
+                 x-transition:enter-end="translate-y-0"
+                 x-transition:leave="transition ease-in duration-200 transform"
+                 x-transition:leave-start="translate-y-0"
+                 x-transition:leave-end="translate-y-full"
+                 class="relative w-full max-w-2xl bg-secondary rounded-t-ios-lg sm:rounded-ios-lg p-6 pb-12 sm:pb-6 shadow-2xl border-t border-white/5 sm:border z-10 max-h-[90vh] overflow-y-auto">
                 
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-success" onclick="agendarCita()" style="color: white; display: none;" 
-                id="agendarCitaButton">
-                    <i class="fa-duotone fa-circle-plus"></i> Agendar Cita
+                <!-- Close Button -->
+                <button @click="closeDrawer()" class="absolute top-4 right-4 text-gray-400 hover:text-white bg-neutral/50 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
-                <button type="button" class="btn btn-success" onclick="cerrarDia()" style="color: white; display: none;" 
-                id="salvarCerrado">
-                    <i class="fa-duotone fa-circle-plus"></i> Cerrar
-                </button>
+
+                <!-- Drawer Header -->
+                <div class="mb-6">
+                    <h2 class="text-xl font-headings font-bold text-white mb-2">
+                        <i class="fa-duotone fa-calendar-plus text-primary mr-2"></i> Nuevo Evento
+                    </h2>
+                    <p class="text-sm text-gray-400">
+                        <i class="fa-duotone fa-calendar-days text-tertiary"></i> <span id="dateSelected" class="capitalize mr-3"></span>
+                        <i class="fa-duotone fa-clock text-white"></i> <span id="timeSelected"></span>
+                    </p>
+                </div>
+
+                <!-- Type Selector -->
+                <div class="mb-6">
+                    <label class="block text-xs uppercase tracking-wider text-gray-500 font-bold mb-2">Tipo de Evento</label>
+                    <select x-model="eventType" class="input-dark">
+                        <option value="none" disabled>Seleccione una opción</option>
+                        <option value="cita">Cita de Cliente</option>
+                        <option value="cerrado">Bloquear Horario</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Forms based on Type -->
+                <div x-show="eventType === 'cita'" x-transition class="space-y-6">
+                    <!-- Client Selector -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-xs uppercase tracking-wider text-gray-500 font-bold">Cliente</label>
+                            <span class="text-xs text-tertiary" id="numeroTelefono"></span>
+                        </div>
+                        <div class="flex gap-2">
+                            <!-- TODO: Convert to native search or Alpine autocomplete -->
+                            <select id="clientsSelectize" class="input-dark flex-grow" placeholder="Buscar cliente..."></select>
+                            <button class="bg-neutral border border-white/10 rounded-ios px-4 hover:border-primary transition-colors">
+                                <i class="fa-solid fa-plus text-white"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Services -->
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-gray-500 font-bold mb-2">Servicios Solicitados</label>
+                        <div id="serviciosDisponibles" class="flex flex-wrap gap-2">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="flex justify-between items-center bg-neutral p-4 rounded-ios border border-white/5">
+                        <span class="text-gray-400">Total Estimado</span>
+                        <span class="text-xl font-bold text-white">₡<span id="precioFinalModal">0</span></span>
+                    </div>
+
+                    <button class="btn-primary w-full mt-4" @click="agendarCita()">
+                        Confirmar Cita
+                    </button>
+                </div>
+
+                <div x-show="eventType === 'cerrado'" x-transition class="space-y-6">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="allDayClosed" class="w-5 h-5 rounded border-white/10 bg-neutral text-primary focus:ring-primary focus:ring-offset-secondary">
+                        <span class="text-sm font-medium">Bloquear todo el día</span>
+                    </label>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-gray-500 font-bold mb-2">Desde</label>
+                            <input type="time" id="closedHoursStart" class="input-dark">
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-gray-500 font-bold mb-2">Hasta</label>
+                            <input type="time" id="closedHoursEnd" class="input-dark">
+                        </div>
+                    </div>
+
+                    <button class="btn-primary w-full mt-4" @click="cerrarDia()">
+                        Guardar Bloqueo
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+    </template>
+
+    <!-- Cash Register Drawer (Finance V2) -->
+    <template x-teleport="body">
+        <div x-show="isFinanceDrawerOpen" class="fixed inset-0 z-50 flex items-end justify-center sm:items-center" style="display: none;">
+            <div x-show="isFinanceDrawerOpen" x-transition.opacity class="fixed inset-0 bg-neutral/80 backdrop-blur-sm" @click="isFinanceDrawerOpen = false"></div>
+            <div x-show="isFinanceDrawerOpen" 
+                 x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
+                 x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
+                 class="relative w-full max-w-lg bg-zinc-950 rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl border-t border-white/10 sm:border z-10 max-h-[90vh] overflow-y-auto">
+                
+                <button @click="isFinanceDrawerOpen = false" class="absolute top-4 right-4 text-gray-400 hover:text-white bg-zinc-800 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-white mb-1"><i class="fa-solid fa-cash-register text-[#F4C82C] mr-2"></i> Cierre de Caja</h2>
+                    <p class="text-sm text-gray-400">Verifica que el efectivo físico cuadre con lo registrado en sistema antes de cerrar el día.</p>
+                </div>
+
+                <div class="bg-zinc-900 border border-white/5 rounded-xl p-4 mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-gray-400 text-sm">Total Efectivo Reportado:</span>
+                        <span class="text-white font-bold" x-text="'₡' + metrics.cashRevenue.toLocaleString('es-CR')"></span>
+                    </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-gray-400 text-sm">Total SINPE Reportado:</span>
+                        <span class="text-white font-bold" x-text="'₡' + metrics.sinpeRevenue.toLocaleString('es-CR')"></span>
+                    </div>
+                    <hr class="border-white/5 my-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-300 font-bold">Total Sistema:</span>
+                        <span class="text-green-400 font-bold text-lg" x-text="'₡' + metrics.totalRevenue.toLocaleString('es-CR')"></span>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Efectivo físico en caja ₡</label>
+                        <input type="number" x-model="closureForm.actualCash" class="w-full bg-zinc-900 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary" placeholder="Ej: 45000">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Notas / Justificación</label>
+                        <textarea x-model="closureForm.notes" class="w-full bg-zinc-900 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary" rows="2" placeholder="Opcional..."></textarea>
+                    </div>
+
+                    <!-- Calculated Difference -->
+                    <div x-show="closureForm.actualCash !== ''" class="p-3 rounded-lg flex items-center gap-3"
+                         :class="(Number(closureForm.actualCash) - metrics.cashRevenue) === 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'">
+                        <i class="fa-solid" :class="(Number(closureForm.actualCash) - metrics.cashRevenue) === 0 ? 'fa-check-circle' : 'fa-triangle-exclamation'"></i>
+                        <span class="font-medium text-sm">
+                            Diferencia: ₡<span x-text="(Number(closureForm.actualCash) - metrics.cashRevenue).toLocaleString('es-CR')"></span>
+                        </span>
+                    </div>
+
+                    <button @click="submitClosure()" :disabled="isLoading" class="w-full bg-gradient-to-r from-primary to-tertiary hover:to-tertiary text-white font-bold py-3 px-4 rounded-xl shadow-lg disabled:opacity-50 mt-4 transition-all">
+                        <span x-show="!isLoading"><i class="fa-solid fa-lock mr-2"></i> Cerrar Caja Hoy</span>
+                        <span x-show="isLoading"><i class="fas fa-spinner fa-spin"></i> Procesando...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
 </div>
+
+<!-- Alpine.js Component Logic -->
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('adminDashboard', () => ({
+            isDrawerOpen: false,
+            isFinanceDrawerOpen: false,
+            eventType: 'none',
+            isLoading: false,
+            
+            metrics: {
+                totalRevenue: 0,
+                cashRevenue: 0,
+                sinpeRevenue: 0,
+                completedAppointments: 0,
+                pendingAppointments: 0,
+                newClients: 0
+            },
+            
+            closureForm: {
+                actualCash: '',
+                notes: ''
+            },
+            
+            async init() {
+                // Fetch V2 Finances data independently
+                this.fetchMetrics();
+                
+                // Legacy Event Listeners
+                window.addEventListener('open-booking-drawer', (e) => {
+                    this.eventType = 'none';
+                    this.isDrawerOpen = true;
+                });
+                window.addEventListener('close-booking-drawer', () => {
+                    this.isDrawerOpen = false;
+                });
+            },
+            
+            async fetchMetrics() {
+                try {
+                    const res = await axios.get('/api/v2/finances/today-summary');
+                    this.metrics = res.data.metrics;
+                } catch(e) {
+                    console.error("Error fetching metrics", e);
+                }
+            },
+            
+            async submitClosure() {
+                if(this.closureForm.actualCash === '') return Swal.fire('Error', 'Debes ingresar el efectivo físico.', 'error');
+                
+                this.isLoading = true;
+                try {
+                    const res = await axios.post('/api/v2/finances/closures', {
+                        date: new Date().toISOString().split('T')[0],
+                        expectedCash: this.metrics.cashRevenue,
+                        actualCash: this.closureForm.actualCash,
+                        notes: this.closureForm.notes
+                    });
+                    
+                    Swal.fire({
+                        title: 'Caja Cerrada',
+                        text: res.data.message,
+                        icon: res.data.closure.difference === 0 ? 'success' : 'warning',
+                        background: '#18181b', color: '#fff'
+                    });
+                    
+                    this.isFinanceDrawerOpen = false;
+                } catch(e) {
+                    Swal.fire('Error', e.response?.data?.error || 'Error de servidor', 'error');
+                } finally {
+                    this.isLoading = false;
+                }
+            },
+
+            closeDrawer() {
+                this.isDrawerOpen = false;
+            },
+
+            agendarCita() {
+                if(typeof window.agendarCita === 'function') window.agendarCita();
+                this.closeDrawer();
+            },
+
+            cerrarDia() {
+                if(typeof window.cerrarDia === 'function') window.cerrarDia();
+                this.closeDrawer();
+            }
+        }))
+    });
+</script>
 
 <script src="/js/admin/index.js"></script>

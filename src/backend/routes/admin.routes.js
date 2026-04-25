@@ -7,7 +7,7 @@ const Admin = require('../controllers/admin.controller');
 router.get('/', async (req, res) => {
     res.render('admin/login');
 });
-router.post('/login', cipherPassword, Admin.auth);
+router.post('/login', Admin.auth);
 
 router.get('/panel', verify, async (req, res) => {
     res.render('admin/index',{
