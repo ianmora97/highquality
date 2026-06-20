@@ -1,8 +1,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-const CryptoJS = require('crypto-js');
+const bcrypt = require('bcrypt');
 
-const { MONGODB_URI, SECRET } = process.env;
+const { MONGODB_URI } = process.env;
 
 const AdminSchema = new mongoose.Schema({
     name:     { type: String, required: true, unique: true },
@@ -21,14 +21,13 @@ async function run() {
     await mongoose.connect(MONGODB_URI);
     console.log('[OK] MongoDB connected');
 
-    const hash = CryptoJS.HmacMD5(CREDENTIALS.password, SECRET).toString();
-
     const existing = await Admin.findOne({ user: CREDENTIALS.user });
     if (existing) {
         console.log('[SKIP] Admin user already exists:', CREDENTIALS.user);
         process.exit(0);
     }
 
+    const hash = await bcrypt.hash(CREDENTIALS.password, 12);
     await Admin.create({ name: CREDENTIALS.name, user: CREDENTIALS.user, password: hash });
 
     console.log('\n✓ Admin created');

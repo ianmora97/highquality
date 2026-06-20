@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-const { cipherPassword, verify } = require('../middlewares/auth');
+const { verify } = require('../middlewares/auth');
 const Admin = require('../controllers/admin.controller');
 
 router.get('/', async (req, res) => {
     res.render('admin/login', { layout: 'login' });
 });
-router.post('/login', cipherPassword, Admin.auth);
+router.post('/login', Admin.auth);
 
 router.get('/panel', verify, async (req, res) => {
     res.render('admin/index',{

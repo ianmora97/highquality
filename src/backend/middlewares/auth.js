@@ -1,13 +1,6 @@
-const {encryptMD5} = require('../helpers/cipher');
 const jwt = require('jsonwebtoken');
 
 const { SECRET } = process.env;
-
-async function cipherPassword(req, res, next) {
-    const {password} = req.body;
-    req.body.password = encryptMD5(password);
-    next();
-}
 
 async function verify(req, res, next) {
     const {signature} = req.cookies;
@@ -22,6 +15,5 @@ async function verify(req, res, next) {
 }
 
 module.exports = {
-    cipherPassword,
     verify
 }

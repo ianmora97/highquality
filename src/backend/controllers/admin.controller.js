@@ -1,5 +1,6 @@
 const Admin = require('../models/admin/admin.model');
-const { sign } = require('../helpers/cipher')
+const { sign } = require('../helpers/cipher');
+const bcrypt = require('bcrypt');
 
 exports.get = async (req, res) => {
     const admins = await Admin.get();
@@ -8,9 +9,10 @@ exports.get = async (req, res) => {
 
 exports.auth = async (req, res) => {
     const {user, password} = req.body;
-    const admin = await Admin.auth(user, password);
+    const admin = await Admin.auth(user);
 
-    if(admin){
+    const match = admin && await bcrypt.compare(password, admin.password);
+    if(match){
         const token = await sign({
             _id: admin._id,
             user: admin.user,

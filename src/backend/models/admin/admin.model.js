@@ -6,9 +6,9 @@ exports.get = async () => {
     return admins;
 };
 
-exports.auth = async (user, password) => {
+exports.auth = async (user) => {
     try {
-        const admin = await Admin.findOne({user, password});
+        const admin = await Admin.findOne({user});
         return admin;
     } catch (error) {
         console.log(error);
