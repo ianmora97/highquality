@@ -5,7 +5,7 @@ const { cipherPassword, verify } = require('../middlewares/auth');
 const Admin = require('../controllers/admin.controller');
 
 router.get('/', async (req, res) => {
-    res.render('admin/login');
+    res.render('admin/login', { layout: 'login' });
 });
 router.post('/login', cipherPassword, Admin.auth);
 

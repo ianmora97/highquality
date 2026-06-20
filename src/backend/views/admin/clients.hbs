@@ -1,71 +1,68 @@
+<!-- DataTables -->
 <script src="/scripts/datatables.net/js/dataTables.min.js"></script>
-<script src="/scripts/datatables.net-bs5/js/dataTables.bootstrap5.min.js"></script>
-<script src="/scripts/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js"></script>
-<script src="/scripts/datatables.net-fixedheader-bs5/js/fixedHeader.bootstrap5.min.js"></script>
 <script src="/scripts/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
-<script src="/scripts/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js"></script>
 
-<link rel="stylesheet" href="/scripts/datatables.net-bs5/css/dataTables.bootstrap5.min.css">
-<link rel="stylesheet" href="/scripts/datatables.net-fixedheader-bs5/css/fixedHeader.bootstrap5.min.css">
-<link rel="stylesheet" href="/scripts/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css">
+<div class="container-md-fluid py-3">
 
-<div class="container-fluid">
-    <div class="row mx-0 g-3 mt-2">
-        <section class="col-12 animate__animated animate__fadeInUp">
-            <div class="bg-fore shadow rounded-3 p-3 d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="fw-bold"><i class="fa-duotone fa-users text-primary"></i> Clientes</h1>
-                    <small class="text-light mb-1">Todos los clientes registrados</small>
-                    <div class="d-flex justify-content-start align-items-center">
-                        <p class="text-muted small mt-1 mb-0 me-3"><i class="fa-solid fa-clock"></i> Actualizado hace: <span id="lastUpdated" class="text-primary">1 seg</span></p>
-                    </div>
-                </div>
-                <h1 class="display-2 fw-bold mb-0">
-                    <span id="totalitems" class="text-gold">20</span>
-                </h1>
+    <!-- Header -->
+    <div class="rounded-xl p-4 mb-4 border border-white/10 flex items-center justify-between animate__animated animate__fadeInUp" style="background:#0d0d0d;">
+        <div>
+            <h1 class="text-2xl font-bold mb-1">
+                <i class="fa-solid fa-users" style="color:#3004f3;"></i> Clientes
+            </h1>
+            <p class="text-gray-500 text-sm mb-1">Todos los clientes registrados</p>
+            <span class="text-xs text-gray-600">
+                <i class="fa-solid fa-clock"></i> Actualizado: <span id="lastUpdated" class="text-primary">ahora</span>
+            </span>
+        </div>
+        <div class="text-right">
+            <span class="bebas text-5xl font-bold" style="color:#F4C82C;" id="totalitems">—</span>
+            <p class="text-xs text-gray-500 mt-0">clientes</p>
+        </div>
+    </div>
+
+    <!-- Search bar -->
+    <div class="mb-3">
+        <div class="relative">
+            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+            <input type="text" id="barraBuscar" placeholder="Buscar cliente..."
+                   class="form-control pl-9 py-2.5">
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="rounded-xl border border-white/10 overflow-hidden animate__animated animate__fadeInUp" id="table-container" style="background:#0d0d0d;">
+        <table id="table" class="table table-custom table-striped nowrap align-middle w-100 position-relative">
+            <thead>
+                <tr id="thead">
+                    <th data-priority="1"><i class="fa-solid fa-id-card"></i> Nombre</th>
+                    <th data-priority="2"><i class="fa-solid fa-calendar-days"></i> Citas</th>
+                    <th data-priority="3"><i class="fa-solid fa-phone"></i> Teléfono</th>
+                </tr>
+            </thead>
+            <tbody id="tbody">
+                <tr class="placeholder-glow">
+                    <td><span class="placeholder col-10"></span></td>
+                    <td><span class="placeholder col-10"></span></td>
+                    <td><span class="placeholder col-10"></span></td>
+                </tr>
+                <tr class="placeholder-glow">
+                    <td><span class="placeholder col-10"></span></td>
+                    <td><span class="placeholder col-10"></span></td>
+                    <td><span class="placeholder col-10"></span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination info -->
+    <div class="flex items-center justify-between py-3 px-2 mt-2 rounded-xl border border-white/10 animate__animated animate__fadeInUp" style="background:#0d0d0d;">
+        <small class="text-gray-500 text-xs" id="info">
+            <div class="placeholder-glow">
+                <span class="placeholder" style="width:200px;"></span>
             </div>
-        </section>
-
-        <section class="col-12 animate__animated animate__fadeInUp">
-            <div class="table-container position-relative bg-fore rounded-3" 
-            id="table-container">
-                <table style="margin: 0 !important;" 
-                class="table table-custom table-striped table-responsive nowrap align-middle position-relative w-100" 
-                id="table">
-                    <thead>
-                        <tr id="thead">
-                            <th scope="col" data-priority="1"><i class="fa-duotone fa-id-card"></i> Nombre</th>
-                            <th scope="col" data-priority="2"><i class="fa-duotone fa-calendar-days"></i> Citas</th>
-                            <th scope="col" data-priority="3"><i class="fa-duotone fa-phone"></i> Telefono</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody">
-                        <tr class="placeholder-glow">
-                            <td><span class="placeholder col-10"></span></td>
-                            <td><span class="placeholder col-10"></span></td>
-                            <td><span class="placeholder col-10"></span></td>
-                        </tr>
-                        <tr class="placeholder-glow">
-                            <td><span class="placeholder col-10"></span></td>
-                            <td><span class="placeholder col-10"></span></td>
-                            <td><span class="placeholder col-10"></span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-        
-        <section class="col-12 animate__animated animate__fadeInUp">
-            <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded-3 bg-fore">
-                <small class="text-muted" id="info">
-                    <div class="placeholder-glow">
-                        <span class="placeholder col-12">-o-o-o-o-o-o-o-o-o-o-</span>
-                    </div>
-                </small>
-                <div class="pagination-tables" id="pagination"></div>
-            </div>
-        </section>
-
+        </small>
+        <div class="pagination-tables" id="pagination"></div>
     </div>
 </div>
 

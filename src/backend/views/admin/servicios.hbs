@@ -1,123 +1,99 @@
-<div class="container-fluid">
-    <div class="row mx-0 g-3 mt-2">
-        <section class="col-12">
-            <div class="bg-fore shadow rounded-3 p-2 row mx-0 g-3">
-                <div class="col-md-9 mb-0 mb-lg-3">
-                    <h1 class="fw-bold"><i class="fa-duotone fa-scissors text-primary"></i> Servicios</h1>
-                    <p class="text-light mb-1">Todos los servicios que ofrece HighQuality Barber</p>
-                    <div class="d-flex justify-content-start align-items-center">
-                        <p class="text-muted small mt-1 mb-0 me-3"><i class="fa-solid fa-clock"></i> Actualizado hace: <span id="lastUpdated" class="text-primary">1 seg</span></p>
-                        <p class="text-muted small mt-1 mb-0"><i class="fa-duotone fa-dice"></i> Total: <span id="totalitems" class="text-primary">20</span></p>
-                    </div>
-                </div>
-                <div class="col-md-3 d-flex justify-content-start justify-content-lg-end align-items-center">
-                    <button class="btn btn-primary w-100 mb-3 mb-lg-0" data-bs-toggle="modal" data-bs-target="#addService">
-                        <i class="fa-duotone fa-square-plus"></i> Agregar Servicio
-                    </button>
-                </div>
-            </div>
-        </section>
+<div class="container-md-fluid py-3">
 
-        <section class="col-12 d-flex justify-content-center align-items-start gap-3 flex-wrap position-relative overflow-hidden" id="listaServicios">
-            
-        </section>
+    <!-- Header -->
+    <div class="rounded-xl p-4 mb-4 border border-white/10 flex flex-wrap gap-4 items-center justify-between" style="background:#0d0d0d;">
+        <div>
+            <h1 class="text-2xl font-bold mb-1">
+                <i class="fa-solid fa-scissors" style="color:#3004f3;"></i> Servicios
+            </h1>
+            <p class="text-gray-500 text-sm mb-1">Todos los servicios que ofrece HighQuality</p>
+            <div class="flex items-center gap-4">
+                <span class="text-xs text-gray-600">
+                    <i class="fa-solid fa-clock"></i> Actualizado:
+                    <span id="lastUpdated" class="text-primary">ahora</span>
+                </span>
+                <span class="text-xs text-gray-600">
+                    <i class="fa-solid fa-list"></i> Total:
+                    <span id="totalitems" class="text-primary font-bold">—</span>
+                </span>
+            </div>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addService">
+            <i class="fa-solid fa-plus"></i> Agregar Servicio
+        </button>
     </div>
+
+    <!-- Services Grid -->
+    <div class="flex flex-wrap justify-start gap-4" id="listaServicios"></div>
 </div>
 
-<div class="modal fade" id="addService" tabindex="-1" aria-labelledby="addServiceLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+<!-- Add Service Modal -->
+<div class="modal" id="addService" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-scrollable" style="max-width:550px;">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="addServiceLabel">
-                    <i class="fa-duotone fa-scissors"></i> Agregar Servicio
-                </h1>
-                <button type="button" class="btn-close btn-close-white" 
-                data-bs-dismiss="modal" aria-label="Close"></button>
+                <h2 class="modal-title"><i class="fa-solid fa-scissors"></i> Agregar Servicio</h2>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body px-1">
-                <div class="row mx-0">
-                    <div class="col-12 mb-2">
-                        <label for="nombre" class="form-label">Nombre del servicio</label>
-                        <input type="text" class="form-control form-control-lg" id="nombre-add" placeholder="Nombre">
-                    </div>
-                    <div class="col-12 mb-2">
-                        <label for="precio" class="form-label">Precio del servicio</label>
-                        <input type="number" class="form-control form-control-lg" id="precio-add" placeholder="Precio">
-                    </div>
-                    <div class="col-12">
-                        <hr class="my-1">
-                    </div>
-                    <div class="col-12 d-flex justify-content-start align-items-center py-3">
-                        <div class="my-2">
-                            <div class="dropdown dropup">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Icono
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-dark" id="imagesToSelect" 
-                                style="max-height:300px; overflow-y:auto;"></ul>
-                            </div>
-                        </div>
-                        <div id="imagenseleccionada" class="ms-4" style="filter: invert(1);">
-                            <img src="/images/icons/corte.png" width="50px">
-                        </div>
-                    </div>
+            <div class="modal-body px-3">
+                <div class="mb-3">
+                    <label class="form-label">Nombre del servicio</label>
+                    <input type="text" class="form-control form-control-lg" id="nombre-add" placeholder="Nombre">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Precio del servicio</label>
+                    <input type="number" class="form-control form-control-lg" id="precio-add" placeholder="Precio">
+                </div>
+                <hr class="border-white/10 my-3">
+                <label class="form-label text-sm text-gray-400">Ícono</label>
+                <div class="fa-icon-grid" id="faIconGrid-add"></div>
+                <div class="fa-icon-selected-preview" id="faIconPreview-add">
+                    <i class="fa-solid fa-scissors fa-icon-preview-i" id="faIconPreviewIcon-add"></i>
+                    <span class="fa-icon-preview-name" id="faIconPreviewName-add">Tijeras</span>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-success" onclick="agregarServicio()">
-                    <i class="fa-duotone fa-circle-plus"></i> Agregar Servicio
+                <button type="button" class="btn btn-success" onclick="agregarServicio()" style="color:white;">
+                    <i class="fa-solid fa-circle-plus"></i> Agregar
                 </button>
             </div>
         </div>
     </div>
 </div>
-<div class="modal fade" id="editService" tabindex="-1" aria-labelledby="editServiceLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+
+<!-- Edit Service Modal -->
+<div class="modal" id="editService" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-scrollable" style="max-width:550px;">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="editServiceLabel">
-                    <i class="fa-duotone fa-scissors"></i> Editar Servicio
-                    <span class="small text-muted d-block" id="idUpdate"></span>
-                </h1>
-                
-                <button type="button" class="btn-close btn-close-white" 
-                data-bs-dismiss="modal" aria-label="Close"></button>
+                <div>
+                    <h2 class="modal-title"><i class="fa-solid fa-scissors"></i> Editar Servicio</h2>
+                    <span class="text-xs text-gray-500 mt-1 block" id="idUpdate"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body px-1">
-                
-                <div class="row mx-0">
-                    <div class="col-12 mb-2">
-                        <label for="nombre" class="form-label">Nombre del servicio</label>
-                        <input type="text" class="form-control form-control-lg" id="nombre-edit" placeholder="Nombre">
-                    </div>
-                    <div class="col-12 mb-2">
-                        <label for="precio" class="form-label">Precio del servicio</label>
-                        <input type="number" class="form-control form-control-lg" id="precio-edit" placeholder="Precio">
-                    </div>
-                    <div class="col-12">
-                        <hr class="my-1">
-                    </div>
-                    <div class="col-12 d-flex justify-content-start align-items-center py-3">
-                        <div class="my-2">
-                            <div class="dropdown dropup">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Icono
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-dark" id="imagesToSelect-edit" 
-                                style="max-height:300px; overflow-y:auto;"></ul>
-                            </div>
-                        </div>
-                        <div id="imagenseleccionada-edit" class="ms-4" style="filter: invert(1);">
-                            <img src="/images/icons/corte.png" width="50px">
-                        </div>
-                    </div>
+            <div class="modal-body px-3">
+                <div class="mb-3">
+                    <label class="form-label">Nombre del servicio</label>
+                    <input type="text" class="form-control form-control-lg" id="nombre-edit" placeholder="Nombre">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Precio del servicio</label>
+                    <input type="number" class="form-control form-control-lg" id="precio-edit" placeholder="Precio">
+                </div>
+                <hr class="border-white/10 my-3">
+                <label class="form-label text-sm text-gray-400">Ícono</label>
+                <div class="fa-icon-grid" id="faIconGrid-edit"></div>
+                <div class="fa-icon-selected-preview" id="faIconPreview-edit">
+                    <i class="fa-solid fa-scissors fa-icon-preview-i" id="faIconPreviewIcon-edit"></i>
+                    <span class="fa-icon-preview-name" id="faIconPreviewName-edit">Tijeras</span>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-light" onclick="actualizarServicio()">
-                    <i class="fa-duotone fa-save"></i> Actualizar
+                    <i class="fa-solid fa-floppy-disk"></i> Actualizar
                 </button>
             </div>
         </div>

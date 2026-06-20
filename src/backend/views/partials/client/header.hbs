@@ -1,32 +1,113 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-fore py-0">
-    <div class="container">
-        <a class="navbar-brand" href="/">
-            <img src="/images/simple-logo.png" alt="Logo" width="60">
+<!-- Nav — no x-data here, state lives on <body> x-data="{ navOpen: false }" -->
+<nav class="sticky top-0 z-50 border-b border-white/10" style="background-color:rgba(13,13,13,0.97);">
+
+    <div class="max-w-7xl mx-auto px-5 flex items-center justify-between h-16">
+        <!-- Logo -->
+        <a href="/" class="flex items-center shrink-0">
+            <img src="/images/simple-logo.png" alt="HighQuality Studio" width="44" height="44">
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" 
-        aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse inter" id="navbarNavAltMarkup">
-            <div class="nav nav-pills-home w-100 gap-1 ms-4 d-flex justify-content-end flex-fill">
-                <a class="nav-link" id="tab-inicio" href="/">
-                    Inicio
-                </a>
-                <a class="nav-link" id="tab-reservar" href="/reservar">
-                    Reservar
-                </a>
-                <a class="nav-link" id="tab-galeria" href="/galeria">
-                    Galeria
-                </a>
+
+        <!-- Desktop Nav Links -->
+        <div class="hidden md:flex items-center gap-1">
+            <a class="nav-link-client" id="tab-inicio" href="/">Inicio</a>
+            <a class="nav-link-client" id="tab-servicios" href="/servicios">Servicios</a>
+            <a class="nav-link-client" id="tab-galeria" href="/galeria">Galería</a>
+            <a class="nav-link-client" id="tab-reservar" href="/reservar">Reservar</a>
+        </div>
+
+        <!-- Right side -->
+        <div class="flex items-center gap-3">
+            <a href="/reservar" class="hidden md:inline-flex btn btn-gold rounded-pill gap-2 nav-cta-btn">
+                <i class="fa-solid fa-scissors"></i> Reservar
+            </a>
+            <!-- Hamburger: wrapped in md:hidden div so .nav-hamburger display:flex doesn't override -->
+            <div class="md:hidden">
+                <button @click="navOpen = true; document.body.style.overflowY = 'hidden'"
+                        class="nav-hamburger"
+                        aria-label="Abrir menú">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
             </div>
         </div>
     </div>
 </nav>
 
+<!-- Backdrop — sibling of <nav>, in root stacking context so z-index works correctly -->
+<div x-show="navOpen"
+     @click="navOpen = false; document.body.style.overflowY = ''"
+     x-transition:enter="backdrop-enter"
+     x-transition:enter-start="backdrop-enter-start"
+     x-transition:enter-end="backdrop-enter-end"
+     x-transition:leave="backdrop-leave"
+     x-transition:leave-start="backdrop-leave-start"
+     x-transition:leave-end="backdrop-leave-end"
+     class="mobile-nav-backdrop"
+     x-cloak>
+</div>
+
+<!-- Drawer — sibling of <nav>, z-100 in root stacking context is above nav z-50 -->
+<div x-show="navOpen"
+     x-transition:enter="drawer-enter"
+     x-transition:enter-start="drawer-enter-start"
+     x-transition:enter-end="drawer-enter-end"
+     x-transition:leave="drawer-leave"
+     x-transition:leave-start="drawer-leave-start"
+     x-transition:leave-end="drawer-leave-end"
+     class="mobile-nav-drawer"
+     x-cloak>
+
+    <!-- Drawer header -->
+    <div class="mobile-drawer-header">
+        <div class="flex items-center gap-2">
+            <img src="/images/simple-logo.png" alt="HighQuality" width="36">
+            <span class="text-sm font-semibold" style="color:#f1f1f1; letter-spacing:0.01em;">High<span style="color:#F4C82C;">Quality</span></span>
+        </div>
+        <button @click="navOpen = false; document.body.style.overflowY = ''"
+                class="mobile-drawer-close"
+                aria-label="Cerrar menú">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- Nav links -->
+    <div class="mobile-drawer-nav">
+        <a class="mobile-drawer-link" id="tab-inicio-m" href="/">
+            <span class="mobile-drawer-icon"><i class="fa-solid fa-house"></i></span>
+            <span>Inicio</span>
+        </a>
+        <a class="mobile-drawer-link" id="tab-servicios-m" href="/servicios">
+            <span class="mobile-drawer-icon"><i class="fa-solid fa-scissors"></i></span>
+            <span>Servicios</span>
+        </a>
+        <a class="mobile-drawer-link" id="tab-galeria-m" href="/galeria">
+            <span class="mobile-drawer-icon"><i class="fa-solid fa-images"></i></span>
+            <span>Galería</span>
+        </a>
+        <a class="mobile-drawer-link" id="tab-reservar-m" href="/reservar">
+            <span class="mobile-drawer-icon"><i class="fa-solid fa-calendar-check"></i></span>
+            <span>Reservar</span>
+        </a>
+    </div>
+
+    <!-- Bottom CTA -->
+    <div class="mobile-drawer-footer">
+        <a href="/reservar" class="btn btn-gold btn-lg rounded-pill w-full justify-center">
+            <i class="fa-solid fa-scissors me-2"></i>Reservar Cita
+        </a>
+        <p class="text-center text-xs mt-3" style="color:#374151;">HighQuality Studio · San José, CR</p>
+    </div>
+</div>
+
 <script>
     const CURRENT_PAGE = "{{tab}}";
-    $(document).ready(function() {
-        $(`#tab-${CURRENT_PAGE}`).addClass("active");
-        $(`#tab-${CURRENT_PAGE}`).attr("aria-current", "page");
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('[id^="tab-' + CURRENT_PAGE + '"]').forEach(function(el) {
+            el.classList.add('active');
+        });
+        // Hide CTA "Reservar" button when already on the reservar page
+        if (CURRENT_PAGE === 'reservar') {
+            var cta = document.querySelector('.nav-cta-btn');
+            if (cta) cta.style.display = 'none';
+        }
     });
 </script>

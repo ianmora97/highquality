@@ -1,46 +1,70 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-fore">
-    <div class="container">
-        <a class="navbar-brand nautigal" href="/dashboard/panel">
-            <img src="/images/simple-logo.png" alt="HighQuality Barber Logo" width="50" height="50" class="d-inline-block align-text-top">
+<nav class="border-b border-white/10" style="background-color:#0d0d0d;" x-data="{ open: false }">
+    <div class="max-w-screen-xl mx-auto px-4 flex items-center h-14">
+        <!-- Logo -->
+        <a href="/dashboard/panel" class="flex items-center mr-6 shrink-0">
+            <img src="/images/simple-logo.png" alt="HighQuality Admin" width="40" height="40">
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" 
-        aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+
+        <!-- Desktop Nav -->
+        <div class="hidden md:flex items-center gap-1 flex-1">
+            <a class="admin-nav-link" id="tab-panel" href="/dashboard/panel">
+                <i class="fa-solid fa-calendar-days"></i> Citas
+            </a>
+            <a class="admin-nav-link" id="tab-horarios" href="/dashboard/horarios">
+                <i class="fa-solid fa-clock"></i> Horario
+            </a>
+            <a class="admin-nav-link" id="tab-servicios" href="/dashboard/servicios">
+                <i class="fa-solid fa-scissors"></i> Servicios
+            </a>
+            <a class="admin-nav-link" id="tab-clientes" href="/dashboard/clientes">
+                <i class="fa-solid fa-users"></i> Clientes
+            </a>
+            <a class="admin-nav-link" id="tab-reviews" href="/dashboard/reviews">
+                <i class="fa-solid fa-star"></i> Reviews
+            </a>
+        </div>
+
+        <!-- Mobile toggle -->
+        <button @click="open = !open" class="md:hidden ml-auto p-2 text-gray-400 hover:text-white">
+            <i x-show="!open" class="fa-solid fa-bars text-xl"></i>
+            <i x-show="open" class="fa-solid fa-xmark text-xl" x-cloak></i>
         </button>
-        <div class="collapse navbar-collapse inter" id="navbarNavAltMarkup">
-            <div class="nav nav-pills w-100 gap-3 ms-0 ms-md-4">
-                <a class="nav-link" id="tab-panel" href="/dashboard/panel">
-                    <i class="fa-duotone fa-calendar-days"></i> Citas
-                </a>
-                <a class="nav-link" id="tab-horarios" href="/dashboard/horarios">
-                    <i class="fa-duotone fa-clock"></i> Horario
-                </a>
-                <a class="nav-link" id="tab-servicios" href="/dashboard/servicios">
-                    <i class="fa-duotone fa-scissors"></i> Servicios
-                </a>
-                <a class="nav-link" id="tab-clientes" href="/dashboard/clientes">
-                    <i class="fa-duotone fa-users"></i> Clientes
-                </a>
-                <a class="nav-link" id="tab-reviews" href="/dashboard/reviews">
-                    <i class="fa-solid fa-star"></i> Reviews
-                </a>
-            </div>
+    </div>
+
+    <!-- Mobile Nav -->
+    <div x-show="open"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-end="opacity-0 -translate-y-2"
+         class="md:hidden border-t border-white/10 px-4 py-4"
+         x-cloak>
+        <div class="flex flex-col gap-2">
+            <a class="admin-nav-link" id="tab-panel-m" href="/dashboard/panel">
+                <i class="fa-solid fa-calendar-days"></i> Citas
+            </a>
+            <a class="admin-nav-link" id="tab-horarios-m" href="/dashboard/horarios">
+                <i class="fa-solid fa-clock"></i> Horario
+            </a>
+            <a class="admin-nav-link" id="tab-servicios-m" href="/dashboard/servicios">
+                <i class="fa-solid fa-scissors"></i> Servicios
+            </a>
+            <a class="admin-nav-link" id="tab-clientes-m" href="/dashboard/clientes">
+                <i class="fa-solid fa-users"></i> Clientes
+            </a>
+            <a class="admin-nav-link" id="tab-reviews-m" href="/dashboard/reviews">
+                <i class="fa-solid fa-star"></i> Reviews
+            </a>
         </div>
     </div>
 </nav>
 
 <script>
     const CURRENT_PAGE = "{{tab}}";
-    $(document).ready(function() {
-        $(`#tab-${CURRENT_PAGE}`).addClass("active");
-        $(`#tab-${CURRENT_PAGE}`).attr("aria-current", "page");
-        anime({
-            targets: '.nav-link',
-            translateY: [-10, 0],
-            opacity: [0, 1],
-            delay: anime.stagger(20),
-            easing: 'easeInOutSine'
-        })
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('[id^="tab-' + CURRENT_PAGE + '"]').forEach(function(el) {
+            el.classList.add('active');
+        });
     });
-
 </script>

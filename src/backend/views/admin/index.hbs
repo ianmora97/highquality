@@ -1,167 +1,169 @@
+<!-- FullCalendar -->
 <script src="/scripts/@fullcalendar/core/index.global.min.js"></script>
 <script src="/scripts/@fullcalendar/daygrid/index.global.min.js"></script>
 <script src="/scripts/@fullcalendar/timegrid/index.global.min.js"></script>
 <script src="/scripts/@fullcalendar/interaction/index.global.min.js"></script>
-<script src="/scripts/@fullcalendar/bootstrap5/index.global.min.js"></script>
 <script src="/scripts/@fullcalendar/moment/index.global.min.js"></script>
 <script src="/scripts/@fullcalendar/multimonth/index.global.min.js"></script>
-
 <script src="/scripts/chart.js/dist/chart.umd.js"></script>
-
 <script src="/scripts/@selectize/selectize/dist/js/selectize.min.js"></script>
 <link rel="stylesheet" href="/scripts/@selectize/selectize/dist/css/selectize.css">
-<link rel="stylesheet" href="/scripts/@selectize/selectize/dist/css/selectize.bootstrap5.css">
 
-<div class="container-md-fluid">
-    <div class="row mx-0 g-2 mt-2">
-        <div class="col-lg-4 col-7">
-            <div class="bg-secondary bg-opacity-10 p-3 rounded-3 shadow 
-                border-start border-4 border-secondary
-                animate__animated animate__fadeInDown">
-                <h1 class="display-5 fw-bold text-secondary" id="countGanancias">0</h1>
-                <h6 class=" "><i class="fa-duotone fa-coins text-secondary"></i> Ganancias de hoy</h6>
-            </div>
-        </div>
-        <div class="col-lg-4 col-5">
-            <div class="bg-fore p-3 rounded-3 shadow 
-                border-start border-4 border-white 
-                animate__animated animate__fadeInDown"
-                style="animation-delay: 200ms;">
-                <h1 class=" display-5 fw-bold text-white" id="countCitas">0</h1>
-                <h6 class=""><i class="fa-duotone fa-clock"></i> Citas Hoy</h6>
-            </div>
-        </div>
-        <div class="col-lg-4 col-12">
-            <div class="bg-primary bg-opacity-10 p-3 rounded-3 shadow 
-                border-start border-4 border-primary 
-                animate__animated animate__fadeInDown"
-                style="animation-delay: 400ms;"
-                onclick="toggleChart()" 
-                role="button">
-                <h1 class=" display-5 fw-bold text-primary" id="countGananciasMes">₡0</h1>
-                <h6 class=""><i class="fa-duotone fa-sack-dollar text-primary"></i> Ganancias del Mes</h6>
-            </div>
+<div class="container-md-fluid py-3">
+    <!-- KPI Cards -->
+    <div class="flex flex-wrap gap-3 mb-3">
+        <!-- Ganancias hoy -->
+        <div class="flex-1 min-w-[140px] rounded-xl p-4 border-l-4 border-gray-500 animate__animated animate__fadeInDown"
+             style="background:rgba(107,114,128,0.1); border-left-color:#6b7280;">
+            <h2 class="text-3xl font-bold text-gray-400" id="countGanancias">0</h2>
+            <p class="text-sm text-gray-500 mt-1">
+                <i class="fa-solid fa-coins text-gray-500"></i> Ganancias de hoy
+            </p>
         </div>
 
-        <div class="col-12">
-            <div class="bg-success bg-opacity-10 p-3 rounded-3 shadow 
-                border-start border-4 border-success 
-                animate__animated animate__fadeInDown"
-                style="animation-delay: 600ms;">
-                <h6 class="fw-bold mb-1"><span class="text-success" id="currentAppointment"></span></h6>
-                <div class="text-muted">
-                    <p class="mb-0">Siguiente Cita: <span id="nextAppointment"></span></p>
-                </div>
-            </div>
+        <!-- Citas hoy -->
+        <div class="flex-1 min-w-[100px] rounded-xl p-4 border-l-4 border-white animate__animated animate__fadeInDown"
+             style="background:#0d0d0d; animation-delay:200ms;">
+            <h2 class="text-3xl font-bold text-white" id="countCitas">0</h2>
+            <p class="text-sm text-gray-500 mt-1">
+                <i class="fa-solid fa-clock"></i> Citas hoy
+            </p>
         </div>
 
-        <div class="col-12" style="display: none;" id="gananciaspormes">
-            <div class="bg-fore p-2 rounded-3 shadow">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h3 class="fw-bold">Ganancias por Mes</h3>
-
-                </div>
-                <div class="w-100" style="height: 400px;">
-                    <canvas id="chartGanancias"></canvas>
-                </div>
-            </div>
+        <!-- Ganancias mes -->
+        <div class="flex-1 min-w-[180px] rounded-xl p-4 border-l-4 border-primary animate__animated animate__fadeInDown cursor-pointer"
+             style="background:rgba(48,4,243,0.1); animation-delay:400ms;" onclick="toggleChart()" role="button">
+            <h2 class="text-3xl font-bold text-primary" id="countGananciasMes">₡0</h2>
+            <p class="text-sm text-gray-500 mt-1">
+                <i class="fa-solid fa-sack-dollar text-primary"></i> Ganancias del Mes
+            </p>
         </div>
 
-        <div class="col-lg-12">
-            <div class="bg-fore px-md-3 py-3 rounded-3 shadow">
-                <p class="small text-muted text-center d-block mb-1" id="date">-</p>
-                <div id="calendar" class="text-capitalize"></div>
+        <!-- Próxima cita -->
+        <div class="w-full rounded-xl p-4 border-l-4 border-success animate__animated animate__fadeInDown"
+             style="background:rgba(20,183,58,0.1); animation-delay:600ms;">
+            <p class="font-bold text-sm text-success mb-1" id="currentAppointment"></p>
+            <p class="text-gray-500 text-sm mb-0">Siguiente: <span id="nextAppointment">—</span></p>
+        </div>
+    </div>
+
+    <!-- Monthly chart (hidden by default) -->
+    <div class="mb-3" style="display:none;" id="gananciaspormes">
+        <div class="rounded-xl p-4 border border-white/10" style="background:#0d0d0d;">
+            <h3 class="font-bold mb-3">Ganancias por Mes</h3>
+            <div style="height:350px;">
+                <canvas id="chartGanancias"></canvas>
             </div>
         </div>
     </div>
+
+    <!-- Calendar -->
+    <div class="rounded-xl border border-white/10 px-1 md:px-4 py-3" style="background:#0d0d0d;">
+        <p class="text-sm text-gray-500 text-center mb-2" id="date">-</p>
+        <div id="calendar" class="capitalize"></div>
+    </div>
 </div>
 
-<div class="modal fade" id="addEvent" tabindex="-1" 
-aria-labelledby="addEventLabel" aria-hidden="true"
-    data-bs-focus="false">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg modal-fullscreen-md-down">
+<!-- Add Event Modal -->
+<div class="modal modal-lg" id="addEvent" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-md-down" style="max-width:700px;">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="addEventLabel">
-                    <span class="d-block mb-1">
-                        <i class="fa-duotone fa-calendar-plus"></i> Agregar Evento
-                    </span>
-                    <small class="d-block small text-muted">
-                        <i class="fa-duotone fa-calendar-days text-gold"></i> <span id="dateSelected" class="text-capitalize"></span> 
-                        <i class="fa-duotone fa-clock text-maps"></i> <span id="timeSelected" class="text-uppercase"></span>
-                    </small>
-                </h1>
-                <button type="button" class="btn-close btn-close-white" 
-                data-bs-dismiss="modal" aria-label="Close"></button>
+                <div>
+                    <h2 class="modal-title mb-1">
+                        <i class="fa-solid fa-calendar-plus"></i> Agregar Evento
+                    </h2>
+                    <p class="text-sm text-gray-500 mb-0">
+                        <i class="fa-solid fa-calendar-days" style="color:#F4C82C;"></i>
+                        <span id="dateSelected" class="capitalize"></span>
+                        &nbsp;
+                        <i class="fa-solid fa-clock" style="color:#e44e4e;"></i>
+                        <span id="timeSelected" class="uppercase"></span>
+                    </p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body px-1">
-                <div class="row mx-0 g-3">
-                    <div class="col-12">
-                        <label for="opcionModal" class="form-label">Tipo de Evento</label>
-                        <select class="form-select form-select-lg" id="opcionModal" onchange="typeselection(this)">
-                            <option value="0" selected>Seleccione una opcion</option>
-                            <option value="cita">Cita</option>
-                            <option value="cerrado">Cerrado</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <hr class="my-1">
-                    </div>
-                    <div class="col-12">
-                        <!-- ! Cerrado -->
-                        <div id="cerradoSelection" class="animate__animated animate__fadeIn" style="display: none;">
-                            <div class="form-check form-switch mb-3">
-                                <input class="form-check-input" type="checkbox" role="switch" id="allDayClosed">
-                                <label class="form-check-label" for="allDayClosed">Todo el dia</label>
-                            </div>
-                            <label for="closedHours" class="form-label">Hora: Inicio - Final</label>
-                            <div class="input-group mb-3">
-                                <input type="time" class="form-control" id="closedHoursStart" placeholder="Inicio">
-                                <input type="time" class="form-control" id="closedHoursEnd" placeholder="Final">
-                            </div>
+
+            <div class="modal-body px-3">
+                <!-- Type selector -->
+                <div class="mb-3">
+                    <label class="form-label">Tipo de Evento</label>
+                    <select class="form-select form-select-lg" id="opcionModal" onchange="typeselection(this)">
+                        <option value="0" selected>Seleccione una opción</option>
+                        <option value="cita">Cita</option>
+                        <option value="cerrado">Cerrado</option>
+                    </select>
+                </div>
+                <hr class="border-white/10">
+
+                <!-- Closed form -->
+                <div id="cerradoSelection" class="animate__animated animate__fadeIn" style="display:none;">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="allDayClosed">
                         </div>
-                        <!-- ? Servicios -->
-                        <div id="citaSelection" class="animate__animated animate__fadeIn" style="display: none;">
-                            <div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <label for="nombreCita" class="form-label">
-                                        <i class="fa-duotone fa-user text-secondary"></i> Cliente:
-                                    </label>
-                                    <p class="mb-0">
-                                        <i class="fa-duotone fa-mobile text-gold"></i> <span id="numeroTelefono"></span>
-                                    </p>
-                                </div>
-                                <div class="d-flex justify-content-start align-items-center">
-                                    <button class="btn btn-outline-secondary" onclick="addNewClientToList()">
-                                        <i class="fa-solid fa-plus"></i> Nuevo Cliente
-                                    </button>
-                                    <select id="clientsSelectize" class="flex-fill" placeholder="Nombre del cliente...">
-                                    </select>
-                                </div>
-                            </div>
-                            <hr>
-                            <i class="fa-duotone fa-clock text-gold"></i> <span class="mb-1 d-inline-block">Hora de la Cita:</span>
-                            <div id="horasDisponibles"></div>
-                            <hr>
-                            <i class="fa-duotone fa-scissors text-info"></i> <span class="mb-1 d-inline-block">Servicios:</span>
-                            <div id="serviciosDisponibles" class="d-flex gap-2 py-2 flex-wrap"></div>
-                            <p class="text-end">
-                                Precio Final: ₡<span class="fw-bold" id="precioFinalModal"></span> <i class="fa-duotone fa-coins text-gold"></i>
-                            </p>
-                        </div>
+                        <label for="allDayClosed" class="form-check-label">Todo el día</label>
+                    </div>
+                    <label class="form-label">Hora: Inicio — Final</label>
+                    <div class="input-group mb-3">
+                        <input type="time" class="form-control" id="closedHoursStart" placeholder="Inicio">
+                        <input type="time" class="form-control" id="closedHoursEnd" placeholder="Final">
                     </div>
                 </div>
-                
+
+                <!-- Appointment form -->
+                <div id="citaSelection" class="animate__animated animate__fadeIn" style="display:none;">
+                    <!-- Client selector -->
+                    <div class="mb-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="form-label mb-0">
+                                <i class="fa-solid fa-user text-gray-400"></i> Cliente:
+                            </label>
+                            <span class="text-sm">
+                                <i class="fa-solid fa-phone" style="color:#F4C82C;"></i>
+                                <span id="numeroTelefono" class="font-bold"></span>
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="btn btn-dark btn-sm shrink-0" onclick="addNewClientToList()">
+                                <i class="fa-solid fa-plus"></i> Nuevo
+                            </button>
+                            <select id="clientsSelectize" class="flex-fill" placeholder="Nombre del cliente..."></select>
+                        </div>
+                    </div>
+                    <hr class="border-white/10">
+
+                    <!-- Hours -->
+                    <p class="text-sm font-semibold mb-2">
+                        <i class="fa-solid fa-clock" style="color:#F4C82C;"></i> Hora de la Cita:
+                    </p>
+                    <div id="horasDisponibles" class="flex flex-wrap gap-2 mb-3"></div>
+                    <hr class="border-white/10">
+
+                    <!-- Services -->
+                    <p class="text-sm font-semibold mb-2">
+                        <i class="fa-solid fa-scissors" style="color:#3086e7;"></i> Servicios:
+                    </p>
+                    <div id="serviciosDisponibles" class="d-flex gap-2 py-2 flex-wrap mb-2"></div>
+
+                    <!-- Price -->
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="text-sm font-semibold">Precio Final:</span>
+                        <span class="text-sm">
+                            ₡<span class="font-bold text-lg" id="precioFinalModal">0</span>
+                            <i class="fa-solid fa-coins" style="color:#F4C82C;"></i>
+                        </span>
+                    </div>
+                </div>
             </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-success" onclick="agendarCita()" style="color: white; display: none;" 
-                id="agendarCitaButton">
-                    <i class="fa-duotone fa-circle-plus"></i> Agendar Cita
+                <button type="button" class="btn btn-success" onclick="agendarCita()" style="color:white;display:none;" id="agendarCitaButton">
+                    <i class="fa-solid fa-circle-plus"></i> Agendar Cita
                 </button>
-                <button type="button" class="btn btn-success" onclick="cerrarDia()" style="color: white; display: none;" 
-                id="salvarCerrado">
-                    <i class="fa-duotone fa-circle-plus"></i> Cerrar
+                <button type="button" class="btn btn-primary" onclick="cerrarDia()" style="display:none;" id="salvarCerrado">
+                    <i class="fa-solid fa-circle-plus"></i> Cerrar Día
                 </button>
             </div>
         </div>

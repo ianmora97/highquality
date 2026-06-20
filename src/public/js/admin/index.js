@@ -192,7 +192,7 @@ async function renderCalendar() {
         dayMaxEventRows: true,
         dayMaxEventRows: true,
         expandRows: true,
-        themeSystem: 'bootstrap',
+        themeSystem: 'standard',
         firstDay: 1,
         businessHours: businessHours,
         hiddenDays: hiddenDays,

@@ -1,86 +1,127 @@
-<script
-  src="
-https://cdn.jsdelivr.net/npm/lightgallery@2.9.0/lightgallery.umd.min.js
-"
-></script>
-<link
-  href="
-https://cdn.jsdelivr.net/npm/lightgallery@2.9.0/css/lightgallery-bundle.min.css
-"
-  rel="stylesheet"
-/>
+<script src="https://cdn.jsdelivr.net/npm/lightgallery@2.9.0/lightgallery.umd.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/lightgallery@2.9.0/css/lightgallery-bundle.min.css" rel="stylesheet">
 
-
-<!-- create a gallery using lightgallery js , use all the images [1.jpg ... 7.jpg] from /images/1.jpg -->
 <style>
-    body{
-        background-color: black;
-    }
-    .gallery-container{
-        max-width: 1200px;
-        margin: auto;
-        padding: 20px;
-    }
-    .gallery-item{
-        width: 100%;
-        height: 300px;
-        object-fit: cover;
-        cursor: pointer;
-        border-radius: 10px;
-        transition: transform 0.3s ease;
-    }
-    .gallery-item:hover{
-        transform: scale(1.05);
-    }
-    .gallery-grid{
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 15px;
-    }
-    .lg-backdrop{
-        background-color: rgba(0, 0, 0, 0.9) !important;
-    }
-    .lg-toolbar{
-        background-color: rgba(0, 0, 0, 0.8) !important;
-    }
-    .lg-outer .lg-thumb-outer{
-        background-color: rgba(0, 0, 0, 0.8) !important;
-    }
-    .lg-outer .lg-thumb-item.active, .lg-outer .lg-thumb-item:hover{
-        border-color: #FFD700 !important;
-    }
-    .lg-outer .lg-thumb-item{
-        border-color: white !important;
-    }
-    .lg-outer .lg-item .lg-image{
-        border-radius: 10px;
-    }
-    .lg-outer .lg-item .lg-image:hover{
-        transform: scale(1.05);
-    }
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+}
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    aspect-ratio: 1/1;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+    display: block;
+}
+.gallery-item:hover img { transform: scale(1.06); }
+.gallery-item-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0);
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.gallery-item:hover .gallery-item-overlay {
+    background: rgba(0,0,0,0.35);
+}
+.gallery-item-overlay i {
+    color: white;
+    font-size: 2rem;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.3s;
+}
+.gallery-item:hover .gallery-item-overlay i {
+    opacity: 1;
+    transform: scale(1);
+}
+/* LightGallery dark */
+.lg-backdrop { background-color: rgba(0,0,0,0.95) !important; }
+.lg-toolbar { background-color: rgba(0,0,0,0.8) !important; }
+.lg-outer .lg-thumb-outer { background-color: rgba(0,0,0,0.8) !important; }
+.lg-outer .lg-thumb-item.active,
+.lg-outer .lg-thumb-item:hover { border-color: #F4C82C !important; }
 </style>
-<div class="gallery-container">
-    <div id="lightgallery" class="gallery-grid">
-        <div class="gallery-item">
-            <img src="/images/cortes/1.jpg" alt="Gallery Image 1" class="gallery-item">
+
+<div class="min-h-screen" style="background-color:#141414;">
+    <div class="max-w-6xl mx-auto px-4 py-12">
+        <div class="mb-10">
+            <h1 class="bebas text-5xl md:text-6xl font-bold text-white">Galería</h1>
+            <div class="flex items-center gap-3 mt-2">
+                <div class="h-0.5 w-12 bg-gold"></div>
+                <p class="text-gray-400 text-sm">Nuestros mejores trabajos</p>
+            </div>
         </div>
-        <div class="gallery-item">
-            <img src="/images/cortes/2.jpg" alt="Gallery Image 2" class="gallery-item">
-        </div>
-        <div class="gallery-item">
-            <img src="/images/cortes/3.jpg" alt="Gallery Image 3" class="gallery-item">
-        </div>
-        <div class="gallery-item">
-            <img src="/images/cortes/4.jpg" alt="Gallery Image 4" class="gallery-item">
-        </div>
-        <div class="gallery-item">
-            <img src="/images/cortes/5.jpg" alt="Gallery Image 5" class="gallery-item">
-        </div>
-        <div class="gallery-item">
-            <img src="/images/cortes/6.jpg" alt="Gallery Image 6" class="gallery-item">
-        </div>
-        <div class="gallery-item">
-            <img src="/images/cortes/7.jpg" alt="Gallery Image 7" class="gallery-item">
+
+        <div id="lightgallery" class="gallery-grid">
+            <a href="/images/cortes/1.jpg" class="gallery-item">
+                <img src="/images/cortes/1.jpg" alt="Corte 1">
+                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+            </a>
+            <a href="/images/cortes/2.jpg" class="gallery-item">
+                <img src="/images/cortes/2.jpg" alt="Corte 2">
+                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+            </a>
+            <a href="/images/cortes/3.jpg" class="gallery-item">
+                <img src="/images/cortes/3.jpg" alt="Corte 3">
+                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+            </a>
+            <a href="/images/cortes/4.jpg" class="gallery-item">
+                <img src="/images/cortes/4.jpg" alt="Corte 4">
+                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+            </a>
+            <a href="/images/cortes/5.jpg" class="gallery-item">
+                <img src="/images/cortes/5.jpg" alt="Corte 5">
+                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+            </a>
+            <a href="/images/cortes/6.jpg" class="gallery-item">
+                <img src="/images/cortes/6.jpg" alt="Corte 6">
+                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+            </a>
+            <a href="/images/cortes/7.jpg" class="gallery-item">
+                <img src="/images/cortes/7.jpg" alt="Corte 7">
+                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+            </a>
+            <a href="/images/cortes/taper_fade.jpeg" class="gallery-item">
+                <img src="/images/cortes/taper_fade.jpeg" alt="Taper Fade">
+                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+            </a>
+            <a href="/images/cortes/corte1.jpg" class="gallery-item">
+                <img src="/images/cortes/corte1.jpg" alt="Corte Clásico">
+                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+            </a>
+            <a href="/images/cortes/corte2.jpg" class="gallery-item">
+                <img src="/images/cortes/corte2.jpg" alt="Corte 2">
+                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+            </a>
+            <a href="/images/cortes/corte3.jpg" class="gallery-item">
+                <img src="/images/cortes/corte3.jpg" alt="Corte 3">
+                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+            </a>
+            <a href="/images/cortes/corteybarba.jpeg" class="gallery-item">
+                <img src="/images/cortes/corteybarba.jpeg" alt="Corte y Barba">
+                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+            </a>
         </div>
     </div>
 </div>
+
+<script>
+    lightGallery(document.getElementById('lightgallery'), {
+        selector: 'a',
+        speed: 400,
+        thumbnail: true,
+        download: false
+    });
+</script>

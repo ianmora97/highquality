@@ -1,16 +1,83 @@
+<div class="min-h-screen" style="background-color:#141414;">
+    <div class="max-w-6xl mx-auto px-4 py-12">
 
-<div class="container mt-3">
-    <h1 class="fw-bold">Servicios y Cortes</h1>
-    <p class="">En HighQuality ofrecemos todo tipo de cortes clasicos y modernos.</p>
-    <hr>
-    <div class="card text-bg-dark overflow-hidden" style="width: 300px; height: 300px;">
-        <img src="/images/cortes/taper_fade.jpeg" class="card-img" alt="Taper Fade">
-        <div class="card-img-overlay p-0">
-            <div class="position-absolute bottom-0 text-center w-100 ">
-                <h4 class="card-title fw-bold ">Taper Fade</h4>
-                <p>Corte de Pelo</p>
+        <div class="mb-10">
+            <h1 class="bebas text-5xl md:text-6xl text-white">Servicios y Cortes</h1>
+            <div class="flex items-center gap-3 mt-2">
+                <div class="h-0.5 w-12" style="background-color:#F4C82C;"></div>
+                <p class="text-gray-400 text-sm">En HighQuality ofrecemos todo tipo de cortes clásicos y modernos.</p>
             </div>
         </div>
-    </div>
 
+        <!-- Service Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="serviciosList">
+            <!-- Loaded via JS if needed, or static below -->
+            <div class="rounded-2xl overflow-hidden border border-white/10" style="background-color:#0d0d0d;">
+                <div class="relative aspect-[4/3] overflow-hidden">
+                    <img src="/images/cortes/taper_fade.jpeg" alt="Taper Fade"
+                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+                    <div class="absolute inset-0" style="background:linear-gradient(0deg,rgba(0,0,0,0.7) 0%,transparent 60%);"></div>
+                    <div class="absolute bottom-0 left-0 p-4">
+                        <h3 class="bebas text-2xl text-white">Taper Fade</h3>
+                        <p class="text-sm text-gray-300">Corte de Pelo</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-2xl overflow-hidden border border-white/10" style="background-color:#0d0d0d;">
+                <div class="relative aspect-[4/3] overflow-hidden">
+                    <img src="/images/cortes/corte1.jpg" alt="Clásico"
+                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+                    <div class="absolute inset-0" style="background:linear-gradient(0deg,rgba(0,0,0,0.7) 0%,transparent 60%);"></div>
+                    <div class="absolute bottom-0 left-0 p-4">
+                        <h3 class="bebas text-2xl text-white">Clásico</h3>
+                        <p class="text-sm text-gray-300">Corte Tradicional</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-2xl overflow-hidden border border-white/10" style="background-color:#0d0d0d;">
+                <div class="relative aspect-[4/3] overflow-hidden">
+                    <img src="/images/cortes/corteybarba.jpeg" alt="Corte y Barba"
+                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+                    <div class="absolute inset-0" style="background:linear-gradient(0deg,rgba(0,0,0,0.7) 0%,transparent 60%);"></div>
+                    <div class="absolute bottom-0 left-0 p-4">
+                        <h3 class="bebas text-2xl text-white">Corte + Barba</h3>
+                        <p class="text-sm text-gray-300">Combo Premium</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-2xl overflow-hidden border border-white/10" style="background-color:#0d0d0d;">
+                <div class="relative aspect-[4/3] overflow-hidden">
+                    <img src="/images/cortes/corte2.jpg" alt="Diseño"
+                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+                    <div class="absolute inset-0" style="background:linear-gradient(0deg,rgba(0,0,0,0.7) 0%,transparent 60%);"></div>
+                    <div class="absolute bottom-0 left-0 p-4">
+                        <h3 class="bebas text-2xl text-white">Diseños</h3>
+                        <p class="text-sm text-gray-300">Corte Personalizado</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-2xl overflow-hidden border border-white/10" style="background-color:#0d0d0d;">
+                <div class="relative aspect-[4/3] overflow-hidden">
+                    <img src="/images/cortes/corte3.jpg" alt="Niño"
+                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+                    <div class="absolute inset-0" style="background:linear-gradient(0deg,rgba(0,0,0,0.7) 0%,transparent 60%);"></div>
+                    <div class="absolute bottom-0 left-0 p-4">
+                        <h3 class="bebas text-2xl text-white">Corte de Niño</h3>
+                        <p class="text-sm text-gray-300">Para los más pequeños</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="mt-16 text-center">
+            <a href="/reservar" class="btn btn-gold btn-lg rounded-pill gap-2 mx-auto">
+                <i class="fa-solid fa-scissors"></i> Reservar tu Cita
+            </a>
+        </div>
+    </div>
 </div>

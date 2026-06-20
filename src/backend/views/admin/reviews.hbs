@@ -1,77 +1,25 @@
-<div class="container-fluid">
-    <div class="row mx-0 g-3 mt-2">
-        <section class="col-12">
-            <div class="bg-fore shadow rounded-3 p-2 row mx-0 g-3">
-                <div class="col-md-9 mb-0 mb-lg-3">
-                    <h1 class="fw-bold">
-                        <i class="fa-duotone fa-pen-to-square text-primary"></i> Reviews
-                    </h1>
-                    <p class="text-muted mb-1 small">Opiniones que han dejado los clientes.</p>
-                    <div class="d-flex justify-content-start align-items-center">
-                        <p class="text-muted small mt-1 mb-0 me-3"><i class="fa-solid fa-clock text-light"></i> Actualizado hace: <span id="lastUpdated" class="text-primary">1 seg</span></p>
-                        <p class="text-muted small mt-1 mb-0"><i class="fa-solid fa-star text-light"></i> Total: <span id="totalitems" class="text-primary">20</span></p>
-                    </div>
-                </div>
-            </div>
-        </section>
+<div class="container-md-fluid py-3">
 
-        <section class="col-12 d-flex justify-content-start align-items-start gap-3 flex-wrap position-relative overflow-hidden" 
-        id="list">
-            
-        </section>
-    </div>
-</div>
-
-<div class="modal fade" id="editService" tabindex="-1" aria-labelledby="editServiceLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="editServiceLabel">
-                    <i class="fa-duotone fa-scissors"></i> Editar Servicio
-                    <span class="small text-muted d-block" id="idUpdate"></span>
-                </h1>
-                
-                <button type="button" class="btn-close btn-close-white" 
-                data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body px-1">
-                
-                <div class="row mx-0">
-                    <div class="col-12 mb-2">
-                        <label for="nombre" class="form-label">Nombre del servicio</label>
-                        <input type="text" class="form-control form-control-lg" id="nombre-edit" placeholder="Nombre">
-                    </div>
-                    <div class="col-12 mb-2">
-                        <label for="precio" class="form-label">Precio del servicio</label>
-                        <input type="number" class="form-control form-control-lg" id="precio-edit" placeholder="Precio">
-                    </div>
-                    <div class="col-12">
-                        <hr class="my-1">
-                    </div>
-                    <div class="col-12 d-flex justify-content-start align-items-center py-3">
-                        <div class="my-2">
-                            <div class="dropdown dropup">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Icono
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-dark" id="imagesToSelect-edit" 
-                                style="max-height:300px; overflow-y:auto;"></ul>
-                            </div>
-                        </div>
-                        <div id="imagenseleccionada-edit" class="ms-4" style="filter: invert(1);">
-                            <img src="/images/icons/corte.png" width="50px">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-light" onclick="actualizarServicio()">
-                    <i class="fa-duotone fa-save"></i> Actualizar
-                </button>
-            </div>
+    <!-- Header -->
+    <div class="rounded-xl p-4 mb-4 border border-white/10" style="background:#0d0d0d;">
+        <h1 class="text-2xl font-bold mb-1">
+            <i class="fa-solid fa-pen-to-square" style="color:#3004f3;"></i> Reviews
+        </h1>
+        <p class="text-gray-500 text-sm mb-1">Opiniones que han dejado los clientes.</p>
+        <div class="flex items-center gap-4">
+            <span class="text-xs text-gray-600">
+                <i class="fa-solid fa-clock"></i> Actualizado:
+                <span id="lastUpdated" class="text-primary">ahora</span>
+            </span>
+            <span class="text-xs text-gray-600">
+                <i class="fa-solid fa-star"></i> Total:
+                <span id="totalitems" class="text-primary font-bold">—</span>
+            </span>
         </div>
     </div>
+
+    <!-- Reviews list -->
+    <div class="flex flex-wrap gap-4 items-start" id="list"></div>
 </div>
 
 <script src="/js/admin/reviews.js"></script>
