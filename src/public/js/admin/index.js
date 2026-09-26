@@ -54,39 +54,11 @@ async function bringServices() {
     const { data: clients } = await axios.get('/api/v1/client');
     fillClients(clients);
 }
-var g_clientSelected;
 var g_clients = new Map();
-var clientSelectize;
 function fillClients(data) {
+    g_clients.clear();
     data.forEach(e => {
         g_clients.set(parseInt(e.numero), e);
-    })
-    clientSelectize = $("#clientsSelectize").selectize({
-        valueField: 'numero',
-        labelField: 'nombre',
-        searchField: 'nombre',
-        options: data,
-        create: false,
-        render: {
-            option: function (item, escape) {
-                return `
-                <div class="bg-dark py-1 px-3 text-white rounded">
-                    <span class="title">
-                        <span class="name" id="nombreSelected">${escape(item.nombre)}</span>
-                    </span>
-                </div>`;
-            },
-            item: function (item, escape) {
-                return `
-                <div class="bg-secondary px-1 rounded-3">
-                    <span class="name">${escape(item.nombre)}</span>
-                </div>`;
-            }
-        },
-        onChange: function (value, arg) {
-            $("#numeroTelefono").html(value);
-            g_clientSelected = g_clients.get(parseInt(value));
-        }
     });
 }
 async function addHalfHourtoMap() {
@@ -113,49 +85,6 @@ function addHalfHour(arr) {
     }
     return [...new Set(array)];
 }
-function showHorario(e, i) {
-    const HORA_FORMAT = moment(e, 'h:mm a').format('h-mm');
-    $("#horasDisponibles").append(`
-        <div class="d-inline-block animate__animated animate__zoomIn animate__fast" style="animation-delay:${i * 40}ms;">
-            <input type="radio" name="horaDeCitaSelect" class="btn-check" id="hora-cita-${HORA_FORMAT}"
-            onclick="changeHora('${e}')" autocomplete="off">
-            <label class="btn btn-outline-gold mt-2" for="hora-cita-${HORA_FORMAT}">${e}</label>
-        </div>
-    `);
-}
-function showServicio(e, i) {
-    $("#serviciosDisponibles").append(`
-        <div class="animate__animated animate__zoomIn animate__fast" style="animation-delay:${i * 40}ms;">
-            <input type="checkbox" class="btn-check" id="service-checkbox-${e.name}" data-precio="${e.price}"
-            onclick="addServicioToArray('${e.name}','${e.price}')" autocomplete="off">
-            <label class="btn btn-outline-info" id="service-checkbox-label-${e.name}" for="service-checkbox-${e.name}">${e.name}</label>
-        </div>
-    `);
-}
-var g_serviciosTempCheck = new Map();
-function addServicioToArray(servicio, precio) {
-    if (!g_serviciosTempCheck.has(servicio)) {
-        g_serviciosTempCheck.set(servicio, parseInt(precio));
-    } else {
-        g_serviciosTempCheck.delete(servicio);
-    }
-    let total = 0;
-    g_serviciosTempCheck.forEach((value, key) => {
-        total += value;
-    });
-    if (g_serviciosTempCheck.has('Corte') && g_serviciosTempCheck.has('Barba')) {
-        total -= 1000;
-    }
-    if (g_serviciosTempCheck.has('Cejas')) {
-        if (g_serviciosTempCheck.size > 1) {
-            total -= 1000;
-        }
-    }
-    $('#precioFinalModal').html(`${total}`);
-}
-const modalAddEvent = new bootstrap.Modal(document.getElementById('addEvent'), {
-    keyboard: false
-});
 var businessHours = [];
 var hiddenDays = [];
 var slotDays = {
@@ -214,7 +143,7 @@ async function renderCalendar() {
         height: "900px",
         nowIndicator: true,
         dayMaxEventRows: true,
-        expandRows: true,
+        expandRows: false,
         themeSystem: 'standard',
         firstDay: 1,
         businessHours: businessHours,
@@ -249,10 +178,9 @@ async function renderCalendar() {
             minute: '2-digit',
             hour12: true
         },
+        slotLabelInterval: '01:00:00',
         slotLabelFormat: {
             hour: 'numeric',
-            minute: '2-digit',
-            omitZeroMinute: true,
             meridiem: 'short',
             hour12: true
         },
@@ -285,9 +213,10 @@ function updateCalViewButtons(activeView) {
     const map = {
         'timeGridWeek': 'btnViewWeek',
         'dayGridThreeWeek': 'btnView3Days',
-        'timeGridDay': 'btnViewDay'
+        'timeGridDay': 'btnViewDay',
+        'dayGridMonth': 'btnViewMonth'
     };
-    ['btnViewWeek', 'btnView3Days', 'btnViewDay'].forEach(id => {
+    ['btnViewWeek', 'btnView3Days', 'btnViewDay', 'btnViewMonth'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.remove('active');
     });
@@ -353,6 +282,8 @@ function eventClick(info) {
             title,
             fecha,
             hora,
+            fechaRaw: moment(start).format('YYYY-MM-DD'),
+            horaRaw: moment(start).format('HH:mm'),
             servicios: ev.servicios,
             precio,
             precioFmt: toCRC(precio),
@@ -463,251 +394,17 @@ async function removeHoursBookedfromthatday(arr, date) {
     return availableHours;
 }
 var currentDateSelected = '';
-async function onDateClick(info) {
+function onDateClick(info) {
     currentDateSelected = info.dateStr;
-
-    // Reset cerrado mode first, then show modal
-    resetCerradoMode();
-    modalAddEvent.show();
-
-    const date = moment(info.dateStr);
-    const day = g_horarios.get(DAYS_MAP_ES_EN[date.format('dddd')]);
-
-    $("#horasDisponibles").empty();
-    $("#serviciosDisponibles").empty();
-
-    const arr = await removeHoursBookedfromthatday(day.hours, date);
-    console.log(arr)
-    arr.forEach((e, i) => {
-        showHorario(e, i);
-    });
-    g_servicios.forEach((e, i) => {
-        showServicio(e, i);
-    });
-
-    $("#dateSelected").html(date.format('dddd DD MMMM'));
-    $("#timeSelected").html(date.format('hh:mm a'));
-
-}
-
-// Cerrado mode toggle
-var cerradoModeActive = false;
-function toggleCerradoMode() {
-    cerradoModeActive = !cerradoModeActive;
-    if (cerradoModeActive) {
-        $("#cerradoSelection").show();
-        $("#cerradoToggleBtn").addClass('active-cerrado');
-        $("#agendarCitaButton").hide();
-        $("#salvarCerrado").show();
-    } else {
-        resetCerradoMode();
-    }
-}
-function resetCerradoMode() {
-    cerradoModeActive = false;
-    $("#cerradoSelection").hide();
-    $("#cerradoToggleBtn").removeClass('active-cerrado');
-    $("#agendarCitaButton").show();
-    $("#salvarCerrado").hide();
-}
-
-async function typeselection(ele) {
-    const val = ele.value;
-    if (val == 'cita') {
-        $("#citaSelection").show();
-        $("#cerradoSelection").hide();
-        $("#agendarCitaButton").show();
-        $("#salvarCerrado").hide();
-    } else if (val == 'cerrado') {
-        $("#cerradoSelection").show();
-        $("#citaSelection").hide();
-        $("#agendarCitaButton").hide();
-        $("#salvarCerrado").show();
-    } else {
-        $("#citaSelection").hide();
-        $("#cerradoSelection").hide();
-        $("#agendarCitaButton").hide();
-        $("#salvarCerrado").hide();
-    }
-}
-async function addNewClientToList() {
-    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
-    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
-    const swalWithBootstrapButtons = Swal.mixin({
-        customClass: {
-            confirmButton: 'btn btn-success text-white me-2',
-            cancelButton: 'btn btn-light text-dark',
-        },
-        buttonsStyling: false
-    });
-    const { value: formValues } = await swalWithBootstrapButtons.fire({
-        title: 'Agregar Cliente',
-        html: `
-            <input id="nombreCliente" class="form-control form-control-lg mb-2" placeholder="Nombre">
-            <input id="numeroCliente" class="form-control form-control-lg" placeholder="Número de Teléfono">`,
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Guardar',
-        cancelButtonText: 'Cancelar',
-        background: bg,
-        color: color,
-        preConfirm: async () => {
-            const numero = parseInt(document.getElementById('numeroCliente').value);
-            const nombre = sentecesCase(document.getElementById('nombreCliente').value);
-            const { data: client } = await axios.post('/api/v1/client', { numero, nombre });
-            g_clients.set(client.numero, client);
-            return client;
+    // Opens the Alpine "Nueva Cita" bottom sheet (views/admin/index.hbs)
+    window.dispatchEvent(new CustomEvent('open-nueva-cita', {
+        detail: {
+            dateStr: info.dateStr,
+            conHora: info.dateStr.includes('T')
         }
-    });
-    const selectize = clientSelectize[0].selectize;
-    selectize.addOption(formValues);
-    selectize.refreshOptions();
+    }));
 }
-async function agendarCita() {
-    if (!checkCitaData()) {
-        return;
-    }
-    const date = $("#dateSelected").html();
-    const title = $("#nombreSelected").html();
-    const numero = $("#clientsSelectize").val();
-    const servicios = [];
-    let price = 0;
-    g_serviciosTempCheck.forEach((value, key) => {
-        servicios.push(key);
-        price += parseInt(value);
-    });
-    console.log("DATE", date, horaSeleccionada);
-    const start = moment(`${date} ${horaSeleccionada}`, 'dddd DD MMMM h:mm a').format(); //'YYYY-MM-DD HH:mm:ss'
-    console.log("start", start);
 
-    const data = {
-        title: sentecesCase(title),
-        start: start,
-        end: moment(start).add(30, 'minutes').format(),
-        allDay: false,
-        display: 'auto',
-        backgroundColor: '#191919',
-        borderColor: '#595959',
-        textColor: '#ffffff',
-        extendedProps: {
-            servicios: servicios,
-            numero: numero,
-            estado: 'PENDIENTE',
-            precio: price
-        },
-    }
-    const { data: event } = await axios.post('/api/v1/event', data);
-    modalAddEvent.hide();
-    calendar.today();
-    reloadData();
-}
-function reloadData() {
-    g_serviciosTempCheck.clear();
-    g_clientSelected = undefined;
-    horaSeleccionada = "00:00 am";
-    $("#clientsSelectize").val('');
-}
-function checkCitaData() {
-    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
-    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
-    if (horaSeleccionada == "00:00 am") {
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Seleccione una hora',
-            background: bg,
-            color: color,
-        });
-        return false;
-    } else if (g_serviciosTempCheck.size == 0) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Seleccione un servicio',
-            background: bg,
-            color: color,
-        });
-        return false;
-    } else if (g_clientSelected == undefined) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Seleccione un cliente',
-            background: bg,
-            color: color,
-        });
-        return false;
-    }
-    return true;
-}
-function cerrarDia() {
-    const allday = $("#allDayClosed").is(':checked');
-
-    const date = $("#dateSelected").html();
-    const servicios = ['Cerrado'];
-
-    const day = moment(date, 'dddd DD MMMM').format('dddd');
-    const hours = g_horarios.get(DAYS_MAP_ES_EN[day]).hours;
-    if (allday) {
-        hours.forEach((e, i) => {
-            const start = moment(`${date} ${e}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
-            const data = {
-                title: "Cerrado",
-                start: start,
-                end: moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
-                allDay: false,
-                display: 'auto',
-                backgroundColor: '#142946',
-                borderColor: '#046af3',
-                textColor: '#ffffff',
-                extendedProps: {
-                    servicios: servicios,
-                    numero: '88008800',
-                    estado: 'PENDIENTE',
-                    precio: 0
-                },
-            }
-            const { data: event } = axios.post('/api/v1/event', data);
-        });
-    } else {
-        const startTime = moment(`${date} ${$("#closedHoursStart").val()}`, 'dddd DD MMMM HH:mm').format('YYYY-MM-DD HH:00:00');
-        const endTime = moment(`${date} ${$("#closedHoursEnd").val()}`, 'dddd DD MMMM HH:mm').format('YYYY-MM-DD HH:00:00');
-
-        const s = moment(startTime);
-        const e = moment(endTime);
-        const hoursArray = [];
-
-        let currentHour = moment(s).startOf('hour'); // Round down to the start of the hour
-
-        hoursArray.push(currentHour.format('hh:mm a'));
-        for (let i = 0; currentHour.isBefore(e); i++) {
-            currentHour.add(1, 'hour');
-            hoursArray.push(currentHour.format('hh:mm a'));
-        }
-        hoursArray.forEach((e, i) => {
-            const start = moment(`${date} ${e}`, 'dddd DD MMMM h:mm a').format('YYYY-MM-DD HH:mm:ss');
-            const data = {
-                title: "Cerrado",
-                start: start,
-                end: moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
-                allDay: false,
-                display: 'auto',
-                backgroundColor: '#142946',
-                borderColor: '#046af3',
-                textColor: '#ffffff',
-                extendedProps: {
-                    servicios: servicios,
-                    numero: '88008800',
-                    estado: 'PENDIENTE',
-                    precio: 0
-                },
-            }
-            const { data: event } = axios.post('/api/v1/event', data);
-        });
-    }
-    modalAddEvent.hide();
-    calendar.today();
-}
 var incomeByMonth = [];
 var earningsMode = 'day';
 var chartExpanded = false;
@@ -995,11 +692,6 @@ function buildTopClientesChart(events) {
     });
 }
 
-var horaSeleccionada = "00:00 am";
-function changeHora(hora) {
-    $("#timeSelected").html(hora);
-    horaSeleccionada = hora;
-}
 function sortHours(hours) {
     const sortedHours = hours.sort((a, b) => {
         const timeA = new Date("2020-01-01 " + a).getTime();

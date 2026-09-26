@@ -16,7 +16,7 @@ Premium barbershop. Masculine, dark, gold-accented. Communicates quality, precis
 | `--color-fore` | `#0d0d0d` | Alternating section background (darker) |
 | `--color-light-base` | `#f1f1f1` | Primary text, light section backgrounds |
 | `--color-secondary` | `#f8272e` | Red accent — nav active states, danger |
-| `--color-primary` | `#3004f3` | Blue-purple — informational, link active |
+| `--color-primary` | `#1D4ED8` | Navy blue — informational, link active, admin CTAs. Chosen 2026-09-26 to replace the old violet `#7c3aed`: reads as professional/high-end and echoes the classic barber-pole red/white/blue without competing with the red danger accent. |
 | `--color-info` | `#3086e7` | Info state, time slot color (lightskin half-hour slots) |
 | `--color-lightskin` | `#ffe1b3` | Half-hour time slot color |
 | `--color-maps` | `#e44e4e` | Map/location icon, clock icon |
@@ -217,7 +217,7 @@ Calendar day states: `.disabled` (past / closed day) · `.today` (gold dot indic
 </div>
 ```
 
-### KPI Card
+### KPI Card (legacy — flat, superseded below)
 ```html
 <div class="rounded-xl p-4 border-l-4 border-primary/60 bg-primary/8">
     <p class="text-xs text-gray-500 mb-1 flex items-center gap-1.5">
@@ -226,6 +226,31 @@ Calendar day states: `.disabled` (past / closed day) · `.today` (gold dot indic
     <h2 class="text-2xl font-bold text-primary" id="kpiId">0</h2>
 </div>
 ```
+
+### KPI Gradient Card (current standard, since 2026-09-26)
+Every stat/KPI tile gets a soft diagonal gradient tint + a gradient icon badge, its own hue, and a colored `border/25`. This is for the top 4 stat tiles only — the "Ahora / Próxima" status card intentionally stays flat (`bg-white/[.03]`, no gradient): user explicitly rejected a gradient version of it (2026-09-26), keep it plain.
+
+```html
+<div class="kpi-card kpi-hideable rounded-lg p-2.5 bg-gradient-to-br from-{hue}-500/20 via-{hue2}-500/10 to-transparent border border-{hue}-400/25 flex items-center gap-2">
+    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-{hue}-400 to-{hue2}-600 flex items-center justify-center shrink-0 shadow-lg shadow-{hue}-500/20">
+        <i class="fa-solid fa-icon text-white text-xs"></i>
+    </div>
+    <div class="min-w-0">
+        <p class="text-[10px] text-{hue}-300/70 leading-none mb-1 truncate">Label</p>
+        <h2 class="text-base font-bold text-{hue}-200 leading-none" id="kpiId">0</h2>
+    </div>
+</div>
+```
+
+Hue assignment used on the admin panel (`admin/index.hbs`) — never reuse a hue for two adjacent cards:
+| Stat | Hue |
+|------|-----|
+| Citas hoy | violet/purple |
+| Por Pagar | danger/orange (red→orange gradient) |
+| Ganancias hoy | emerald/green |
+| Ganancias (mes, chart trigger) | primary/blue |
+
+Calendar view-switcher buttons (`.cal-view-btn.active` in `input.css`) and FullCalendar's own prev/next (`.fc-button-primary`) use the same idea as a solid diagonal gradient instead of a flat `bg-primary`: `linear-gradient(135deg, #2563eb, #1d4ed8 55%, #1e3a8a)` with a soft `box-shadow: 0 4px 14px rgba(29,78,216,.35)`. Buttons are sized `px-4 py-2.5 text-sm` (up from the old `px-3 py-1.5 text-xs`) — calendar controls should read as bigger/tappable, not compact chrome.
 
 ### Admin Color Usage
 | Purpose | Tailwind |
@@ -242,3 +267,27 @@ Calendar day states: `.disabled` (past / closed day) · `.today` (gold dot indic
 - Desktop: JS removes `text-gray-400`, adds `text-yellow-400 bg-yellow-400/10`
 - Mobile: JS inline style `color:#fff; background:rgba(48,4,243,0.15); border-left:3px solid #3004f3`
 - Controlled by `{{tab}}` variable from each admin route
+
+### Bottom Sheet (admin modals, standard since 2026-09-26)
+
+Admin dialogs are **Alpine bottom sheets**, never Bootstrap modals. Two live in `admin/index.hbs`:
+`#citaDetailModal` (`citaDetailData()`) and `#nuevaCitaSheet` (`nuevaCitaData()`).
+
+Recipe:
+- Backdrop: `fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4`,
+  `background:rgba(0,0,0,0.75); backdrop-filter:blur(6px)`, closes on backdrop click + `Escape`.
+- Panel: `w-full sm:max-w-md bg-[#0d0d0d] border border-white/10 rounded-t-3xl sm:rounded-2xl`
+  — slides up from the bottom on mobile, centers as a card on `sm:`.
+- Transitions: backdrop `opacity` 200/150ms; panel `translate-y-full → translate-y-0` 300/200ms.
+- Drag handle (`sm:hidden`): `w-10 h-1.5 rounded-full bg-white/20`, touch drag > 90px closes.
+- Sub-views switch with `x-show` + `opacity-0 translate-x-4 → opacity-100 translate-x-0` (200ms).
+- Opened by dispatching a window event (`open-cita-detail`, `open-nueva-cita`) from `index.js`,
+  so calendar/JS code never touches the sheet's DOM.
+- Structure for multi-step sheets: fixed header (title + context + step bar) · scrollable body
+  (`flex-1 overflow-y-auto min-h-0`) · sticky footer with the primary action
+  (`padding-bottom: calc(1rem + env(safe-area-inset-bottom))`).
+
+**Nueva Cita flow** (`#nuevaCitaSheet`): 3 steps — Cliente (search + inline "nuevo cliente" view) ·
+Hora (chips: gold = hora completa, `info` teal = media hora, clicked calendar slot preselected) ·
+Servicios (cards + live total with the Corte+Barba / Cejas discounts). "Marcar día como cerrado"
+is a fourth view inside the same sheet.

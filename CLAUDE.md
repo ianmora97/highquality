@@ -18,9 +18,11 @@
 
 ## CSS Build
 
+**Claude Code must NEVER run `npm run css` or `npm run css:watch`.** The user always keeps `npm run css:watch` running in a terminal during development — it rebuilds `tailwind.css` automatically on every save. Just edit `src/public/css/input.css` and stop; do not invoke any build command for it, and do not tell the user to run it (it's already running).
+
 ```bash
-npm run css          # one-shot build
-npm run css:watch    # watch mode
+npm run css          # one-shot build (user runs manually, e.g. before a prod deploy)
+npm run css:watch    # watch mode (user keeps this running at all times in dev — never start/stop it yourself)
 ```
 
 Source: `src/public/css/input.css`  
@@ -97,7 +99,7 @@ Bootstrap was replaced with Tailwind, but JS files generate HTML with Bootstrap 
 |------|------|
 | `src/public/js/client/index.js` | Homepage (Splide carousel, review form) |
 | `src/public/js/client/reserva.js` | Booking page (FullCalendar, Socket.IO slots) |
-| `src/public/js/admin/index.js` | Admin panel (FullCalendar, KPI, Selectize) |
+| `src/public/js/admin/index.js` | Admin panel (FullCalendar, KPI, charts) |
 | `src/public/js/admin/servicios.js` | Services CRUD |
 | `src/public/js/admin/horarios.js` | Schedule CRUD |
 | `src/public/js/admin/clientes.js` | Clients DataTable |
@@ -236,6 +238,9 @@ These classes must stay because JS references them by name or toggles `.active` 
 | `.image-upload-area` | Image upload in servicios/galería | hover: `border-primary/50 bg-primary/[.04]` |
 
 Do NOT remove these from `input.css` — they are required by the JS files.
+
+### KPI Gradient Card Pattern (established 2026-09-26)
+All admin KPI/stat cards and calendar buttons use a **gradient-tinted** look — flat `bg-primary/8` cards are the old style, no longer the standard for new cards. Full recipe in `design.md` under "KPI Gradient Card". Each stat gets its own hue (violet/orange-red/emerald/blue) with a matching gradient icon badge — never reuse the same hue for two adjacent KPI cards.
 
 ## FullCalendar Notes
 
