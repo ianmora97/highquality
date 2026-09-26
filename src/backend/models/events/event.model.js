@@ -83,7 +83,7 @@ exports.create = async (event) => {
 };
 
 exports.update = async (id, data) => {
-    data.updatedAt = moment().format('DD/MM/YYYY hh:mm:ss');
+    data.updatedAt = new Date();
     const event = await Event.findByIdAndUpdate(id, data);
     return event;
 };
