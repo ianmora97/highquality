@@ -53,6 +53,16 @@ exports.get = async (limit, page, sort, only) => {
     }
 };
 
+exports.getRange = async (start, end) => {
+    const events = await Event.find({
+        start: {
+            $gte: moment(start).startOf('day').format(),
+            $lte: moment(end).endOf('day').format()
+        }
+    }).lean();
+    return events;
+};
+
 exports.getMonth = async (month) => {
     const events = await Event.find({
         start: {

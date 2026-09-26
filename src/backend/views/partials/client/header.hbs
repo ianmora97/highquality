@@ -1,5 +1,6 @@
-<!-- Nav — no x-data here, state lives on <body> x-data="{ navOpen: false }" -->
-<nav class="sticky top-0 z-50 border-b border-white/10" style="background-color:rgba(13,13,13,0.97);">
+<!-- Nav — navOpen state lives on <body x-data="{ navOpen: false }"> in main.hbs -->
+<nav class="sticky top-0 z-50 border-b border-white/10" style="background-color:rgba(13,13,13,0.97);"
+     x-effect="navOpen ? document.body.style.setProperty('overflow','hidden') : document.body.style.removeProperty('overflow')">
 
     <div class="max-w-7xl mx-auto px-5 flex items-center justify-between h-16">
         <!-- Logo -->
@@ -13,6 +14,7 @@
             <a class="nav-link-client" id="tab-servicios" href="/servicios">Servicios</a>
             <a class="nav-link-client" id="tab-galeria" href="/galeria">Galería</a>
             <a class="nav-link-client" id="tab-reservar" href="/reservar">Reservar</a>
+            <a class="nav-link-client" id="tab-app" href="/app"><i class="fa-solid fa-user me-1"></i>Mi Cuenta</a>
         </div>
 
         <!-- Right side -->
@@ -20,91 +22,128 @@
             <a href="/reservar" class="hidden md:inline-flex btn btn-gold rounded-pill gap-2 nav-cta-btn">
                 <i class="fa-solid fa-scissors"></i> Reservar
             </a>
-            <!-- Hamburger: wrapped in md:hidden div so .nav-hamburger display:flex doesn't override -->
             <div class="md:hidden">
-                <button @click="navOpen = true; document.body.style.overflowY = 'hidden'"
-                        class="nav-hamburger"
+                <button @click="navOpen = true"
+                        class="w-10 h-10 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/[.06] transition-colors"
                         aria-label="Abrir menú">
-                    <i class="fa-solid fa-bars"></i>
+                    <i class="fa-solid fa-bars text-lg"></i>
                 </button>
             </div>
         </div>
     </div>
 </nav>
 
-<!-- Backdrop — sibling of <nav>, in root stacking context so z-index works correctly -->
+<!-- Backdrop -->
 <div x-show="navOpen"
-     @click="navOpen = false; document.body.style.overflowY = ''"
-     x-transition:enter="backdrop-enter"
-     x-transition:enter-start="backdrop-enter-start"
-     x-transition:enter-end="backdrop-enter-end"
-     x-transition:leave="backdrop-leave"
-     x-transition:leave-start="backdrop-leave-start"
-     x-transition:leave-end="backdrop-leave-end"
-     class="mobile-nav-backdrop"
-     x-cloak>
-</div>
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click="navOpen = false"
+     class="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+     x-cloak></div>
 
-<!-- Drawer — sibling of <nav>, z-100 in root stacking context is above nav z-50 -->
+<!-- Drawer -->
 <div x-show="navOpen"
-     x-transition:enter="drawer-enter"
-     x-transition:enter-start="drawer-enter-start"
-     x-transition:enter-end="drawer-enter-end"
-     x-transition:leave="drawer-leave"
-     x-transition:leave-start="drawer-leave-start"
-     x-transition:leave-end="drawer-leave-end"
-     class="mobile-nav-drawer"
-     x-cloak>
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="opacity-0 translate-x-full"
+     x-transition:enter-end="opacity-100 translate-x-0"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="opacity-100 translate-x-0"
+     x-transition:leave-end="opacity-0 translate-x-full"
+     style="height: 100dvh;"
+     class="md:hidden fixed top-0 right-0 z-50 flex flex-col w-[350px] bg-[#0E0E0E] border-l border-white/[.06]"
+     x-cloak
+     @click.stop>
 
-    <!-- Drawer header -->
-    <div class="mobile-drawer-header">
-        <div class="flex items-center gap-2">
-            <img src="/images/simple-logo.png" alt="HighQuality" width="36">
-            <span class="text-sm font-semibold" style="color:#f1f1f1; letter-spacing:0.01em;">High<span style="color:#F4C82C;">Quality</span></span>
+    <!-- Header -->
+    <div class="flex items-center justify-between px-5 py-4 border-b border-white/[.06] shrink-0">
+        <div class="flex items-center gap-3">
+            <img src="/images/simple-logo.png" alt="HighQuality" width="32" height="32">
+            <div>
+                <div class="text-sm font-semibold text-white">High<span class="text-gold">Quality</span></div>
+                <div class="text-[11px] text-gray-600">Barbería · San José</div>
+            </div>
         </div>
-        <button @click="navOpen = false; document.body.style.overflowY = ''"
-                class="mobile-drawer-close"
+        <button @click="navOpen = false"
+                class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-white hover:bg-white/[.07] transition-all"
                 aria-label="Cerrar menú">
-            <i class="fa-solid fa-xmark"></i>
+            <i class="fa-solid fa-xmark text-sm"></i>
         </button>
     </div>
 
     <!-- Nav links -->
-    <div class="mobile-drawer-nav">
-        <a class="mobile-drawer-link" id="tab-inicio-m" href="/">
-            <span class="mobile-drawer-icon"><i class="fa-solid fa-house"></i></span>
-            <span>Inicio</span>
-        </a>
-        <a class="mobile-drawer-link" id="tab-servicios-m" href="/servicios">
-            <span class="mobile-drawer-icon"><i class="fa-solid fa-scissors"></i></span>
-            <span>Servicios</span>
-        </a>
-        <a class="mobile-drawer-link" id="tab-galeria-m" href="/galeria">
-            <span class="mobile-drawer-icon"><i class="fa-solid fa-images"></i></span>
-            <span>Galería</span>
-        </a>
-        <a class="mobile-drawer-link" id="tab-reservar-m" href="/reservar">
-            <span class="mobile-drawer-icon"><i class="fa-solid fa-calendar-check"></i></span>
-            <span>Reservar</span>
-        </a>
+    <div class="flex-1 overflow-y-auto p-3 min-h-0">
+        <p class="text-[10px] text-gray-700 uppercase tracking-widest mb-3 px-2 font-medium">Menú</p>
+        <div class="flex flex-col gap-0.5">
+            <a id="tab-inicio-m" href="/"
+               class="client-drawer-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/[.05] transition-all text-sm">
+                <span class="w-8 h-8 rounded-lg bg-white/[.06] border border-white/[.05] flex items-center justify-center shrink-0 transition-colors">
+                    <i class="fa-solid fa-house text-xs"></i>
+                </span>
+                <span class="font-medium">Inicio</span>
+            </a>
+            <a id="tab-servicios-m" href="/servicios"
+               class="client-drawer-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/[.05] transition-all text-sm">
+                <span class="w-8 h-8 rounded-lg bg-white/[.06] border border-white/[.05] flex items-center justify-center shrink-0 transition-colors">
+                    <i class="fa-solid fa-scissors text-xs"></i>
+                </span>
+                <span class="font-medium">Servicios</span>
+            </a>
+            <a id="tab-galeria-m" href="/galeria"
+               class="client-drawer-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/[.05] transition-all text-sm">
+                <span class="w-8 h-8 rounded-lg bg-white/[.06] border border-white/[.05] flex items-center justify-center shrink-0 transition-colors">
+                    <i class="fa-solid fa-images text-xs"></i>
+                </span>
+                <span class="font-medium">Galería</span>
+            </a>
+            <a id="tab-reservar-m" href="/reservar"
+               class="client-drawer-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/[.05] transition-all text-sm">
+                <span class="w-8 h-8 rounded-lg bg-white/[.06] border border-white/[.05] flex items-center justify-center shrink-0 transition-colors">
+                    <i class="fa-solid fa-calendar-check text-xs"></i>
+                </span>
+                <span class="font-medium">Reservar</span>
+            </a>
+            <a id="tab-app-m" href="/app"
+               class="client-drawer-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/[.05] transition-all text-sm">
+                <span class="w-8 h-8 rounded-lg bg-white/[.06] border border-white/[.05] flex items-center justify-center shrink-0 transition-colors">
+                    <i class="fa-solid fa-user text-xs"></i>
+                </span>
+                <span class="font-medium">Mi Cuenta</span>
+            </a>
+        </div>
     </div>
 
-    <!-- Bottom CTA -->
-    <div class="mobile-drawer-footer">
+    <!-- Footer CTA -->
+    <div class="p-4 border-t border-white/[.06] shrink-0">
         <a href="/reservar" class="btn btn-gold btn-lg rounded-pill w-full justify-center">
             <i class="fa-solid fa-scissors me-2"></i>Reservar Cita
         </a>
-        <p class="text-center text-xs mt-3" style="color:#374151;">HighQuality Studio · San José, CR</p>
+        <p class="text-center text-xs mt-3 text-gray-700">HighQuality Studio · San José, CR</p>
     </div>
 </div>
 
 <script>
     const CURRENT_PAGE = "{{tab}}";
     document.addEventListener('DOMContentLoaded', function() {
+        // Desktop active
         document.querySelectorAll('[id^="tab-' + CURRENT_PAGE + '"]').forEach(function(el) {
             el.classList.add('active');
         });
-        // Hide CTA "Reservar" button when already on the reservar page
+        // Mobile active
+        var mobileLink = document.getElementById('tab-' + CURRENT_PAGE + '-m');
+        if (mobileLink) {
+            mobileLink.classList.remove('text-gray-400');
+            mobileLink.classList.add('text-gold', 'bg-gold/10');
+            var iconBox = mobileLink.querySelector('.w-8.h-8');
+            if (iconBox) {
+                iconBox.classList.remove('bg-white/[.06]', 'border-white/[.05]');
+                iconBox.classList.add('bg-gold/15', 'border-gold/25');
+            }
+        }
+        // Hide CTA when already on reservar page
         if (CURRENT_PAGE === 'reservar') {
             var cta = document.querySelector('.nav-cta-btn');
             if (cta) cta.style.display = 'none';

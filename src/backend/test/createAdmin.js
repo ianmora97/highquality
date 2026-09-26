@@ -22,14 +22,17 @@ async function run() {
     console.log('[OK] MongoDB connected');
 
     const existing = await Admin.findOne({ user: CREDENTIALS.user });
+    const hash = await bcrypt.hash(CREDENTIALS.password, 12);
+
     if (existing) {
-        console.log('[SKIP] Admin user already exists:', CREDENTIALS.user);
+        await Admin.findByIdAndUpdate(existing._id, { password: hash });
+        console.log('[OK] Admin password re-hashed with bcrypt');
+        console.log('  user:    ', CREDENTIALS.user);
+        console.log('  password:', CREDENTIALS.password);
         process.exit(0);
     }
 
-    const hash = await bcrypt.hash(CREDENTIALS.password, 12);
     await Admin.create({ name: CREDENTIALS.name, user: CREDENTIALS.user, password: hash });
-
     console.log('\n✓ Admin created');
     console.log('  user:    ', CREDENTIALS.user);
     console.log('  password:', CREDENTIALS.password);

@@ -1,6 +1,11 @@
 <!-- Animate.css for time chips entrance -->
 <link rel="stylesheet" href="/scripts/animate.css/animate.min.css">
 
+{{#if client}}
+<meta name="client-session-nombre" content="{{client.nombre}}">
+<meta name="client-session-numero" content="{{client.numero}}">
+{{/if}}
+
 <!-- ===== HERO ===== -->
 <section class="booking-page-hero">
     <div class="booking-page-hero-content w-full max-w-7xl mx-auto px-6 md:px-14 pb-10">
@@ -106,7 +111,7 @@
 
             <div id="noctural" class="nocturnal-notice">
                 <i class="fa-solid fa-moon text-gold"></i>
-                <span>Turnos de 30 min disponibles esta madrugada</span>
+                <span>Turnos de 30 min disponibles.</span>
             </div>
 
             <div class="time-legend" id="time-legend" style="display:none;">
@@ -129,16 +134,52 @@
             <!-- Booking summary -->
             <div class="booking-summary-card" id="booking-summary"></div>
 
-            <div class="mb-4">
-                <label class="form-label" for="nombreCita">Nombre completo</label>
-                <input type="text" class="form-control form-control-lg" id="nombreCita"
-                       placeholder="Tu nombre" autocomplete="name">
-            </div>
-            <div class="mb-2">
+            <!-- Logged-in session pill (shown only when session active) -->
+            <div id="session-pill" class="animate__animated animate__fadeIn" style="display:none;"></div>
+
+            <!-- Phone first -->
+            <div id="phone-section" class="mb-3">
                 <label class="form-label" for="numeroTelefono">Número de Teléfono</label>
                 <input type="tel" class="form-control form-control-lg" id="numeroTelefono"
-                       placeholder="8080-8080" autocomplete="tel">
+                       placeholder="8080 8080" autocomplete="tel" inputmode="numeric" maxlength="9">
+                <div id="lookup-status" class="text-sm mt-2" style="display:none;"></div>
             </div>
+
+            <!-- Name (appears after lookup) -->
+            <div id="nombre-section" class="mb-3 animate__animated animate__fadeIn" style="display:none;">
+                <label class="form-label" for="nombreCita">Nombre completo</label>
+                <input type="text" class="form-control form-control-lg" id="nombreCita"
+                       placeholder="Tu nombre" autocomplete="name" maxlength="80">
+            </div>
+
+            <!-- Optional account actions (appears after lookup) -->
+            <div id="account-actions" style="display:none;">
+                <!-- Client exists with account → offer login -->
+                <div id="action-login" class="rounded-xl p-3 mb-3 animate__animated animate__fadeIn"
+                     style="display:none; background:rgba(244,200,44,0.05); border:1px solid rgba(244,200,44,0.15);">
+                    <p class="text-sm text-gray-400 mb-2">
+                        <i class="fa-solid fa-circle-user me-1" style="color:#F4C82C;"></i>
+                        ¿Quieres ver el historial de tus citas?
+                    </p>
+                    <button class="btn btn-sm btn-dark rounded-pill"
+                            onclick="openClientAuth(); showAuthTab('login');">
+                        Iniciar sesión <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </button>
+                </div>
+                <!-- New client → offer register -->
+                <div id="action-register" class="rounded-xl p-3 mb-3 animate__animated animate__fadeIn"
+                     style="display:none; background:rgba(244,200,44,0.05); border:1px solid rgba(244,200,44,0.15);">
+                    <p class="text-sm text-gray-400 mb-2">
+                        <i class="fa-solid fa-user-plus me-1" style="color:#F4C82C;"></i>
+                        ¿Quieres guardar el historial de tus citas?
+                    </p>
+                    <button class="btn btn-sm btn-dark rounded-pill"
+                            onclick="openClientAuth(); showAuthTab('register');">
+                        Crear cuenta (opcional) <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </button>
+                </div>
+            </div>
+
             <p class="text-gray-600 text-xs mt-2">
                 <i class="fa-brands fa-whatsapp text-gold me-1"></i>
                 Recibirás confirmación vía WhatsApp
@@ -169,5 +210,40 @@
     </div>
 </div>
 
+<!-- Client Auth Modal -->
+<div class="modal" id="clientAuthModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Mi Cuenta</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Tab: Login / Register -->
+                <div class="flex gap-2 mb-4">
+                    <button class="btn btn-gold btn-sm flex-1" onclick="showAuthTab('login')" id="tab-login-btn">Iniciar Sesión</button>
+                    <button class="btn btn-dark btn-sm flex-1" onclick="showAuthTab('register')" id="tab-register-btn">Crear Cuenta</button>
+                </div>
+                <!-- Login form -->
+                <div id="auth-login">
+                    <input type="tel" class="form-control mb-2" id="loginNumero" placeholder="Número de teléfono">
+                    <input type="password" class="form-control mb-3" id="loginPassword" placeholder="Contraseña">
+                    <button class="btn btn-gold w-full rounded-pill" onclick="clientLogin()">Entrar</button>
+                </div>
+                <!-- Register form -->
+                <div id="auth-register" style="display:none;">
+                    <input type="text" class="form-control mb-2" id="regNombre" placeholder="Tu nombre">
+                    <input type="tel" class="form-control mb-2" id="regNumero" placeholder="Número de teléfono">
+                    <input type="password" class="form-control mb-2" id="regPassword" placeholder="Contraseña">
+                    <input type="password" class="form-control mb-3" id="regPasswordConfirm" placeholder="Confirmar contraseña">
+                    <button class="btn btn-gold w-full rounded-pill" onclick="clientRegister()">Crear Cuenta</button>
+                </div>
+                <p id="auth-error" class="text-red-400 text-sm mt-2" style="display:none;"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="/scripts/imask/dist/imask.min.js"></script>
 <script src="/js/client/reserva.js"></script>

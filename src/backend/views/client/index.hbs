@@ -276,56 +276,6 @@
     </div>
 </section>
 
-<!-- ===== REVIEW FORM ===== -->
-<section class="py-24" style="background-color:#0d0d0d;">
-    <div class="max-w-2xl mx-auto px-6">
-        <div class="text-center mb-10" data-aos="fade-up">
-            <p class="nautigal text-gold mb-1" style="font-size:2rem;">Tu opinión importa</p>
-            <h2 class="bebas text-white leading-none" style="font-size:clamp(2rem,5vw,3.5rem);">Deja tu Opinión</h2>
-            <p class="text-gray-500 mt-3 text-sm">¿Pasaste por el Studio? Cuéntanos tu experiencia.</p>
-        </div>
-        <div class="review-form-card" data-aos="fade-up">
-            <form id="formOpinion">
-                <input type="number" name="stars" id="stars" hidden>
-
-                <div class="text-center mb-6">
-                    <p class="text-gray-400 text-sm mb-3">¿Cómo calificarías tu experiencia?</p>
-                    <div class="flex justify-center items-center gap-2">
-                        <button type="button" class="btn-star-ranking" onclick="addStar(1, this)">
-                            <i class="fa-regular fa-star" style="font-size:2.1rem;"></i>
-                        </button>
-                        <button type="button" class="btn-star-ranking" onclick="addStar(2, this)">
-                            <i class="fa-regular fa-star" style="font-size:2.1rem;"></i>
-                        </button>
-                        <button type="button" class="btn-star-ranking" onclick="addStar(3, this)">
-                            <i class="fa-regular fa-star" style="font-size:2.1rem;"></i>
-                        </button>
-                        <button type="button" class="btn-star-ranking" onclick="addStar(4, this)">
-                            <i class="fa-regular fa-star" style="font-size:2.1rem;"></i>
-                        </button>
-                        <button type="button" class="btn-star-ranking" onclick="addStar(5, this)">
-                            <i class="fa-regular fa-star" style="font-size:2.1rem;"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label" for="nombre">Nombre</label>
-                    <input type="text" class="form-control form-control-lg" name="nombre" id="nombre" placeholder="Tu nombre">
-                </div>
-                <div class="mb-4">
-                    <label class="form-label" for="opinion">Opinión</label>
-                    <textarea class="form-control" name="opinion" id="opinion" rows="4" placeholder="Cuéntanos tu experiencia..."></textarea>
-                </div>
-                <small id="feedbackerror" class="text-danger d-block mb-3"></small>
-                <button type="submit" class="btn btn-gold btn-lg w-full rounded-pill">
-                    <i class="fa-solid fa-paper-plane me-2"></i>Enviar Opinión
-                </button>
-            </form>
-        </div>
-    </div>
-</section>
-
 <!-- ===== CTA STRIP ===== -->
 <section class="cta-strip">
     <div class="max-w-4xl mx-auto text-center" data-aos="fade-up">

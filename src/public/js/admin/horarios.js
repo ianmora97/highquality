@@ -1,168 +1,158 @@
-function init(){
-    bringData();
-}
 var g_horarios = new Map();
+var currentEditId = null;
 
-async function bringData(){
+const DAYS_MAP = {
+    "Monday": "Lunes", "Tuesday": "Martes", "Wednesday": "Miércoles",
+    "Thursday": "Jueves", "Friday": "Viernes", "Saturday": "Sábado", "Sunday": "Domingo"
+};
+
+function init() { bringData(); }
+
+async function bringData() {
     const { data } = await axios.get('/api/v1/horario');
+    g_horarios.clear();
+    data.forEach(e => g_horarios.set(e._id, e));
     fillData(data);
 }
 
-function fillData(data){
-    if(data){
-        $("#horarios").empty();
-        data.forEach((e,i) =>{
-            g_horarios.set(e._id,e);
-            addHorario(e,i+1);
-        })
-    }else{
-        console.log('No hay datos');
-    }
+function fillData(data) {
+    const container = document.getElementById('horarios');
+    container.innerHTML = '';
+    const ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const sorted = ORDER.map(d => data.find(h => h.day === d)).filter(Boolean);
+    sorted.forEach((e, i) => addHorario(e, i + 1));
 }
-function addHorario(item,i){
-    const DAYS_MAP = {
-        "Monday": "Lunes",
-        "Tuesday": "Martes",
-        "Wednesday": "Miércoles",
-        "Thursday": "Jueves",
-        "Friday": "Viernes",
-        "Saturday": "Sábado",
-        "Sunday": "Domingo"
-    }
-    let hours = "";
-    item.hours.forEach(e =>{
-        hours += `<p class="mb-0 fw-bold border-end pe-2 border-dark">
-            <span class="text-${item.enable ? "success" : "secondary"}">${e}</span>
-        </p> `;
-    })
-    $("#horarios").append(`
-        <div class="card bg-fore shadow p-3 animate__animated animate__fadeInLeft w-100 animate__faster 
-        border-end-0 border-start-0 border-bottom-0 border-5 border-${item.enable ? "primary" : "secondary"}" 
-        style="animation-delay:${i*50}ms;">
 
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="fw-bold mb-1">${DAYS_MAP[item.day]}</h5>
-            
-                <div class="d-flex justify-content-end align-items-center">
-                    <div class="form-check form-switch form-check-lg" role="button">
-                        <input class="form-check-input" type="checkbox" onchange="cambiarestado('${item._id}')" 
-                        role="switch" id="switchservicio-${item.day}" ${item.enable ? "checked": ""}>
-                    </div>
-                    <button type="button" class="btn btn-dark btn-sm ms-2 rounded-pill"
-                    onclick="horarioModalUpdate('${item._id}')"><i class="fa-duotone fa-pen"></i></button>
-                </div>
+function addHorario(item, i) {
+    const dayName = DAYS_MAP[item.day] || item.day;
+    const hasRange = item.startTime && item.endTime;
+    const slots = item.hours || [];
+
+    let rangeDisplay = '';
+    if (hasRange) {
+        rangeDisplay = `<span class="text-white font-semibold">${formatTime12(item.startTime)}</span>
+            <i class="fa-solid fa-arrow-right text-gray-600 mx-2"></i>
+            <span class="text-white font-semibold">${formatTime12(item.endTime)}</span>`;
+    } else if (slots.length) {
+        rangeDisplay = `<span class="text-gray-400 text-sm">${slots.length} horarios individuales</span>`;
+    } else {
+        rangeDisplay = `<span class="text-gray-600 text-sm">Sin horario definido</span>`;
+    }
+
+    const slotsHtml = slots.slice(0, 6).map(h =>
+        `<span class="text-xs px-2 py-0.5 rounded" style="background:#1a1a1a; color:${item.enable ? '#3004f3' : '#6b7280'}; border:1px solid ${item.enable ? 'rgba(48,4,243,0.3)' : 'rgba(107,114,128,0.2)'};">${h}</span>`
+    ).join('') + (slots.length > 6 ? `<span class="text-xs text-gray-600">+${slots.length - 6} más</span>` : '');
+
+    const el = document.createElement('div');
+    el.className = 'rounded-xl border border-white/10 border-l-4 p-4 animate__animated animate__fadeInLeft animate__faster bg-[#0d0d0d]';
+    el.style.animationDelay = `${i * 50}ms`;
+    el.style.borderLeftColor = item.enable ? '#3004f3' : '#374151';
+    el.innerHTML = `
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+                <h5 class="font-bold text-lg mb-0">${dayName}</h5>
+                <div class="flex items-center gap-2">${rangeDisplay}</div>
             </div>
-            <div class="d-flex justify-content-start align-items-center gap-2 flex-wrap">
-                ${hours}
+            <div class="flex items-center gap-2">
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" role="switch"
+                        id="switch-${item.day}" onchange="cambiarestado('${item._id}')"
+                        ${item.enable ? 'checked' : ''}>
+                </div>
+                <button class="btn btn-dark btn-sm rounded-pill" onclick="openEditModal('${item._id}')">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
             </div>
         </div>
-    `);
+        <div class="flex flex-wrap gap-1">${slotsHtml}</div>
+    `;
+    document.getElementById('horarios').appendChild(el);
 }
 
-function horarioModalUpdate(id){
-    const horario = g_horarios.get(id);
-    $("#editHorario").modal('show');
-
-    $("#idUpdate").html(horario._id);
-
-    $("#horas-edit").empty();
-    horario.hours.forEach(e =>{
-        $("#horas-edit").append(`
-            <div class="card bg-dark mb-3 p-2">
-                <div class="d-flex justify-content-between align-items-center px-2">
-                    <h5 class="mb-0">${e}</h5>
-                    <button class="btn btn-outline-danger" type="button" onclick="eliminarHoraEdit('${e}')"><i class="fa-solid fa-trash"></i></button>
-                </div>
-            </div>
-        `);
-    });
-
+function formatTime12(time24) {
+    if (!time24) return '';
+    const [h, m] = time24.split(':').map(Number);
+    const ampm = h < 12 ? 'am' : 'pm';
+    const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
 }
 
-async function agregarHora(){
-    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
-    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
-    const id = $("#idUpdate").html();
-
-    const bootstrapColorSwall = Swal.mixin({
-        customClass: {
-            confirmButton: 'btn btn-primary',
-            cancelButton: 'btn btn-danger ms-2'
-        },
-        buttonsStyling: false
-    });
-    const { value: date } = await bootstrapColorSwall.fire({
-        title: 'Agregar hora',
-        text: "Ingrese la hora",
-        input: "time",
-        confirmButtonText: "Agregar",
-        background: bg,
-        color: color,
-        didOpen: () => {
-            const today = (new Date()).toISOString();
-            Swal.getInput().min = today.split("T")[0];
-        }
-    });
-    if (date) {
-        const formatDate = moment(date, "HH:mm").format("h:mm a");
-        
-        g_horarios.get(id).hours.push(formatDate);
-
-        $("#horas-edit").append(`
-            <div class="card bg-dark mb-3 p-2">
-                <div class="d-flex justify-content-between align-items-center px-2">
-                    <h5 class="mb-0">${formatDate}</h5>
-                </div>
-            </div>
-        `);
+function computePreviewSlots(startTime, endTime) {
+    if (!startTime || !endTime) return [];
+    const slots = [];
+    const [sh, sm] = startTime.split(':').map(Number);
+    const [eh, em] = endTime.split(':').map(Number);
+    let cur = sh * 60 + sm;
+    const end = eh * 60 + em;
+    while (cur < end) {
+        const h = Math.floor(cur / 60);
+        const m = cur % 60;
+        const ampm = h < 12 ? 'am' : 'pm';
+        const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+        slots.push(`${h12}:${String(m).padStart(2, '0')} ${ampm}`);
+        cur += 30;
     }
+    return slots;
 }
 
-async function actualizarHorario(){
-    const id = $("#idUpdate").html();
-    let dataSend = {
-        hours: g_horarios.get(id).hours,
-    };
-    const { data } = await axios.put(`/api/v1/horario/${id}`, dataSend);
-    bringData();
-    $("#editHorario").modal('hide');
+function updateSlotsPreview() {
+    const start = document.getElementById('editStartTime').value;
+    const end = document.getElementById('editEndTime').value;
+    const preview = document.getElementById('slotsPreview');
+    const slots = computePreviewSlots(start, end);
+    if (!slots.length) {
+        preview.innerHTML = '<span class="text-gray-600 text-xs">Selecciona inicio y fin</span>';
+        return;
+    }
+    preview.innerHTML = slots.map(s =>
+        `<span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(48,4,243,0.15); color:#7c6af7; border:1px solid rgba(48,4,243,0.3);">${s}</span>`
+    ).join('');
 }
 
-function eliminarHoraEdit(e){
-    const id = $("#idUpdate").html();
-    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
-    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
-    const bootstrapColorSwall = Swal.mixin({
-        customClass: {
-            confirmButton: 'btn btn-primary',
-            cancelButton: 'btn btn-danger ms-2'
-        },
-        buttonsStyling: false
-    });
-    bootstrapColorSwall.fire({
-        title: '¿Está seguro?',
-        text: `¿Desea eliminar la hora ${e}?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar',
-        background: bg,
-        color: color
-    }).then((result) => {
-        if (result.isConfirmed) {
-            g_horarios.get(id).hours = g_horarios.get(id).hours.filter(x => x != e);
-            actualizarHorario();
-        }
-    });
+function openEditModal(id) {
+    const item = g_horarios.get(id);
+    currentEditId = id;
+    document.getElementById('editDayName').textContent = DAYS_MAP[item.day] || item.day;
+    document.getElementById('editStartTime').value = item.startTime || '';
+    document.getElementById('editEndTime').value = item.endTime || '';
+    updateSlotsPreview();
+
+    // Remove old listeners before adding new ones to avoid duplicate firings
+    const startInput = document.getElementById('editStartTime');
+    const endInput = document.getElementById('editEndTime');
+    startInput.replaceWith(startInput.cloneNode(true));
+    endInput.replaceWith(endInput.cloneNode(true));
+    document.getElementById('editStartTime').addEventListener('input', updateSlotsPreview);
+    document.getElementById('editEndTime').addEventListener('input', updateSlotsPreview);
+
+    document.getElementById('editHorario').classList.add('modal-open');
+    document.body.style.overflow = 'hidden';
 }
 
-async function cambiarestado(id){
-    const horario = g_horarios.get(id);
-    let dataSend = {
-        enable: !horario.enable
-    };
-    const { data } = await axios.put(`/api/v1/horario/${id}`, dataSend);
-    bringData();
+async function actualizarHorario() {
+    const startTime = document.getElementById('editStartTime').value;
+    const endTime = document.getElementById('editEndTime').value;
+    if (!startTime || !endTime) {
+        Swal.fire({ icon: 'warning', text: 'Selecciona hora de inicio y cierre', background: '#0d0d0d', color: '#f1f1f1' });
+        return;
+    }
+    if (startTime >= endTime) {
+        Swal.fire({ icon: 'warning', text: 'La hora de inicio debe ser antes que la de cierre', background: '#0d0d0d', color: '#f1f1f1' });
+        return;
+    }
+    const hours = computePreviewSlots(startTime, endTime);
+    await axios.put(`/api/v1/horario/${currentEditId}`, { startTime, endTime, hours });
+    document.getElementById('editHorario').classList.remove('modal-open');
+    document.body.style.overflow = '';
+    await bringData();
+    const toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, background: '#0d0d0d', color: '#f1f1f1' });
+    toast.fire({ icon: 'success', title: 'Horario actualizado' });
+}
+
+async function cambiarestado(id) {
+    const h = g_horarios.get(id);
+    await axios.put(`/api/v1/horario/${id}`, { enable: !h.enable });
+    await bringData();
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -1,49 +1,40 @@
 const express = require('express');
-const router = express.Router();
+const router  = express.Router();
 
-const { verify } = require('../middlewares/auth');
+const { requirePage } = require('../middlewares/auth');
+const Auth  = require('../controllers/auth.controller');
 const Admin = require('../controllers/admin.controller');
 
-router.get('/', async (req, res) => {
-    res.render('admin/login', { layout: 'login' });
-});
-router.post('/login', Admin.auth);
+// Auth pages
+router.get('/',       (_req, res) => res.render('auth/admin-login', { layout: 'auth', title: 'Admin' }));
+router.post('/login', Auth.loginStaff);
 
-router.get('/panel', verify, async (req, res) => {
-    res.render('admin/index',{
-        layout: 'admin',
-        user: req.user,
-        tab: 'panel'
-    });
-});
+// Protected panel pages — require admin or su
+const guard = requirePage('admin');
 
-router.get('/servicios', verify, async (req, res) => {
-    res.render('admin/servicios',{
-        layout: 'admin',
-        user: req.user,
-        tab: 'servicios'
-    });
+router.get('/panel', guard, (req, res) => {
+    res.render('admin/index', { layout: 'admin', user: req.user, tab: 'panel' });
 });
-router.get('/horarios', verify, async (req, res) => {
-    res.render('admin/horarios',{
-        layout: 'admin',
-        user: req.user,
-        tab: 'horarios'
-    });
+router.get('/servicios', guard, (req, res) => {
+    res.render('admin/servicios', { layout: 'admin', user: req.user, tab: 'servicios' });
 });
-router.get('/clientes', verify, async (req, res) => {
-    res.render('admin/clients',{
-        layout: 'admin',
-        user: req.user,
-        tab: 'clientes'
-    });
+router.get('/horarios', guard, (req, res) => {
+    res.render('admin/horarios', { layout: 'admin', user: req.user, tab: 'horarios' });
 });
-router.get('/reviews', verify, async (req, res) => {
-    res.render('admin/reviews',{
-        layout: 'admin',
-        user: req.user,
-        tab: 'reviews'
-    });
+router.get('/clientes', guard, (req, res) => {
+    res.render('admin/clients', { layout: 'admin', user: req.user, tab: 'clientes' });
+});
+router.get('/reviews', guard, (req, res) => {
+    res.render('admin/reviews', { layout: 'admin', user: req.user, tab: 'reviews' });
+});
+router.get('/overrides', guard, (req, res) => {
+    res.render('admin/overrides', { layout: 'admin', user: req.user, tab: 'overrides' });
+});
+router.get('/galeria', guard, (req, res) => {
+    res.render('admin/galeria', { layout: 'admin', user: req.user, tab: 'galeria' });
+});
+router.get('/configuracion', guard, (req, res) => {
+    res.render('admin/settings', { layout: 'admin', user: req.user, tab: 'configuracion' });
 });
 
 module.exports = router;

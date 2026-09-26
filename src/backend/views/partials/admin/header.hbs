@@ -1,70 +1,275 @@
-<nav class="border-b border-white/10" style="background-color:#0d0d0d;" x-data="{ open: false }">
-    <div class="max-w-screen-xl mx-auto px-4 flex items-center h-14">
-        <!-- Logo -->
-        <a href="/dashboard/panel" class="flex items-center mr-6 shrink-0">
-            <img src="/images/simple-logo.png" alt="HighQuality Admin" width="40" height="40">
-        </a>
+<div x-data="{ open: false, showUser: false, showFooterMenu: false }"
+     x-effect="open ? document.body.style.setProperty('overflow','hidden') : document.body.style.removeProperty('overflow')"
+     @keydown.escape.window="open = false; showUser = false">
 
-        <!-- Desktop Nav -->
-        <div class="hidden md:flex items-center gap-1 flex-1">
-            <a class="admin-nav-link" id="tab-panel" href="/dashboard/panel">
-                <i class="fa-solid fa-calendar-days"></i> Citas
+    <nav class="border-b border-white/[.05] relative z-50 bg-[#0a0a0e]/95 backdrop-blur-md">
+        <div class="max-w-screen-xl mx-auto px-4 flex items-center h-14 gap-2">
+            <!-- Logo -->
+            <a href="/dashboard/panel" class="flex items-center mr-4 shrink-0">
+                <img src="/images/simple-logo.png" alt="HighQuality Admin" width="36" height="36">
             </a>
-            <a class="admin-nav-link" id="tab-horarios" href="/dashboard/horarios">
-                <i class="fa-solid fa-clock"></i> Horario
-            </a>
-            <a class="admin-nav-link" id="tab-servicios" href="/dashboard/servicios">
-                <i class="fa-solid fa-scissors"></i> Servicios
-            </a>
-            <a class="admin-nav-link" id="tab-clientes" href="/dashboard/clientes">
-                <i class="fa-solid fa-users"></i> Clientes
-            </a>
-            <a class="admin-nav-link" id="tab-reviews" href="/dashboard/reviews">
-                <i class="fa-solid fa-star"></i> Reviews
-            </a>
+
+            <!-- Desktop Nav -->
+            <div class="hidden md:flex items-center gap-0.5 flex-1 min-w-0">
+                <a class="nav-link text-gray-500 hover:text-white hover:bg-white/[.06] px-3 py-1.5 rounded-lg text-sm inline-flex items-center gap-1.5 transition-all duration-150 shrink-0" id="tab-panel" href="/dashboard/panel">
+                    <i class="fa-solid fa-calendar-days text-xs"></i> Citas
+                </a>
+                <a class="nav-link text-gray-500 hover:text-white hover:bg-white/[.06] px-3 py-1.5 rounded-lg text-sm inline-flex items-center gap-1.5 transition-all duration-150 shrink-0" id="tab-horarios" href="/dashboard/horarios">
+                    <i class="fa-solid fa-clock text-xs"></i> Horario
+                </a>
+                <a class="nav-link text-gray-500 hover:text-white hover:bg-white/[.06] px-3 py-1.5 rounded-lg text-sm inline-flex items-center gap-1.5 transition-all duration-150 shrink-0" id="tab-servicios" href="/dashboard/servicios">
+                    <i class="fa-solid fa-scissors text-xs"></i> Servicios
+                </a>
+                <a class="nav-link text-gray-500 hover:text-white hover:bg-white/[.06] px-3 py-1.5 rounded-lg text-sm inline-flex items-center gap-1.5 transition-all duration-150 shrink-0" id="tab-clientes" href="/dashboard/clientes">
+                    <i class="fa-solid fa-users text-xs"></i> Clientes
+                </a>
+                <a class="nav-link text-gray-500 hover:text-white hover:bg-white/[.06] px-3 py-1.5 rounded-lg text-sm inline-flex items-center gap-1.5 transition-all duration-150 shrink-0" id="tab-reviews" href="/dashboard/reviews">
+                    <i class="fa-solid fa-star text-xs"></i> Reviews
+                </a>
+                <a class="nav-link text-gray-500 hover:text-white hover:bg-white/[.06] px-3 py-1.5 rounded-lg text-sm inline-flex items-center gap-1.5 transition-all duration-150 shrink-0" id="tab-overrides" href="/dashboard/overrides">
+                    <i class="fa-solid fa-calendar-xmark text-xs"></i> Bloqueos
+                </a>
+                <a class="nav-link text-gray-500 hover:text-white hover:bg-white/[.06] px-3 py-1.5 rounded-lg text-sm inline-flex items-center gap-1.5 transition-all duration-150 shrink-0" id="tab-galeria" href="/dashboard/galeria">
+                    <i class="fa-solid fa-images text-xs"></i> Galería
+                </a>
+                <a class="nav-link text-gray-500 hover:text-white hover:bg-white/[.06] px-3 py-1.5 rounded-lg text-sm inline-flex items-center gap-1.5 transition-all duration-150 shrink-0" id="tab-configuracion" href="/dashboard/configuracion">
+                    <i class="fa-solid fa-gear text-xs"></i> Config
+                </a>
+            </div>
+
+            <!-- User menu (desktop only) -->
+            <div class="hidden md:block relative shrink-0 ml-1" @click.away="showUser = false">
+                <button @click="showUser = !showUser"
+                        class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-white/[.06] transition-all duration-150 group cursor-pointer">
+                    <div class="w-7 h-7 rounded-full bg-gold/15 border border-gold/30 flex items-center justify-center shrink-0">
+                        <span class="text-gold text-xs font-bold leading-none" id="user-initial-desktop">?</span>
+                    </div>
+                    <span class="text-gray-300 text-sm font-medium group-hover:text-white transition-colors max-w-[120px] truncate" id="user-name-desktop">{{#if user}}{{user.name}}{{else}}Admin{{/if}}</span>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-gray-600 transition-transform duration-150" :class="showUser ? 'rotate-180 !text-gray-400' : ''"></i>
+                </button>
+
+                <!-- Dropdown -->
+                <div x-show="showUser"
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                     class="absolute right-0 top-full mt-1.5 min-w-[200px] bg-[#111116] border border-white/[.08] rounded-xl shadow-[0_16px_48px_rgba(0,0,0,0.65)] overflow-hidden z-50"
+                     x-cloak>
+                    <div class="px-4 py-3 border-b border-white/[.06]">
+                        <p class="text-white text-sm font-semibold leading-tight truncate">{{#if user}}{{user.name}}{{else}}Admin{{/if}}</p>
+                        <p class="text-gray-500 text-xs capitalize mt-0.5">{{#if user}}{{user.role}}{{else}}administrador{{/if}}</p>
+                    </div>
+                    <div class="p-1">
+                        <a href="/" target="_blank"
+                           class="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/[.05] rounded-lg transition-colors">
+                            <i class="fa-solid fa-arrow-up-right-from-square text-xs w-4 text-center"></i>
+                            Ver sitio web
+                        </a>
+                        <button onclick="logoutAdmin()"
+                                class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-danger hover:bg-danger/[.08] rounded-lg transition-colors text-left cursor-pointer">
+                            <i class="fa-solid fa-right-from-bracket text-xs w-4 text-center"></i>
+                            Cerrar sesión
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile hamburger -->
+            <button @click="open = true" class="md:hidden ml-auto p-2 text-gray-500 hover:text-white transition-colors" aria-label="Abrir menú">
+                <i class="fa-solid fa-bars"></i>
+            </button>
         </div>
+    </nav>
 
-        <!-- Mobile toggle -->
-        <button @click="open = !open" class="md:hidden ml-auto p-2 text-gray-400 hover:text-white">
-            <i x-show="!open" class="fa-solid fa-bars text-xl"></i>
-            <i x-show="open" class="fa-solid fa-xmark text-xl" x-cloak></i>
-        </button>
-    </div>
-
-    <!-- Mobile Nav -->
+    <!-- Backdrop — outside nav so backdrop-blur on nav doesn't trap fixed positioning -->
     <div x-show="open"
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 -translate-y-2"
-         x-transition:enter-end="opacity-100 translate-y-0"
-         x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-end="opacity-0 -translate-y-2"
-         class="md:hidden border-t border-white/10 px-4 py-4"
-         x-cloak>
-        <div class="flex flex-col gap-2">
-            <a class="admin-nav-link" id="tab-panel-m" href="/dashboard/panel">
-                <i class="fa-solid fa-calendar-days"></i> Citas
-            </a>
-            <a class="admin-nav-link" id="tab-horarios-m" href="/dashboard/horarios">
-                <i class="fa-solid fa-clock"></i> Horario
-            </a>
-            <a class="admin-nav-link" id="tab-servicios-m" href="/dashboard/servicios">
-                <i class="fa-solid fa-scissors"></i> Servicios
-            </a>
-            <a class="admin-nav-link" id="tab-clientes-m" href="/dashboard/clientes">
-                <i class="fa-solid fa-users"></i> Clientes
-            </a>
-            <a class="admin-nav-link" id="tab-reviews-m" href="/dashboard/reviews">
-                <i class="fa-solid fa-star"></i> Reviews
-            </a>
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="open = false"
+         class="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+         x-cloak></div>
+
+    <!-- Mobile drawer panel — outside nav for the same reason -->
+    <div x-show="open"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-x-full"
+         x-transition:enter-end="opacity-100 translate-x-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-x-0"
+         x-transition:leave-end="opacity-0 translate-x-full"
+         style="height: 100dvh;"
+         class="md:hidden fixed top-0 right-0 z-50 flex flex-col bg-[#0d0c14] border-l border-white/[.06] w-[350px]"
+         x-cloak
+         @click.stop>
+
+        <!-- Panel header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-white/[.06] shrink-0">
+            <div class="flex items-center gap-3">
+                <img src="/images/simple-logo.png" alt="HighQuality" width="30" height="30">
+                <div>
+                    <div class="font-semibold text-white text-sm">HighQuality Studio</div>
+                    <div class="text-gray-600 text-xs">Panel Admin</div>
+                </div>
+            </div>
+            <button @click="open = false"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-white hover:bg-white/[.07] transition-all"
+                    aria-label="Cerrar">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Nav items -->
+        <nav class="flex-1 overflow-y-auto p-3 min-h-0">
+            <p class="text-[10px] text-gray-700 uppercase tracking-widest mb-3 px-2 font-medium">Navegación</p>
+            <div class="flex flex-col gap-0.5">
+                <a href="/dashboard/panel" id="tab-panel-m"
+                   class="panel-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:text-white hover:bg-white/[.05] transition-all text-sm">
+                    <div class="w-8 h-8 rounded-lg bg-white/[.04] flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-calendar-days text-xs"></i>
+                    </div>
+                    <span class="font-medium">Citas</span>
+                </a>
+                <a href="/dashboard/horarios" id="tab-horarios-m"
+                   class="panel-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:text-white hover:bg-white/[.05] transition-all text-sm">
+                    <div class="w-8 h-8 rounded-lg bg-white/[.04] flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-clock text-xs"></i>
+                    </div>
+                    <span class="font-medium">Horario</span>
+                </a>
+                <a href="/dashboard/servicios" id="tab-servicios-m"
+                   class="panel-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:text-white hover:bg-white/[.05] transition-all text-sm">
+                    <div class="w-8 h-8 rounded-lg bg-white/[.04] flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-scissors text-xs"></i>
+                    </div>
+                    <span class="font-medium">Servicios</span>
+                </a>
+                <a href="/dashboard/clientes" id="tab-clientes-m"
+                   class="panel-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:text-white hover:bg-white/[.05] transition-all text-sm">
+                    <div class="w-8 h-8 rounded-lg bg-white/[.04] flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-users text-xs"></i>
+                    </div>
+                    <span class="font-medium">Clientes</span>
+                </a>
+                <a href="/dashboard/reviews" id="tab-reviews-m"
+                   class="panel-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:text-white hover:bg-white/[.05] transition-all text-sm">
+                    <div class="w-8 h-8 rounded-lg bg-white/[.04] flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-star text-xs"></i>
+                    </div>
+                    <span class="font-medium">Reviews</span>
+                </a>
+                <a href="/dashboard/overrides" id="tab-overrides-m"
+                   class="panel-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:text-white hover:bg-white/[.05] transition-all text-sm">
+                    <div class="w-8 h-8 rounded-lg bg-white/[.04] flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-calendar-xmark text-xs"></i>
+                    </div>
+                    <span class="font-medium">Bloqueos</span>
+                </a>
+                <a href="/dashboard/galeria" id="tab-galeria-m"
+                   class="panel-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:text-white hover:bg-white/[.05] transition-all text-sm">
+                    <div class="w-8 h-8 rounded-lg bg-white/[.04] flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-images text-xs"></i>
+                    </div>
+                    <span class="font-medium">Galería</span>
+                </a>
+                <a href="/dashboard/configuracion" id="tab-configuracion-m"
+                   class="panel-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:text-white hover:bg-white/[.05] transition-all text-sm">
+                    <div class="w-8 h-8 rounded-lg bg-white/[.04] flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-gear text-xs"></i>
+                    </div>
+                    <span class="font-medium">Configuración</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Panel footer: user dropdown -->
+        <div class="p-3 border-t border-white/[.06] shrink-0 relative" @click.away="showFooterMenu = false">
+
+            <!-- Floating dropdown — appears above button -->
+            <div x-show="showFooterMenu"
+                 x-transition:enter="transition ease-out duration-150"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-100"
+                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                 class="absolute bottom-full left-3 right-3 mb-2 bg-[#111116] border border-white/[.08] rounded-xl shadow-[0_-16px_48px_rgba(0,0,0,0.65)] overflow-hidden z-50"
+                 x-cloak>
+                <div class="p-1">
+                    <a href="/" target="_blank"
+                       class="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-white/[.05] rounded-lg transition-colors">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs w-4 text-center"></i>
+                        Ver sitio web
+                    </a>
+                    <button onclick="logoutAdmin()"
+                            class="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-danger hover:bg-danger/[.08] rounded-lg transition-colors text-left cursor-pointer">
+                        <i class="fa-solid fa-right-from-bracket text-xs w-4 text-center"></i>
+                        Cerrar sesión
+                    </button>
+                </div>
+            </div>
+
+            <!-- Toggle button -->
+            <button @click="showFooterMenu = !showFooterMenu"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[.05] transition-all cursor-pointer text-left">
+                <div class="w-8 h-8 rounded-full bg-gold/15 border border-gold/25 flex items-center justify-center shrink-0">
+                    <span class="text-gold text-xs font-bold leading-none" id="user-initial-mobile">?</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-white text-sm font-medium truncate" id="user-name-mobile">{{#if user}}{{user.name}}{{else}}Admin{{/if}}</p>
+                    <p class="text-gray-600 text-xs capitalize">{{#if user}}{{user.role}}{{else}}administrador{{/if}}</p>
+                </div>
+                <i class="fa-solid fa-chevron-up text-[10px] text-gray-600 transition-transform duration-200 shrink-0"
+                   :class="showFooterMenu ? 'text-gray-400' : 'rotate-180'"></i>
+            </button>
         </div>
     </div>
-</nav>
+
+</div>
 
 <script>
-    const CURRENT_PAGE = "{{tab}}";
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('[id^="tab-' + CURRENT_PAGE + '"]').forEach(function(el) {
-            el.classList.add('active');
+    (function() {
+        const PAGE = "{{tab}}";
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Desktop active state
+            document.querySelectorAll('[id^="tab-' + PAGE + '"]').forEach(function(el) {
+                el.classList.remove('text-gray-500');
+                el.classList.add('text-gold', 'bg-gold/10');
+            });
+
+            // Mobile active state
+            var mobileLink = document.getElementById('tab-' + PAGE + '-m');
+            if (mobileLink) {
+                mobileLink.classList.remove('text-gray-500');
+                mobileLink.classList.add('text-gold', 'bg-gold/10');
+                var iconBox = mobileLink.querySelector('.w-8.h-8');
+                if (iconBox) {
+                    iconBox.classList.remove('bg-white/[.04]');
+                    iconBox.classList.add('bg-gold/10');
+                }
+            }
+
+            // Set user initials from rendered name
+            ['desktop', 'mobile'].forEach(function(s) {
+                var nameEl = document.getElementById('user-name-' + s);
+                var initEl = document.getElementById('user-initial-' + s);
+                if (nameEl && initEl) {
+                    initEl.textContent = (nameEl.textContent.trim().charAt(0) || 'A').toUpperCase();
+                }
+            });
         });
-    });
+
+        async function logoutAdmin() {
+            try { await axios.post('/api/v1/auth/logout'); } catch(e) {}
+            window.location.href = '/dashboard';
+        }
+        window.logoutAdmin = logoutAdmin;
+    })();
 </script>

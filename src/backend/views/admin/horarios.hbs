@@ -1,21 +1,10 @@
-<div class="container-md-fluid py-3">
-
+<div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
     <!-- Header -->
-    <div class="rounded-xl p-4 mb-4 border border-white/10" style="background:#0d0d0d;">
-        <h1 class="text-2xl font-bold mb-1">
-            <i class="fa-solid fa-clock" style="color:#3004f3;"></i> Horarios
+    <div class="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 mb-4">
+        <h1 class="text-xl font-bold mb-1 flex items-center gap-2">
+            <i class="fa-solid fa-clock text-primary"></i> Horarios
         </h1>
-        <p class="text-gray-500 text-sm mb-1">Todos los horarios que ofrece HighQuality</p>
-        <div class="flex items-center gap-4">
-            <span class="text-xs text-gray-600">
-                <i class="fa-solid fa-clock"></i> Actualizado:
-                <span id="lastUpdated" class="text-primary">ahora</span>
-            </span>
-            <span class="text-xs text-gray-600">
-                <i class="fa-solid fa-list"></i> Total:
-                <span id="totalitems" class="text-primary font-bold">—</span>
-            </span>
-        </div>
+        <p class="text-gray-500 text-sm mb-0">Configura el horario de atención por día. Define el rango de horas de inicio y cierre. Las citas se generan cada 30 minutos.</p>
     </div>
 
     <!-- Horarios list -->
@@ -29,22 +18,36 @@
             <div class="modal-header">
                 <div>
                     <h2 class="modal-title"><i class="fa-solid fa-clock"></i> Editar Horario</h2>
-                    <span class="text-xs text-gray-500 mt-1 block" id="idUpdate"></span>
+                    <span class="text-sm text-gray-500" id="editDayName"></span>
                 </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div id="horas-edit" class="flex flex-col gap-2 mb-4"></div>
-                <div class="flex justify-center">
-                    <button class="btn btn-dark gap-2" type="button" onclick="agregarHora(this)">
-                        <i class="fa-solid fa-clock"></i> Agregar Hora
-                    </button>
+                <p class="text-gray-400 text-sm mb-4">
+                    Las citas se generarán cada <strong class="text-white">30 minutos</strong> desde la hora de inicio hasta 30 min antes de la hora de cierre.
+                </p>
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <label class="form-label">Hora de inicio</label>
+                        <input type="time" class="form-control" id="editStartTime" step="1800">
+                        <small class="text-gray-500">Primera cita disponible</small>
+                    </div>
+                    <div>
+                        <label class="form-label">Hora de cierre</label>
+                        <input type="time" class="form-control" id="editEndTime" step="1800">
+                        <small class="text-gray-500">Hora de cierre (última cita = cierre - 30 min)</small>
+                    </div>
+                </div>
+                <!-- Preview slots -->
+                <div class="mt-4">
+                    <p class="text-xs text-gray-500 mb-2">Vista previa de citas disponibles:</p>
+                    <div id="slotsPreview" class="flex flex-wrap gap-1"></div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-light" onclick="actualizarHorario()">
-                    <i class="fa-solid fa-floppy-disk"></i> Actualizar
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar
                 </button>
             </div>
         </div>

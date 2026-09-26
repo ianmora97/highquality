@@ -1,0 +1,86 @@
+<div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
+
+    <!-- Header -->
+    <div class="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 mb-4">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+            <div>
+                <h1 class="text-xl font-bold mb-1 flex items-center gap-2">
+                    <i class="fa-solid fa-calendar-xmark text-maps"></i> Bloqueos de Horario
+                </h1>
+                <p class="text-gray-500 text-sm mb-0">Cierra días o rangos de fechas para evitar reservas. Vacaciones, feriados, cambios de horario.</p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddModal()">
+                <i class="fa-solid fa-plus"></i> Nuevo Bloqueo
+            </button>
+        </div>
+    </div>
+
+    <!-- Info box -->
+    <div class="rounded-xl p-3 mb-4 flex items-start gap-3 bg-danger/8 border border-danger/20">
+        <i class="fa-solid fa-circle-info text-red-400 mt-0.5 shrink-0"></i>
+        <p class="text-sm text-gray-400 mb-0">Los bloqueos impiden que los clientes reserven citas en las fechas seleccionadas. Si ya hay citas agendadas en esos días, deberás moverlas manualmente.</p>
+    </div>
+
+    <!-- Overrides list -->
+    <div class="flex flex-col gap-3" id="overridesList">
+        <div class="text-center py-12 text-gray-600" id="emptyState">
+            <i class="fa-solid fa-calendar-check fa-2x mb-3"></i>
+            <p>No hay bloqueos activos</p>
+        </div>
+    </div>
+</div>
+
+<!-- Add Override Modal -->
+<div class="modal" id="addOverrideModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-scrollable" style="max-width:520px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title"><i class="fa-solid fa-calendar-xmark"></i> Nuevo Bloqueo</h2>
+                    <p class="text-sm text-gray-500 mb-0">Bloquea fechas para evitar reservas</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Title -->
+                <div class="mb-4">
+                    <label class="form-label">Motivo del bloqueo</label>
+                    <input type="text" class="form-control" id="override-title" placeholder="Ej: Vacaciones, Feriado, Día libre...">
+                </div>
+
+                <!-- Type -->
+                <div class="mb-4">
+                    <label class="form-label">Tipo de bloqueo</label>
+                    <div class="flex gap-2 flex-wrap">
+                        <button type="button" class="override-type-btn active" data-type="all-day" onclick="setOverrideType('all-day', this)">
+                            <i class="fa-solid fa-calendar-day me-1"></i> Día(s) completo(s)
+                        </button>
+                        <button type="button" class="override-type-btn" data-type="range" onclick="setOverrideType('range', this)">
+                            <i class="fa-solid fa-calendar-week me-1"></i> Rango de fechas
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Date fields -->
+                <div id="singleDayFields">
+                    <div class="mb-4">
+                        <label class="form-label">Fecha de inicio</label>
+                        <input type="date" class="form-control" id="override-start">
+                    </div>
+                    <div class="mb-4" id="endDateField" style="display:none;">
+                        <label class="form-label">Fecha de fin <span class="text-gray-500 text-xs">(opcional para rango)</span></label>
+                        <input type="date" class="form-control" id="override-end">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="createOverride()" style="color:white;">
+                    <i class="fa-solid fa-ban"></i> Crear Bloqueo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/admin/overrides.js"></script>

@@ -4,7 +4,10 @@ async function init() {
     insightsThisWeek();
     // ifWindowResize();
     nextAppointment();
-    createDataforChart();
+    initEarningsRangePickers();
+    document.querySelectorAll('.kpi-card').forEach(el => {
+        el.addEventListener('animationend', () => { el.style.animation = 'none'; }, { once: true });
+    });
 }
 async function insightsThisWeek() {
     const sort = moment().startOf('isoWeek').format()
@@ -30,12 +33,15 @@ const DAYS_MAP_EN_ES = {
     "Sunday": "Domingo"
 }
 var g_servicios = new Map();
+var g_serviciosByName = new Map();
 var g_horarios = new Map();
 async function bringServices() {
     const { data } = await axios.get('/api/v1/services');
     g_servicios.clear();
+    g_serviciosByName.clear();
     data.forEach((e, i) => {
         g_servicios.set(e._id, e);
+        g_serviciosByName.set(e.name, e);
     });
 
     const { data: horarios } = await axios.get('/api/v1/horario');
@@ -72,7 +78,7 @@ function fillClients(data) {
             },
             item: function (item, escape) {
                 return `
-                <div class="bg-secondary px-1 rounded-3"> 
+                <div class="bg-secondary px-1 rounded-3">
                     <span class="name">${escape(item.nombre)}</span>
                 </div>`;
             }
@@ -111,7 +117,7 @@ function showHorario(e, i) {
     const HORA_FORMAT = moment(e, 'h:mm a').format('h-mm');
     $("#horasDisponibles").append(`
         <div class="d-inline-block animate__animated animate__zoomIn animate__fast" style="animation-delay:${i * 40}ms;">
-            <input type="radio" name="horaDeCitaSelect" class="btn-check" id="hora-cita-${HORA_FORMAT}" 
+            <input type="radio" name="horaDeCitaSelect" class="btn-check" id="hora-cita-${HORA_FORMAT}"
             onclick="changeHora('${e}')" autocomplete="off">
             <label class="btn btn-outline-gold mt-2" for="hora-cita-${HORA_FORMAT}">${e}</label>
         </div>
@@ -120,7 +126,7 @@ function showHorario(e, i) {
 function showServicio(e, i) {
     $("#serviciosDisponibles").append(`
         <div class="animate__animated animate__zoomIn animate__fast" style="animation-delay:${i * 40}ms;">
-            <input type="checkbox" class="btn-check" id="service-checkbox-${e.name}" data-precio="${e.price}" 
+            <input type="checkbox" class="btn-check" id="service-checkbox-${e.name}" data-precio="${e.price}"
             onclick="addServicioToArray('${e.name}','${e.price}')" autocomplete="off">
             <label class="btn btn-outline-info" id="service-checkbox-label-${e.name}" for="service-checkbox-${e.name}">${e.name}</label>
         </div>
@@ -134,7 +140,6 @@ function addServicioToArray(servicio, precio) {
         g_serviciosTempCheck.delete(servicio);
     }
     let total = 0;
-    let combo = 0;
     g_serviciosTempCheck.forEach((value, key) => {
         total += value;
     });
@@ -158,25 +163,44 @@ var slotDays = {
     max: '20:00:00'
 };
 var expected_view = 'timeGridWeek';
+function clampTimeStr(hhmm, deltaHours) {
+    const [h, m] = hhmm.split(':').map(Number);
+    let total = h * 60 + m + deltaHours * 60;
+    total = Math.max(0, Math.min(total, 24 * 60 - 1));
+    const hh = String(Math.floor(total / 60)).padStart(2, '0');
+    const mm = String(total % 60).padStart(2, '0');
+    return `${hh}:${mm}:00`;
+}
 async function createCalendar() {
+    let earliestStart = null;
+    let latestEnd = null;
     g_horarios.forEach((e, i) => {
         if (!e.enable) hiddenDays.push(parseInt(moment(DAYS_MAP_EN_ES[e.day], 'dddd').format('d')));
         else {
             e.hours = sortHours(e.hours);
             const day = DAYS_MAP_EN_ES[e.day];
             const hours = e.hours;
+            const startTime = moment(hours[0], 'h:mm a').format('HH:mm');
+            const endTime = moment(hours[hours.length - 1], 'h:mm a').add(1, 'hour').format('HH:mm');
             businessHours.push({
                 daysOfWeek: [parseInt(moment(day, 'dddd').format('d'))],
-                startTime: moment(hours[0], 'h:mm a').format('HH:mm'),
-                endTime: moment(hours[hours.length - 1], 'h:mm a').add(1, 'hour').format('HH:mm'),
+                startTime,
+                endTime,
             });
-            // slotDays.min = moment(hours[0], 'h:mm a').format('HH:mm:00');
-            // slotDays.max = moment(hours[hours.length - 1], 'h:mm a').add(1, 'hour').format('HH:mm:00');
+            if (earliestStart === null || startTime < earliestStart) earliestStart = startTime;
+            if (latestEnd === null || endTime > latestEnd) latestEnd = endTime;
         }
     });
+    if (earliestStart !== null && latestEnd !== null) {
+        // Show 2 extra hours before opening and after closing, outside businessHours shading
+        slotDays.min = clampTimeStr(earliestStart, -2);
+        slotDays.max = clampTimeStr(latestEnd, 2);
+    }
     let viewport = $(window).width();
-    if (viewport < 600) {
-        expected_view = 'dayGridThreeWeek';
+    if (viewport < 640) {
+        expected_view = 'timeGridDay';
+        // Highlight Day button as active on mobile
+        updateCalViewButtons('timeGridDay');
     }
     renderCalendar();
 }
@@ -189,7 +213,6 @@ async function renderCalendar() {
         aspectRatio: 1,
         height: "900px",
         nowIndicator: true,
-        dayMaxEventRows: true,
         dayMaxEventRows: true,
         expandRows: true,
         themeSystem: 'standard',
@@ -239,7 +262,6 @@ async function renderCalendar() {
             right: 'next'
         },
         buttonText: {
-            today: 'Hoy',
             week: 'Semana',
             day: 'Día',
             dayGridFourWeek: '3 Dias',
@@ -252,20 +274,52 @@ async function renderCalendar() {
     });
     calendar.render();
 }
-function eventDidMount(info) {
 
+// Calendar view switcher
+function switchCalView(viewName) {
+    calendar.changeView(viewName);
+    updateCalViewButtons(viewName);
 }
+
+function updateCalViewButtons(activeView) {
+    const map = {
+        'timeGridWeek': 'btnViewWeek',
+        'dayGridThreeWeek': 'btnView3Days',
+        'timeGridDay': 'btnViewDay'
+    };
+    ['btnViewWeek', 'btnView3Days', 'btnViewDay'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+    });
+    const activeId = map[activeView];
+    if (activeId) {
+        const el = document.getElementById(activeId);
+        if (el) el.classList.add('active');
+    }
+}
+
+function eventDidMount(info) {
+    const { event } = info;
+    const estado = event.extendedProps.estado;
+    if (estado === 'PAGO') {
+        info.el.style.borderLeft = '3px solid #22c55e';
+    }
+}
+
 function eventContent(info) {
     const { event, view } = info;
     const { title, start } = event;
     const hora = moment(start).format('h:mm a');
-    if (view.type == 'timeGridWeek') {
+    const isPaid = event.extendedProps.estado === 'PAGO';
+    const paidIcon = isPaid ? '<i class="fa-solid fa-circle-check text-success me-1" style="font-size:0.7rem;"></i>' : '';
+
+    if (view.type.startsWith('timeGrid')) {
         return {
             html: `
             <div class="d-flex justify-content-start align-items-center px-1 animate__animated animate__fadeIn">
                 <p class="mb-0 text-white me-2"><i class="fa-solid fa-cut"></i></p>
                 <div class="text-white">
-                    <p class="small m-0 fw-bold">${title}</p>
+                    <p class="small m-0 fw-bold">${paidIcon}${title}</p>
                     <p class="small m-0"><span class="text-lowercase">${hora}</span></p>
                 </div>
             </div>`
@@ -276,7 +330,7 @@ function eventContent(info) {
             <div class="d-flex justify-content-start align-items-center px-1 animate__animated animate__fadeIn">
                 <p class="mb-0 text-white me-2"><i class="fa-solid fa-cut"></i></p>
                 <div class="text-white">
-                    <p class="small m-0 fw-bold">${title}</p>
+                    <p class="small m-0 fw-bold">${paidIcon}${title}</p>
                     <p class="small m-0"><span class="text-lowercase">${hora}</span></p>
                 </div>
             </div>`
@@ -284,182 +338,70 @@ function eventContent(info) {
     }
     return true;
 }
-async function eventClick(info) {
-    const { title, start, end, extendedProps } = info.event;
-    const ev = extendedProps;
-
-    const fecha = moment(start, 'YYYY-MM-DD HH:mm').format('dddd D MMMM');
-    const hora = moment(start, 'YYYY-MM-DD HH:mm').format('h:mm a')
-
-    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
-    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
-    const swalWithBootstrapButtons = Swal.mixin({
-        customClass: {
-            confirmButton: 'btn btn-success text-white me-2',
-            denyButton: 'btn btn-danger text-white me-2',
-            cancelButton: 'btn btn-light text-dark',
-        },
-        buttonsStyling: false
-    })
-    swalWithBootstrapButtons.fire({
-        html: `
-            <div>
-                <h1 class="text-capitalize fw-bold">${title}</h1>
-                <div class="d-flex justify-content-center align-items-center my-4">
-                    ${ev.servicios.map((e, i) => {
-            return `<span class="badge bg-gold me-1">${e}</span>`
-        }).join('')}
-                </div>
-                <h4 class="text-primary fw-bold">${toCRC(ev.precio)} colones</h4>
-                <hr>
-                <p class="mb-1">
-                    📞 Telefono: 
-                    <span class="fw-bold">
-                        <a href="tel:+506${ev.numero}">${ev.numero}</a>
-                    </span>
-                    <a 
-                        href="https://wa.me/+506${ev.numero}?text=Hola%20${title},%20le%20contactamos%20de%20HighQuality%20por%20su%20cita%20el%20${encodeURIComponent(fecha)}%20a%20las%20${encodeURIComponent(hora)}."
-                        target="_blank"
-                        class="ms-2 btn btn-success btn-sm"
-                        title="Enviar WhatsApp"
-                    >
-                        <i class="fab fa-whatsapp"></i>
-                    </a>
-                </p>
-                <hr>
-                <small class="mb-1 d-block">
-                    <span class="text-capitalize">${fecha}</span> - <span class="fw-bold">${hora}</span>
-                </small>
-                <hr>
-                <div class="d-grid gap-2 col-6 mx-auto">
-                    <button type="button" class="btn btn-outline-danger btn-sm mt-2" 
-                    onclick="deleteEvent('${ev._id}')"><i class="fas fa-calendar-times pe-1"></i> Eliminar Cita</button>
-                </div>
-            </div>
-        `,
-        showDenyButton: true,
-        showCancelButton: true,
-        confirmButtonText: 'Pago',
-        cancelButtonText: 'Cerrar',
-        denyButtonText: 'Pendiente de Pago',
-        background: bg,
-        color: color,
-        showClass: {
-            popup: `
-                animate__animated
-                animate__fadeInDown
-                animate__faster
-                `
-        },
-        hideClass: {
-            popup: `
-                animate__animated
-                animate__fadeOutUp
-                animate__faster`
+function eventClick(info) {
+    const { title, start, extendedProps: ev } = info.event;
+    const fecha = moment(start, 'YYYY-MM-DD HH:mm').format('dddd D [de] MMMM');
+    const hora = moment(start, 'YYYY-MM-DD HH:mm').format('h:mm a');
+    const waMsg = `?text=Hola%20${encodeURIComponent(title)},%20le%20contactamos%20de%20HighQuality%20por%20su%20cita%20el%20${encodeURIComponent(fecha)}%20a%20las%20${encodeURIComponent(hora)}.`;
+    const precio = ev.precio || (ev.servicios || []).reduce((sum, name) => {
+        const svc = g_serviciosByName.get(name);
+        return sum + (svc ? svc.price : 0);
+    }, 0);
+    window.dispatchEvent(new CustomEvent('open-cita-detail', {
+        detail: {
+            _id: ev._id,
+            title,
+            fecha,
+            hora,
+            servicios: ev.servicios,
+            precio,
+            precioFmt: toCRC(precio),
+            numero: ev.numero,
+            estado: ev.estado,
+            waMsg,
         }
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            swalWithBootstrapButtons.fire({
-                title: 'Pago',
-                html: `
-                    <p>¿Monto?</p>
-                `,
-                input: 'text',
-                inputValue: ev.precio,
-                inputAttributes: {
-                    autocapitalize: 'off'
-                },
-                showCancelButton: true,
-                confirmButtonText: 'Pagar',
-                background: bg,
-                color: color,
-                preConfirm: async (input) => {
-                    if (typeof input != 'number' && isNaN(parseInt(input))) {
-                        return Swal.showValidationMessage('Ingrese un monto valido')
-                    }
-                    else if (input == '') {
-                        return Swal.showValidationMessage('Ingrese un monto')
-                    } else {
-                        const { data } = await axios.put(`/api/v1/event/${ev._id}/pagar`, {
-                            monto: input
-                        });
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 1000,
-                            timerProgressBar: true,
-                            background: bg,
-                            color: color,
-                        })
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Pagado'
-                        });
-                        calendar.today();
-                    }
-                }
-            });
-        } else if (result.isDenied) {
-            const { data } = await axios.put(`/api/v1/event/${ev._id}/pagar`, {
-                monto: 0
-            });
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 1000,
-                timerProgressBar: true,
-                background: bg,
-                color: color,
-            })
-            Toast.fire({
-                icon: 'warning',
-                title: 'Por Pagar'
-            })
-            calendar.today();
-        }
-    })
+    }));
 }
-async function deleteEvent(id) {
-    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
-    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
-    const { data } = await axios.delete(`/api/v1/event/${id}`);
-    const Toast = Swal.mixin({
+function showToast(icon, title) {
+    Swal.mixin({
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
-        timer: 1000,
+        timer: 1800,
         timerProgressBar: true,
-        background: bg,
-        color: color,
-    });
-    Toast.fire({
-        icon: 'success',
-        title: 'Eliminado'
-    });
-    calendar.today();
+        background: '#0d0d0d',
+        color: '#f1f1f1',
+    }).fire({ icon, title });
 }
 async function dateSet(info) {
     const { startStr, endStr } = info;
-    const start = moment(startStr).format('dddd D MMM');
-    const end = moment(endStr).format('dddd D MMM');
-    $("#date").html(`${start} - ${end}`);
+    const startM = moment(startStr);
+    const endInclusive = moment(endStr).subtract(1, 'day');
+    const start = sentenceCase(startM.format('dddd D [de] MMMM'));
+    if (startM.isSame(endInclusive, 'day')) {
+        $("#date").html(start);
+    } else {
+        const end = sentenceCase(endInclusive.format('dddd D [de] MMMM'));
+        $("#date").html(`${start} - ${end}`);
+    }
 
     const sort = moment(startStr).startOf('isoWeek').format()
     const { data } = await axios.get(`/api/v1/event?sort=${sort}`);
     calendar.removeAllEventSources();
     calendar.addEventSource(data);
+
+    // Update KPIs for the currently visible week
+    analytics(data);
 }
 async function analytics(data) {
     const today = moment().format('YYYY-MM-DD');
     const events = data.filter(e => moment(e.start).format('YYYY-MM-DD') == today);
     const total = events.length;
 
-    $("#countCitas").html(total);
+    const pagadas = events.filter(e => e.extendedProps.estado == 'PAGO');
+    const porPagar = events.filter(e => e.extendedProps.estado != 'PAGO');
 
     let monto = 0;
-    const pagadas = events.filter(e => e.extendedProps.estado == 'PAGO');
     pagadas.forEach(e => {
         monto += parseInt(e.extendedProps.precio);
     });
@@ -467,6 +409,14 @@ async function analytics(data) {
     anime({
         targets: '#countCitas',
         innerHTML: [0, total],
+        easing: 'linear',
+        round: 1,
+        duration: 500
+    });
+
+    anime({
+        targets: '#countPorPagar',
+        innerHTML: [0, porPagar.length],
         easing: 'linear',
         round: 1,
         duration: 500
@@ -516,7 +466,10 @@ var currentDateSelected = '';
 async function onDateClick(info) {
     currentDateSelected = info.dateStr;
 
+    // Reset cerrado mode first, then show modal
+    resetCerradoMode();
     modalAddEvent.show();
+
     const date = moment(info.dateStr);
     const day = g_horarios.get(DAYS_MAP_ES_EN[date.format('dddd')]);
 
@@ -536,6 +489,28 @@ async function onDateClick(info) {
     $("#timeSelected").html(date.format('hh:mm a'));
 
 }
+
+// Cerrado mode toggle
+var cerradoModeActive = false;
+function toggleCerradoMode() {
+    cerradoModeActive = !cerradoModeActive;
+    if (cerradoModeActive) {
+        $("#cerradoSelection").show();
+        $("#cerradoToggleBtn").addClass('active-cerrado');
+        $("#agendarCitaButton").hide();
+        $("#salvarCerrado").show();
+    } else {
+        resetCerradoMode();
+    }
+}
+function resetCerradoMode() {
+    cerradoModeActive = false;
+    $("#cerradoSelection").hide();
+    $("#cerradoToggleBtn").removeClass('active-cerrado');
+    $("#agendarCitaButton").show();
+    $("#salvarCerrado").hide();
+}
+
 async function typeselection(ele) {
     const val = ele.value;
     if (val == 'cita') {
@@ -734,34 +709,118 @@ function cerrarDia() {
     calendar.today();
 }
 var incomeByMonth = [];
-async function createDataforChart() {
-    const months = [
-        moment().format('YYYY-MM'),
-        moment().subtract(1, 'month').format('YYYY-MM'),
-        moment().subtract(2, 'month').format('YYYY-MM'),
-        moment().subtract(3, 'month').format('YYYY-MM'),
-    ];
-    for (let i = 0; i < months.length; i++) {
-        const month = months[i];
-        const { data: eventsMonth } = await axios.get('/api/v1/event/month?month=' + month);
-        const pagos = eventsMonth.filter(e => e.extendedProps.estado == 'PAGO');
-        const totalByMonth = pagos.map(e => parseInt(e.extendedProps.precio)).reduce((acc, e) => acc + e, 0);
-        incomeByMonth.push({
-            x: sentecesCase(moment(month, 'YYYY-MM').format('MMMM YYYY')),
-            y: totalByMonth
+var earningsMode = 'day';
+var chartExpanded = false;
+
+function toggleChart() {
+    const panel = document.getElementById('gananciaspormes');
+    const card = document.getElementById('kpiGananciasCard');
+    const closeBtn = document.getElementById('closeChartBtn');
+    const hideables = document.querySelectorAll('.kpi-hideable');
+    const expanding = !chartExpanded;
+    chartExpanded = expanding;
+
+    if (expanding) {
+        hideables.forEach(el => el.classList.add('kpi-fade-out'));
+        setTimeout(() => hideables.forEach(el => el.classList.add('hidden')), 250);
+        card.classList.add('col-span-2', 'sm:col-span-4');
+        closeBtn.classList.remove('hidden');
+        closeBtn.classList.add('flex');
+        $(panel).slideDown(220, () => loadEarningsChart());
+    } else {
+        $(panel).slideUp(200, () => {
+            card.classList.remove('col-span-2', 'sm:col-span-4');
+            closeBtn.classList.add('hidden');
+            closeBtn.classList.remove('flex');
+            hideables.forEach(el => el.classList.remove('hidden'));
+            void document.body.offsetHeight; // force reflow so the fade-in transition plays
+            requestAnimationFrame(() => hideables.forEach(el => el.classList.remove('kpi-fade-out')));
         });
     }
-    incomeByMonth = incomeByMonth.reverse();
+}
+
+var earningsRangePicker;
+function setEarningsMode(mode) {
+    earningsMode = mode;
+    document.querySelectorAll('.earnings-filter-btn[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    document.getElementById('earningsRangeInputs').style.display = mode === 'range' ? 'grid' : 'none';
+    if (mode !== 'range') loadEarningsChart();
+}
+
+function initEarningsRangePickers() {
+    const opts = {
+        locale: 'es',
+        dateFormat: 'Y-m-d',
+        altInput: true,
+        altFormat: 'd M Y',
+        maxDate: 'today',
+    };
+    flatpickr('#earningsStart', opts);
+    flatpickr('#earningsEnd', opts);
+}
+
+async function loadEarningsChart() {
+    const now = moment();
+    let start, end, bucket;
+
+    if (earningsMode === 'day') {
+        start = now.clone().subtract(13, 'days').startOf('day');
+        end = now.clone().endOf('day');
+        bucket = 'day';
+    } else if (earningsMode === 'week') {
+        start = now.clone().subtract(11, 'weeks').startOf('isoWeek');
+        end = now.clone().endOf('isoWeek');
+        bucket = 'week';
+    } else if (earningsMode === 'month') {
+        start = now.clone().subtract(5, 'months').startOf('month');
+        end = now.clone().endOf('month');
+        bucket = 'month';
+    } else {
+        const s = $('#earningsStart').val();
+        const e = $('#earningsEnd').val();
+        if (!s || !e) return;
+        start = moment(s).startOf('day');
+        end = moment(e).endOf('day');
+        const spanDays = end.diff(start, 'days');
+        bucket = spanDays > 60 ? 'month' : (spanDays > 14 ? 'week' : 'day');
+    }
+
+    const { data: events } = await axios.get(`/api/v1/event/range?start=${start.format('YYYY-MM-DD')}&end=${end.format('YYYY-MM-DD')}`);
+    const pagos = events.filter(e => e.extendedProps.estado == 'PAGO');
+
+    const bucketKey = (m) => bucket === 'day' ? m.format('YYYY-MM-DD') : bucket === 'week' ? m.format('GGGG-[W]WW') : m.format('YYYY-MM');
+    const bucketLabel = (m) => bucket === 'day' ? sentenceCase(m.format('D MMM')) : bucket === 'week' ? `Sem ${m.format('WW')}` : sentecesCase(m.format('MMM YYYY'));
+
+    const buckets = new Map();
+    const cursor = start.clone();
+    while (cursor.isSameOrBefore(end)) {
+        const key = bucketKey(cursor);
+        if (!buckets.has(key)) buckets.set(key, { label: bucketLabel(cursor), total: 0 });
+        cursor.add(1, bucket);
+    }
+    pagos.forEach(e => {
+        const key = bucketKey(moment(e.start));
+        if (buckets.has(key)) buckets.get(key).total += parseInt(e.extendedProps.precio) || 0;
+    });
+
+    incomeByMonth = Array.from(buckets.values()).map(b => ({ x: b.label, y: b.total }));
     createChart();
+
+    const realEvents = events.filter(e => e.extendedProps.numero != '88008800' && !(e.extendedProps.servicios || []).includes('Cerrado'));
+    buildServiciosChart(realEvents);
+    buildDiaSemanaChart(realEvents);
+    buildTopClientesChart(realEvents);
 }
 
 var gananciasChart;
 function createChart() {
     const ctx = document.getElementById('chartGanancias').getContext('2d');
-    var gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(248, 39, 46, 1)');
-    gradient.addColorStop(0.5, 'rgba(248, 39, 46, 0.25)');
-    gradient.addColorStop(1, 'rgba(248, 39, 46, 0)');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+    gradient.addColorStop(0, 'rgba(124, 58, 237, 0.45)');
+    gradient.addColorStop(0.6, 'rgba(124, 58, 237, 0.08)');
+    gradient.addColorStop(1, 'rgba(124, 58, 237, 0)');
+
+    if (gananciasChart) gananciasChart.destroy();
 
     gananciasChart = new Chart(ctx, {
         type: 'line',
@@ -771,45 +830,171 @@ function createChart() {
                 label: 'Ganancias',
                 data: incomeByMonth.map(e => e.y),
                 backgroundColor: gradient,
-                borderColor: 'rgba(248, 39, 46, 1)',
-                borderWidth: 1,
-                tension: 0.4,
-                pointRadius: 10,
+                borderColor: '#a78bfa',
+                borderWidth: 2.5,
+                tension: 0.35,
                 fill: true,
-                pointBackgroundColor: 'rgba(248, 39, 46, 0.5)',
-                pointBorderColor: 'rgba(248, 39, 46, 1)',
-                pointHoverRadius: 10,
-                pointHoverBackgroundColor: 'rgba(248, 39, 46, 0.5)',
-                pointHoverBorderColor: 'rgba(248, 39, 46, 1)',
+                pointRadius: 4,
+                pointBackgroundColor: '#7c3aed',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 1.5,
+                pointHoverRadius: 6,
+                pointHoverBackgroundColor: '#a78bfa',
+                pointHoverBorderColor: '#fff',
                 pointHoverBorderWidth: 2,
-                pointHitRadius: 10,
-                pointBorderWidth: 2
-
-
+                pointHitRadius: 12,
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
             scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#8b8b8b', font: { size: 11 } }
+                },
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: {
+                        color: '#8b8b8b',
+                        font: { size: 11 },
+                        callback: (v) => toCRC(v)
+                    }
                 }
             },
             plugins: {
-                title: {
-                    display: false
-                },
-                legend: {
-                    display: false,
+                title: { display: false },
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#161616',
+                    borderColor: 'rgba(124,58,237,0.4)',
+                    borderWidth: 1,
+                    titleColor: '#fff',
+                    bodyColor: '#a78bfa',
+                    padding: 10,
+                    displayColors: false,
+                    callbacks: {
+                        label: (ctx) => toCRC(ctx.parsed.y)
+                    }
                 }
             }
         }
     });
 }
-function toggleChart() {
-    $('#gananciaspormes').slideToggle();
+
+function baseBarOptions(tooltipLabel) {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        scales: {
+            x: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8b8b8b', font: { size: 10 } } },
+            y: { grid: { display: false }, ticks: { color: '#c7c7c7', font: { size: 10 } } }
+        },
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#161616',
+                borderColor: 'rgba(124,58,237,0.4)',
+                borderWidth: 1,
+                titleColor: '#fff',
+                bodyColor: '#a78bfa',
+                padding: 8,
+                displayColors: false,
+                callbacks: tooltipLabel ? { label: tooltipLabel } : undefined
+            }
+        }
+    };
 }
+
+var chartServicios;
+function buildServiciosChart(events) {
+    const counts = new Map();
+    events.forEach(e => {
+        (e.extendedProps.servicios || []).forEach(s => counts.set(s, (counts.get(s) || 0) + 1));
+    });
+    const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+    const ctx = document.getElementById('chartServicios').getContext('2d');
+    if (chartServicios) chartServicios.destroy();
+    chartServicios = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sorted.map(s => s[0]),
+            datasets: [{
+                data: sorted.map(s => s[1]),
+                backgroundColor: '#F4C82C',
+                borderRadius: 4,
+                barThickness: 14
+            }]
+        },
+        options: baseBarOptions((ctx) => `${ctx.parsed.x} citas`)
+    });
+}
+
+var chartDiaSemana;
+function buildDiaSemanaChart(events) {
+    const dayLabels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+    events.forEach(e => {
+        const iso = moment(e.start).isoWeekday(); // 1 = Monday .. 7 = Sunday
+        counts[iso - 1]++;
+    });
+
+    const ctx = document.getElementById('chartDiaSemana').getContext('2d');
+    if (chartDiaSemana) chartDiaSemana.destroy();
+    chartDiaSemana = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: dayLabels,
+            datasets: [{
+                data: counts,
+                backgroundColor: '#0d9488',
+                borderRadius: 4,
+                barThickness: 14
+            }]
+        },
+        options: {
+            ...baseBarOptions((ctx) => `${ctx.parsed.y} citas`),
+            indexAxis: 'x',
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#c7c7c7', font: { size: 10 } } },
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8b8b8b', font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+var chartTopClientes;
+function buildTopClientesChart(events) {
+    const totals = new Map(); // numero -> { name, total }
+    events.filter(e => e.extendedProps.estado == 'PAGO').forEach(e => {
+        const numero = e.extendedProps.numero;
+        const entry = totals.get(numero) || { name: e.title, total: 0 };
+        entry.total += parseInt(e.extendedProps.precio) || 0;
+        totals.set(numero, entry);
+    });
+    const sorted = Array.from(totals.values()).sort((a, b) => b.total - a.total).slice(0, 5);
+
+    const ctx = document.getElementById('chartTopClientes').getContext('2d');
+    if (chartTopClientes) chartTopClientes.destroy();
+    chartTopClientes = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sorted.map(c => c.name),
+            datasets: [{
+                data: sorted.map(c => c.total),
+                backgroundColor: '#14b73a',
+                borderRadius: 4,
+                barThickness: 14
+            }]
+        },
+        options: baseBarOptions((ctx) => toCRC(ctx.parsed.x))
+    });
+}
+
 var horaSeleccionada = "00:00 am";
 function changeHora(hora) {
     $("#timeSelected").html(hora);
@@ -828,6 +1013,9 @@ function toCRC(number) {
 }
 function sentecesCase(str) {
     return str.toLowerCase().replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+}
+function sentenceCase(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 function ifWindowResize() {
@@ -853,22 +1041,25 @@ function addNextAppointmentToNavbar() {
     const now = moment();
     const today = moment().format('YYYY-MM-DD');
     axios.get(`/api/v1/event?sort=${today}&onlyThisDay=true`).then(({ data }) => {
+        // FIX: use moment() fresh to avoid moment mutation bug
         const currentAppointment = data.filter(e => moment(e.start).isSame(now, 'hour'));
-        const nextAppointment = data.filter(e => moment(e.start).isSame(now.add(30, 'minutes'), 'hour'));
+        const nextAppointment = data.filter(e => moment(e.start).isSame(moment().add(30, 'minutes'), 'hour'));
 
         if (currentAppointment.length > 0) {
             const event = currentAppointment[0];
             const { title, start, extendedProps } = event;
-            $("#currentAppointment").html(`${title} - ${moment(start).format('h:mm a')} - ${extendedProps.servicios.join(', ')}`);
+            $("#currentAppointment").html(`${title} — ${moment(start).format('h:mm a')} — ${extendedProps.servicios.join(', ')}`);
+        } else {
+            $("#currentAppointment").html('Sin cita actual');
         }
         if (nextAppointment.length > 0) {
             const event = nextAppointment[0];
             const { title, start, extendedProps } = event;
-            $("#nextAppointment").html(`${title} - ${moment(start).format('h:mm a')} - ${extendedProps.servicios.join(', ')}`);
-        }else if(nextAppointment.length == 0){
-            $("#nextAppointment").html(`No hay citas próximas`);
+            $("#nextAppointment").html(`${title} — ${moment(start).format('h:mm a')} — ${extendedProps.servicios.join(', ')}`);
+        } else {
+            $("#nextAppointment").html('No hay citas próximas');
         }
-        
+
     });
 }
 

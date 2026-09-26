@@ -1,0 +1,31 @@
+<div class="py-2">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-white bebas">Hola, {{user.name}}</h1>
+        <p class="text-gray-500 text-sm mt-1">Agenda tu próxima cita rápidamente</p>
+    </div>
+
+    <!-- Quick rebook section -->
+    <div class="mb-6">
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Tus últimos servicios</h2>
+        <div id="recommended-services" class="flex flex-col gap-2">
+            <div class="text-center py-8 text-gray-600">
+                <i class="fa-solid fa-circle-notch fa-spin fa-lg mb-2"></i>
+                <p class="text-sm">Cargando...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick book button -->
+    <a href="/reservar" class="btn btn-gold btn-lg w-full rounded-pill text-center d-block">
+        <i class="fa-solid fa-plus me-2"></i> Nueva Cita
+    </a>
+
+    <!-- Next upcoming appointment -->
+    <div class="mt-6">
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Próxima cita</h2>
+        <div id="next-appointment" class="rounded-xl p-4 border border-white/10" style="background:#0d0d0d;">
+            <p class="text-gray-600 text-sm text-center py-2">Cargando...</p>
+        </div>
+    </div>
+</div>
+<script src="/js/app/index.js"></script>

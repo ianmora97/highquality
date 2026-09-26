@@ -1,0 +1,93 @@
+<div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
+
+    <!-- Header -->
+    <div class="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 mb-4">
+        <h1 class="text-xl font-bold mb-1 flex items-center gap-2">
+            <i class="fa-solid fa-gear text-primary"></i> Configuración del Sistema
+        </h1>
+        <p class="text-gray-500 text-sm mb-0">Administra las opciones globales del sistema</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-1 mb-4 border-b border-white/8 pb-0">
+        <button onclick="switchTab('pago')" id="tab-btn-pago"
+                class="settings-tab-btn px-4 py-2.5 text-sm font-medium text-gray-400 border-b-2 border-transparent -mb-px transition-all hover:text-white"
+                data-active="false">
+            <i class="fa-solid fa-credit-card me-1.5"></i> Opciones de Pago
+        </button>
+        <button onclick="switchTab('whatsapp')" id="tab-btn-whatsapp"
+                class="settings-tab-btn px-4 py-2.5 text-sm font-medium text-gray-400 border-b-2 border-transparent -mb-px transition-all hover:text-white"
+                data-active="false">
+            <i class="fa-brands fa-whatsapp me-1.5"></i> Whatsapp
+        </button>
+    </div>
+
+    <!-- Tab: Opciones de Pago -->
+    <div id="tab-pago" class="settings-tab">
+        <div class="bg-[#0d0d0d] border border-white/8 rounded-xl overflow-hidden">
+            <div class="flex items-center justify-between p-4 border-b border-white/8">
+                <div>
+                    <h2 class="font-semibold text-white text-sm">Métodos de Pago</h2>
+                </div>
+                <button onclick="openAddModal()" class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i> Agregar
+                </button>
+            </div>
+
+            <!-- List -->
+            <div id="paymentMethodsList" class="divide-y divide-white/5">
+                <!-- JS fills this -->
+            </div>
+            <div id="emptyMethods" class="text-center py-12 text-gray-600" style="display:none;">
+                <i class="fa-solid fa-credit-card fa-2x mb-3"></i>
+                <p class="text-sm">No hay métodos de pago</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: Whatsapp -->
+    <div id="tab-whatsapp" class="settings-tab" style="display:none;">
+        <div class="bg-[#0d0d0d] border border-white/8 rounded-xl overflow-hidden">
+            <div class="flex items-center justify-between p-4">
+                <div>
+                    <h2 class="font-semibold text-white text-sm">Mensajes de Confirmación</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Envía un Whatsapp al cliente al confirmar una cita.</p>
+                </div>
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" role="switch" id="whatsapp-confirm-switch"
+                        onchange="toggleWhatsappConfirm(this.checked)">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal" id="methodModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" style="max-width:420px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="methodModalTitle"><i class="fa-solid fa-credit-card"></i> Nuevo Método</h2>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4">
+                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="method-name" placeholder="Ej: Efectivo, Sinpe Móvil">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Detalles <span class="text-gray-500">(opcional)</span></label>
+                    <input type="text" class="form-control" id="method-details" placeholder="Ej: número de teléfono, cuenta, etc.">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveMethod()">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/admin/settings.js"></script>

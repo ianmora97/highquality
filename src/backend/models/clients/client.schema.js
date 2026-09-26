@@ -16,6 +16,10 @@ const ClientSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    password: {
+        type: String,
+        default: '',
+    },
     createdAt: {
         type: Date,
         default: moment().format()

@@ -1,10 +1,10 @@
-<div class="container-md-fluid py-3">
+<div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
 
     <!-- Header -->
-    <div class="rounded-xl p-4 mb-4 border border-white/10 flex flex-wrap gap-4 items-center justify-between" style="background:#0d0d0d;">
+    <div class="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 mb-4 flex flex-wrap gap-4 items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold mb-1">
-                <i class="fa-solid fa-scissors" style="color:#3004f3;"></i> Servicios
+            <h1 class="text-xl font-bold mb-1 flex items-center gap-2">
+                <i class="fa-solid fa-scissors text-primary"></i> Servicios
             </h1>
             <p class="text-gray-500 text-sm mb-1">Todos los servicios que ofrece HighQuality</p>
             <div class="flex items-center gap-4">
@@ -44,12 +44,55 @@
                     <label class="form-label">Precio del servicio</label>
                     <input type="number" class="form-control form-control-lg" id="precio-add" placeholder="Precio">
                 </div>
-                <hr class="border-white/10 my-3">
-                <label class="form-label text-sm text-gray-400">Ícono</label>
-                <div class="fa-icon-grid" id="faIconGrid-add"></div>
-                <div class="fa-icon-selected-preview" id="faIconPreview-add">
-                    <i class="fa-solid fa-scissors fa-icon-preview-i" id="faIconPreviewIcon-add"></i>
-                    <span class="fa-icon-preview-name" id="faIconPreviewName-add">Tijeras</span>
+                <hr class="border-white/8 my-3">
+                <label class="form-label text-sm">Tipo de icono</label>
+                <div class="flex gap-2 mb-3" id="iconTypeBtns-add">
+                    <button type="button" class="icon-type-btn active" data-type="icon" onclick="setIconType('add', 'icon', this)">
+                        <i class="fa-solid fa-icons me-1"></i> Ícono FA
+                    </button>
+                    <button type="button" class="icon-type-btn" data-type="image" onclick="setIconType('add', 'image', this)">
+                        <i class="fa-solid fa-image me-1"></i> Imagen
+                    </button>
+                </div>
+
+                <!-- Icon picker -->
+                <div id="iconSection-add">
+                    <div class="fa-icon-grid" id="faIconGrid-add"></div>
+                    <div class="fa-icon-selected-preview" id="faIconPreview-add">
+                        <i class="fa-solid fa-scissors fa-icon-preview-i" id="faIconPreviewIcon-add"></i>
+                        <span class="fa-icon-preview-name" id="faIconPreviewName-add">Tijeras</span>
+                    </div>
+                </div>
+
+                <!-- Image upload -->
+                <div id="imageSection-add" style="display:none;">
+                    <div class="image-upload-area" id="uploadArea-add" onclick="document.getElementById('fileInput-add').click()">
+                        <div id="uploadPlaceholder-add">
+                            <i class="fa-solid fa-cloud-arrow-up fa-2x text-gray-600 mb-2"></i>
+                            <p class="text-gray-500 text-sm">Haz click o arrastra una imagen</p>
+                            <p class="text-gray-600 text-xs">JPG, PNG, WebP — se recortará a 800×800</p>
+                        </div>
+                        <img id="uploadPreview-add" style="display:none; max-height:200px; border-radius:8px; object-fit:cover;">
+                    </div>
+                    <input type="file" id="fileInput-add" accept="image/*" style="display:none;" onchange="handleFileSelect('add', this)">
+
+                    <div id="cropperContainer-add" style="display:none; margin-top:12px;">
+                        <div class="rounded-lg overflow-hidden border border-white/8" style="max-height:300px;">
+                            <img id="cropperImg-add" style="max-width:100%;">
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <button type="button" class="btn btn-sm btn-dark flex-1" onclick="resetCrop('add')">
+                                <i class="fa-solid fa-rotate-left"></i> Cambiar
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary flex-1" onclick="confirmCrop('add')">
+                                <i class="fa-solid fa-crop"></i> Confirmar recorte
+                            </button>
+                        </div>
+                    </div>
+                    <div id="cropConfirmed-add" style="display:none; text-align:center; padding:8px;">
+                        <i class="fa-solid fa-circle-check text-green-400 me-2"></i>
+                        <span class="text-green-400 text-sm">Imagen lista</span>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -82,12 +125,55 @@
                     <label class="form-label">Precio del servicio</label>
                     <input type="number" class="form-control form-control-lg" id="precio-edit" placeholder="Precio">
                 </div>
-                <hr class="border-white/10 my-3">
-                <label class="form-label text-sm text-gray-400">Ícono</label>
-                <div class="fa-icon-grid" id="faIconGrid-edit"></div>
-                <div class="fa-icon-selected-preview" id="faIconPreview-edit">
-                    <i class="fa-solid fa-scissors fa-icon-preview-i" id="faIconPreviewIcon-edit"></i>
-                    <span class="fa-icon-preview-name" id="faIconPreviewName-edit">Tijeras</span>
+                <hr class="border-white/8 my-3">
+                <label class="form-label text-sm">Tipo de icono</label>
+                <div class="flex gap-2 mb-3" id="iconTypeBtns-edit">
+                    <button type="button" class="icon-type-btn active" data-type="icon" onclick="setIconType('edit', 'icon', this)">
+                        <i class="fa-solid fa-icons me-1"></i> Ícono FA
+                    </button>
+                    <button type="button" class="icon-type-btn" data-type="image" onclick="setIconType('edit', 'image', this)">
+                        <i class="fa-solid fa-image me-1"></i> Imagen
+                    </button>
+                </div>
+
+                <!-- Icon picker -->
+                <div id="iconSection-edit">
+                    <div class="fa-icon-grid" id="faIconGrid-edit"></div>
+                    <div class="fa-icon-selected-preview" id="faIconPreview-edit">
+                        <i class="fa-solid fa-scissors fa-icon-preview-i" id="faIconPreviewIcon-edit"></i>
+                        <span class="fa-icon-preview-name" id="faIconPreviewName-edit">Tijeras</span>
+                    </div>
+                </div>
+
+                <!-- Image upload -->
+                <div id="imageSection-edit" style="display:none;">
+                    <div class="image-upload-area" id="uploadArea-edit" onclick="document.getElementById('fileInput-edit').click()">
+                        <div id="uploadPlaceholder-edit">
+                            <i class="fa-solid fa-cloud-arrow-up fa-2x text-gray-600 mb-2"></i>
+                            <p class="text-gray-500 text-sm">Haz click o arrastra una imagen</p>
+                            <p class="text-gray-600 text-xs">JPG, PNG, WebP — se recortará a 800×800</p>
+                        </div>
+                        <img id="uploadPreview-edit" style="display:none; max-height:200px; border-radius:8px; object-fit:cover;">
+                    </div>
+                    <input type="file" id="fileInput-edit" accept="image/*" style="display:none;" onchange="handleFileSelect('edit', this)">
+
+                    <div id="cropperContainer-edit" style="display:none; margin-top:12px;">
+                        <div class="rounded-lg overflow-hidden border border-white/8" style="max-height:300px;">
+                            <img id="cropperImg-edit" style="max-width:100%;">
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <button type="button" class="btn btn-sm btn-dark flex-1" onclick="resetCrop('edit')">
+                                <i class="fa-solid fa-rotate-left"></i> Cambiar
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary flex-1" onclick="confirmCrop('edit')">
+                                <i class="fa-solid fa-crop"></i> Confirmar recorte
+                            </button>
+                        </div>
+                    </div>
+                    <div id="cropConfirmed-edit" style="display:none; text-align:center; padding:8px;">
+                        <i class="fa-solid fa-circle-check text-green-400 me-2"></i>
+                        <span class="text-green-400 text-sm">Imagen lista</span>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -100,4 +186,6 @@
     </div>
 </div>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script src="/js/admin/servicios.js"></script>

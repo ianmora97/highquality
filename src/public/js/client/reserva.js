@@ -1,7 +1,5 @@
 // ===== CONSTANTS =====
 const AVOID_HOURS = ["13:30", "15:00", "19:30"];
-const MIN_HALF = "00:00";
-const MAX_HALF = "09:00";
 
 const DAYS_MAP_ES_EN = {
     "domingo": "Sunday",
@@ -31,10 +29,64 @@ async function init() {
     const now = moment();
     calYear  = now.year();
     calMonth = now.month(); // 0-indexed
-    renderCalendarMonth(calYear, calMonth);
+    await renderCalendarMonth(calYear, calMonth);
     setupCalendarNav();
     setupBookingNav();
     updateStepUI();
+    initStep4();
+    setupInputMasks();
+}
+
+// ===== STEP 4 STATE =====
+function initStep4() {
+    const nombreMeta = document.querySelector('meta[name="client-session-nombre"]');
+    const numeroMeta = document.querySelector('meta[name="client-session-numero"]');
+    const nombre = nombreMeta ? nombreMeta.content.trim() : '';
+    const numero = numeroMeta ? numeroMeta.content.trim() : '';
+
+    if (nombre && numero) {
+        _showSessionPill(nombre, numero);
+    } else {
+        _showPhoneInput();
+    }
+}
+
+function _showSessionPill(nombre, numero) {
+    document.getElementById('session-pill').style.display   = 'block';
+    document.getElementById('phone-section').style.display  = 'none';
+    document.getElementById('nombre-section').style.display = 'none';
+    document.getElementById('account-actions').style.display = 'none';
+
+    document.getElementById('numeroTelefono').value = numero;
+    document.getElementById('nombreCita').value     = nombre;
+
+    document.getElementById('session-pill').innerHTML =
+        '<div class="rounded-xl p-3 mb-3" style="background:rgba(244,200,44,0.06); border:1px solid rgba(244,200,44,0.2);">' +
+            '<div class="flex items-center gap-3">' +
+                '<div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style="background:rgba(244,200,44,0.12);">' +
+                    '<i class="fa-solid fa-user" style="color:#F4C82C;"></i>' +
+                '</div>' +
+                '<div class="flex-1 min-w-0">' +
+                    '<div class="font-semibold" style="color:#fff;">' + nombre + '</div>' +
+                    '<div class="text-sm" style="color:#9ca3af;">' + formatPhone(numero) + '</div>' +
+                '</div>' +
+                '<span class="text-xs px-2 py-1 rounded-full shrink-0" style="background:rgba(34,197,94,0.12); color:#22c55e;">' +
+                    '<i class="fa-solid fa-circle-check me-1"></i>Sesión' +
+                '</span>' +
+            '</div>' +
+        '</div>';
+}
+
+function _showPhoneInput() {
+    document.getElementById('session-pill').style.display    = 'none';
+    document.getElementById('phone-section').style.display   = 'block';
+    document.getElementById('nombre-section').style.display  = 'none';
+    document.getElementById('account-actions').style.display = 'none';
+}
+
+function formatPhone(num) {
+    const s = String(num).replace(/\D/g, '');
+    return s.length === 8 ? s.slice(0, 4) + '-' + s.slice(4) : s;
 }
 
 // ===== DATA FETCH =====
@@ -89,6 +141,7 @@ function toggleService(name, price, card) {
         card.classList.add('selected');
     }
     updatePriceDisplay();
+    updateStepUI();
 }
 
 function updatePriceDisplay() {
@@ -118,10 +171,66 @@ function isDayEnabled(momentDate) {
     const dayEs = momentDate.format('dddd'); // Spanish locale: "lunes", etc.
     const dayEn = DAYS_MAP_ES_EN[dayEs];
     const horario = g_horarios.get(dayEn);
-    return horario ? horario.enable : false;
+
+    if (!horario || !horario.enable) return false;
+
+    // Same-day: check if any future slots remain after filtering past times
+    if (momentDate.isSame(moment(), 'day')) {
+        const nowHHmm = moment().format('HH:mm');
+        const hasAvailable = horario.hours.some(h => {
+            const slotHHmm = moment(h, 'h:mm a').format('HH:mm');
+            return slotHHmm > nowHHmm;
+        });
+        return hasAvailable;
+    }
+
+    return true;
 }
 
-function renderCalendarMonth(year, month) {
+async function hasAvailableSlots(dateStr) {
+    try {
+        const date = moment(dateStr);
+        const dayEs = date.format('dddd');
+        const dayEn = DAYS_MAP_ES_EN[dayEs];
+        const horario = g_horarios.get(dayEn);
+
+        if (!horario || !horario.enable) return false;
+
+        let slots = [...horario.hours];
+
+        // Same-day: filter past slots
+        if (date.isSame(moment(), 'day')) {
+            const nowHHmm = moment().format('HH:mm');
+            slots = slots.filter(h => {
+                const slotHHmm = moment(h, 'h:mm a').format('HH:mm');
+                return slotHHmm > nowHHmm;
+            });
+        }
+
+        // Filter avoid hours
+        slots = slots.filter(h => !AVOID_HOURS.includes(moment(h, 'h:mm a').format('HH:mm')));
+
+        // Viernes: remove 3pm and 3:30pm
+        if (dayEs === 'viernes') {
+            slots = slots.filter(h => {
+                const h24 = moment(h, 'h:mm a').format('HH:mm');
+                return h24 !== '15:00' && h24 !== '15:30';
+            });
+        }
+
+        // Check booked hours
+        const { data: events } = await axios.get(`/api/v1/event?sort=${date.format()}&onlyThisDay=true`);
+        const bookedHours = events.map(e => moment(e.start).format('h:mm a'));
+
+        // Find available slot
+        const available = slots.some(h => !bookedHours.includes(h));
+        return available;
+    } catch(e) {
+        return true; // default to available on error
+    }
+}
+
+async function renderCalendarMonth(year, month) {
     calYear  = year;
     calMonth = month;
 
@@ -150,15 +259,17 @@ function renderCalendarMonth(year, month) {
         const isEnabled = isDayEnabled(date);
         const dateStr   = date.format('YYYY-MM-DD');
         const isSelected = currentDateSelected === dateStr;
+        const isFullyBooked = !isPast && isEnabled && !(await hasAvailableSlots(dateStr));
 
         const cell = document.createElement('div');
         cell.className = 'cal-day';
         if (isPast || !isEnabled) cell.classList.add('disabled');
+        if (isFullyBooked) cell.classList.add('booked');
         if (isToday)   cell.classList.add('today');
         if (isSelected) cell.classList.add('selected');
         cell.textContent = d;
 
-        if (!isPast && isEnabled) {
+        if (!isPast && isEnabled && !isFullyBooked) {
             cell.addEventListener('click', () => onDayClick(dateStr));
         }
 
@@ -172,19 +283,21 @@ function renderCalendarMonth(year, month) {
 }
 
 function setupCalendarNav() {
-    document.getElementById('cal-prev').addEventListener('click', () => {
+    document.getElementById('cal-prev').addEventListener('click', async () => {
         let m = calMonth - 1, y = calYear;
         if (m < 0) { m = 11; y--; }
-        renderCalendarMonth(y, m);
+        await renderCalendarMonth(y, m);
     });
-    document.getElementById('cal-next').addEventListener('click', () => {
+    document.getElementById('cal-next').addEventListener('click', async () => {
         let m = calMonth + 1, y = calYear;
         if (m > 11) { m = 0; y++; }
-        renderCalendarMonth(y, m);
+        await renderCalendarMonth(y, m);
     });
 }
 
 async function onDayClick(dateStr) {
+    // New date picked → hour selection invalid
+    if (dateStr !== currentDateSelected) horaSeleccionada = null;
     currentDateSelected = dateStr;
     renderCalendarMonth(calYear, calMonth); // refresh selected state
 
@@ -212,6 +325,20 @@ async function loadTimeSlots() {
         return;
     }
 
+    // Check for overrides (blocked dates)
+    const { data: overrideData } = await axios.get(`/api/v1/special/check?date=${currentDateSelected}`);
+    if (overrideData.blocked) {
+        const reason = overrideData.specials[0]?.title || 'Cerrado';
+        document.getElementById('horasDisponibles').innerHTML = `
+            <div class="text-center py-8 w-full">
+                <i class="fa-solid fa-calendar-xmark fa-2x text-red-400 mb-3"></i>
+                <p class="text-gray-400 font-medium">Día no disponible</p>
+                <p class="text-gray-600 text-sm">${reason}</p>
+            </div>
+        `;
+        return;
+    }
+
     showNocturnalSchedule(date);
 
     let arr = [...day.hours];
@@ -224,6 +351,15 @@ async function loadTimeSlots() {
         arr = arr.filter(h => {
             const h24 = moment(h, 'h:mm a').format('HH:mm');
             return h24 !== '15:00' && h24 !== '15:30';
+        });
+    }
+
+    // Same-day: hide slots whose time already passed
+    if (date.isSame(moment(), 'day')) {
+        const nowHHmm = moment().format('HH:mm');
+        arr = arr.filter(h => {
+            const slotHHmm = moment(h, 'h:mm a').format('HH:mm');
+            return slotHHmm > nowHHmm;  // Simple string comparison works for HH:mm
         });
     }
 
@@ -264,13 +400,16 @@ function showHorario(e, i) {
 
 function changeHora(hora) {
     horaSeleccionada = hora;
+    updateStepUI();
 }
 
 function showNocturnalSchedule(date) {
     const el = document.getElementById('noctural');
-    if (!date.isSame(moment(), 'day')) { el.style.display = 'none'; return; }
-    const h = moment().format('HH:mm');
-    el.style.display = (h >= MIN_HALF && h <= MAX_HALF) ? 'flex' : 'none';
+    // Panel only during early morning (00:00–06:00) of the current day.
+    // Half-hour slots themselves stay available all day regardless.
+    const isToday = date.isSame(moment(), 'day');
+    const hour = moment().hour();
+    el.style.display = (isToday && hour < 6) ? 'flex' : 'none';
 }
 
 async function removeHoursBookedfromthatday(arr, date) {
@@ -284,17 +423,13 @@ async function removeHoursBookedfromthatday(arr, date) {
 }
 
 function additionalHalfHourSlots(arr, date, dayHours) {
-    const now = moment();
-    if (!date.isSame(now, 'day')) return arr;
-    const h = now.format('HH:mm');
-    if (h >= MIN_HALF && h <= MAX_HALF) {
-        dayHours.forEach(e => {
-            const plus30 = moment(e, 'h:mm a').add(30, 'minutes').format('h:mm a');
-            if (!dayHours.includes(plus30)) arr.push(plus30);
-        });
-        arr = sortHours(arr);
-    }
-    return arr;
+    // Half-hour slots only for the current day, available all day long.
+    if (!date.isSame(moment(), 'day')) return arr;
+    dayHours.forEach(e => {
+        const plus30 = moment(e, 'h:mm a').add(30, 'minutes').format('h:mm a');
+        if (!dayHours.includes(plus30)) arr.push(plus30);
+    });
+    return sortHours(arr);
 }
 
 // ===== STEP 4 — SUMMARY =====
@@ -337,10 +472,35 @@ function renderBookingSummary() {
     `;
 }
 
+// ===== STEP STATE =====
+function isStepComplete(n) {
+    if (n === 1) return g_serviciosTempCheck.size > 0;
+    if (n === 2) return currentDateSelected !== null;
+    if (n === 3) return horaSeleccionada !== null;
+    return false;
+}
+
+function isStepReachable(n) {
+    if (n === 1) return true;
+    for (var i = 1; i < n; i++) {
+        if (!isStepComplete(i)) return false;
+    }
+    return true;
+}
+
 // ===== NAVIGATION =====
 function setupBookingNav() {
     document.getElementById('btn-next').addEventListener('click', onNextClick);
     document.getElementById('btn-back').addEventListener('click', onBackClick);
+    document.querySelectorAll('.step-item').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var s = parseInt(el.dataset.step);
+            if (s === currentStep) return;
+            if (!isStepReachable(s)) return;
+            if (s === 4) renderBookingSummary();
+            goToStep(s, s < currentStep ? 'back' : 'forward');
+        });
+    });
 }
 
 async function onNextClick() {
@@ -401,15 +561,20 @@ function goToStep(n, direction) {
 }
 
 function updateStepUI() {
-    // Step dots
+    // Step dots — done = step has valid data (regardless of current position)
     document.querySelectorAll('.step-item').forEach(el => {
         const s = parseInt(el.dataset.step);
+        const complete   = isStepComplete(s);
+        const reachable  = isStepReachable(s);
         el.classList.toggle('active', s === currentStep);
-        el.classList.toggle('done',   s < currentStep);
+        el.classList.toggle('done',   complete && s !== currentStep);
+        // Clickable when reachable and not already here
+        el.style.cursor = (reachable && s !== currentStep) ? 'pointer' : 'default';
+        el.title = (!reachable && s !== currentStep) ? 'Completa los pasos anteriores' : '';
     });
-    // Connectors
+    // Connectors — done when the step to their left is complete
     document.querySelectorAll('.step-connector').forEach((el, i) => {
-        el.classList.toggle('done', i + 1 < currentStep);
+        el.classList.toggle('done', isStepComplete(i + 1));
     });
     // Back button
     document.getElementById('btn-back').style.display = currentStep > 1 ? 'inline-flex' : 'none';
@@ -429,16 +594,20 @@ async function agendarCita() {
     const bg    = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
     const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
 
+    // Use session data if available, otherwise read from inputs
+    const hasSession = !!document.querySelector('meta[name="client-session-nombre"]')?.content.trim();
     const title  = document.getElementById('nombreCita').value.trim();
-    const numero = document.getElementById('numeroTelefono').value.trim();
+    const numero = phoneMask ? phoneMask.unmaskedValue : document.getElementById('numeroTelefono').value.replace(/\D/g, '');
 
-    if (!title) {
-        Swal.fire({ icon: 'error', text: 'Escribe tu nombre completo', background: bg, color });
-        return;
-    }
-    if (!numero) {
-        Swal.fire({ icon: 'error', text: 'Escribe tu número de teléfono', background: bg, color });
-        return;
+    if (!hasSession) {
+        if (!numero || numero.length !== 8) {
+            Swal.fire({ icon: 'error', text: 'Escribe un número de teléfono válido (8 dígitos)', background: bg, color });
+            return;
+        }
+        if (!title || title.length < 2) {
+            Swal.fire({ icon: 'error', text: 'Escribe tu nombre completo', background: bg, color });
+            return;
+        }
     }
 
     const servicios = [...g_serviciosTempCheck.keys()];
@@ -451,9 +620,9 @@ async function agendarCita() {
     ).format('YYYY-MM-DD HH:mm:ss');
 
     const data = {
-        title: sentecesCase(title),
-        start: start,
-        end:   moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
+        title:  sentecesCase(title),
+        start:  start,
+        end:    moment(start).add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
         extendedProps: { servicios, numero, precio: price }
     };
 
@@ -486,13 +655,8 @@ async function agendarCita() {
         }).then(() => location.reload());
 
     } catch (err) {
-        Swal.fire({
-            icon:  'error',
-            title: 'Error al agendar',
-            text:  'No se pudo agendar la cita. Por favor intenta nuevamente.',
-            background: bg,
-            color
-        });
+        const msg = err.response?.data?.error || 'No se pudo agendar la cita. Por favor intenta nuevamente.';
+        Swal.fire({ icon: 'error', title: 'Error al agendar', text: msg, background: bg, color });
         const nextBtn = document.getElementById('btn-next');
         nextBtn.disabled = false;
         nextBtn.innerHTML = '<i class="fa-solid fa-calendar-check me-2"></i>Agendar Cita';
@@ -533,6 +697,145 @@ function toCRC(n) {
 
 function sentecesCase(str) {
     return str.toLowerCase().replace(/\b[a-z]/g, l => l.toUpperCase());
+}
+
+// ===== INPUT MASKS =====
+var phoneMask = null;
+
+function setupInputMasks() {
+    var phoneEl = document.getElementById('numeroTelefono');
+    var nameEl  = document.getElementById('nombreCita');
+
+    if (!phoneEl || !nameEl) return;
+
+    // Phone: XXXX-XXXX display, 8 raw digits underneath
+    phoneMask = IMask(phoneEl, {
+        mask: '0000 0000',
+        lazy: true,
+    });
+    phoneMask.on('accept', function() {
+        debounceLookup(phoneMask.unmaskedValue);
+    });
+
+    // Name: allow letters (including accented), spaces, hyphens, apostrophes
+    var namePattern = /^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s'\-]*$/;
+    nameEl.addEventListener('input', function() {
+        var pos   = this.selectionStart;
+        var clean = this.value.replace(/[^a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s'\-]/g, '');
+        if (clean !== this.value) {
+            this.value = clean;
+            this.setSelectionRange(pos - 1, pos - 1);
+        }
+    });
+}
+
+// ===== PHONE LOOKUP =====
+var lookupTimer = null;
+function debounceLookup(rawDigits) {
+    clearTimeout(lookupTimer);
+    if (!rawDigits || rawDigits.length < 8) {
+        hideLookupResult();
+        return;
+    }
+    lookupTimer = setTimeout(function() { phoneLookup(rawDigits); }, 600);
+}
+
+async function phoneLookup(numero) {
+    var status         = document.getElementById('lookup-status');
+    var nombreSection  = document.getElementById('nombre-section');
+    var nombreInput    = document.getElementById('nombreCita');
+    var accountActions = document.getElementById('account-actions');
+    var actionLogin    = document.getElementById('action-login');
+    var actionRegister = document.getElementById('action-register');
+    try {
+        var resp = await axios.get('/api/v1/client/lookup?numero=' + numero);
+        var data = resp.data;
+        status.style.display = 'none';
+        accountActions.style.display = 'none';
+        if (data.found) {
+            nombreInput.value       = data.nombre;
+            nombreInput.readOnly    = true;
+            nombreInput.style.color = '#9ca3af';
+            nombreSection.style.display = 'block';
+            if (data.hasAccount) {
+                actionLogin.style.display    = 'block';
+                actionRegister.style.display = 'none';
+                accountActions.style.display = 'block';
+            }
+        } else {
+            nombreInput.value       = '';
+            nombreInput.readOnly    = false;
+            nombreInput.style.color = '';
+            nombreSection.style.display = 'block';
+        }
+    } catch(e) {
+        hideLookupResult();
+    }
+}
+
+function hideLookupResult() {
+    var status         = document.getElementById('lookup-status');
+    var nombreSection  = document.getElementById('nombre-section');
+    var nombreInput    = document.getElementById('nombreCita');
+    var accountActions = document.getElementById('account-actions');
+    if (status)         status.style.display = 'none';
+    if (nombreSection)  nombreSection.style.display = 'none';
+    if (nombreInput)    { nombreInput.value = ''; nombreInput.readOnly = false; nombreInput.style.color = ''; }
+    if (accountActions) accountActions.style.display = 'none';
+}
+
+// ===== CLIENT AUTH =====
+var clientAuthModal;
+document.addEventListener('DOMContentLoaded', function() {
+    clientAuthModal = new bootstrap.Modal(document.getElementById('clientAuthModal'));
+    if (new URLSearchParams(window.location.search).get('auth') === '1') {
+        setTimeout(() => clientAuthModal.show(), 400);
+    }
+});
+
+function openClientAuth() {
+    clientAuthModal.show();
+}
+
+function showAuthTab(tab) {
+    document.getElementById('auth-login').style.display = tab === 'login' ? '' : 'none';
+    document.getElementById('auth-register').style.display = tab === 'register' ? '' : 'none';
+    document.getElementById('tab-login-btn').className = 'btn btn-sm flex-1 ' + (tab === 'login' ? 'btn-gold' : 'btn-dark');
+    document.getElementById('tab-register-btn').className = 'btn btn-sm flex-1 ' + (tab === 'register' ? 'btn-gold' : 'btn-dark');
+    document.getElementById('auth-error').style.display = 'none';
+}
+
+async function clientLogin() {
+    var numero = document.getElementById('loginNumero').value;
+    var password = document.getElementById('loginPassword').value;
+    try {
+        await axios.post('/api/v1/client/auth/login', { numero, password });
+        window.location.href = '/app';
+    } catch(e) {
+        var err = document.getElementById('auth-error');
+        err.textContent = (e.response && e.response.data && e.response.data.error) ? e.response.data.error : 'Error al iniciar sesión';
+        err.style.display = '';
+    }
+}
+
+async function clientRegister() {
+    var nombre = document.getElementById('regNombre').value;
+    var numero = document.getElementById('regNumero').value;
+    var password = document.getElementById('regPassword').value;
+    var confirm = document.getElementById('regPasswordConfirm').value;
+    var err = document.getElementById('auth-error');
+    if (password !== confirm) {
+        err.textContent = 'Las contraseñas no coinciden';
+        err.style.display = '';
+        return;
+    }
+    try {
+        await axios.post('/api/v1/client/auth/register', { nombre, numero, password });
+        window.location.href = '/app';
+    } catch(e) {
+        err.textContent = (e.response && e.response.data && e.response.data.error) ? e.response.data.error : 'Error al crear cuenta';
+        err.style.display = '';
+    }
 }
 
 document.addEventListener('DOMContentLoaded', init);

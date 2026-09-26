@@ -1,0 +1,92 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+<div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
+    <!-- Header -->
+    <div class="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 mb-4">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+            <div>
+                <h1 class="text-xl font-bold mb-1 flex items-center gap-2">
+                    <i class="fa-solid fa-images text-primary"></i> Galería
+                </h1>
+                <p class="text-gray-500 text-sm mb-0">Fotos del trabajo del Studio</p>
+            </div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPhotoModal">
+                <i class="fa-solid fa-plus"></i> Subir Foto
+            </button>
+        </div>
+    </div>
+
+    <!-- Gallery grid -->
+    <div class="grid gap-4" id="galleryGrid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));"></div>
+    <div id="emptyGallery" class="text-center py-16 text-gray-600" style="display:none;">
+        <i class="fa-solid fa-images fa-3x mb-4"></i>
+        <p class="text-lg">No hay fotos aún</p>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal" id="addPhotoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-scrollable" style="max-width:560px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fa-solid fa-image"></i> Subir Foto</h2>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Upload area -->
+                <div class="image-upload-area mb-4" id="galleryUploadArea" onclick="document.getElementById('galleryFileInput').click()">
+                    <div id="galleryUploadPlaceholder">
+                        <i class="fa-solid fa-cloud-arrow-up fa-2x text-gray-600 mb-2"></i>
+                        <p class="text-gray-500 text-sm mb-0">Click o arrastra una imagen</p>
+                        <p class="text-gray-600 text-xs">Será recortada a proporción 4:3</p>
+                    </div>
+                </div>
+                <input type="file" id="galleryFileInput" accept="image/*" style="display:none;" onchange="handleGalleryFile(this)">
+
+                <!-- Cropper -->
+                <div id="galleryCropperContainer" style="display:none; margin-bottom:12px;">
+                    <div class="rounded-lg overflow-hidden border border-white/8" style="max-height:280px;">
+                        <img id="galleryCropperImg" style="max-width:100%;">
+                    </div>
+                    <div class="flex gap-2 mt-2">
+                        <button type="button" class="btn btn-sm btn-dark flex-1" onclick="resetGalleryCrop()">
+                            <i class="fa-solid fa-rotate-left"></i> Cambiar
+                        </button>
+                        <button type="button" class="btn btn-sm btn-primary flex-1" onclick="confirmGalleryCrop()">
+                            <i class="fa-solid fa-crop"></i> Confirmar
+                        </button>
+                    </div>
+                </div>
+                <div id="galleryCropConfirmed" style="display:none;" class="text-center mb-3">
+                    <i class="fa-solid fa-circle-check text-green-400 me-1"></i>
+                    <span class="text-green-400 text-sm">Imagen lista para subir</span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Título <span class="text-gray-500">(opcional)</span></label>
+                    <input type="text" class="form-control" id="gallery-title" placeholder="Ej: Taper Fade">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Descripción <span class="text-gray-500">(opcional)</span></label>
+                    <input type="text" class="form-control" id="gallery-desc" placeholder="Breve descripción">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Instagram <span class="text-gray-500">(opcional — usuario etiquetado)</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-[#1a1a1a] border-white/10 text-gray-500">@</span>
+                        <input type="text" class="form-control" id="gallery-instagram" placeholder="usuario_instagram">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="uploadGalleryPhoto()">
+                    <i class="fa-solid fa-cloud-arrow-up me-1"></i> Subir Foto
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/admin/galeria.js"></script>
