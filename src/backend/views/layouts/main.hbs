@@ -3,15 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HighQuality Studio | Alfonso Acuña</title>
-    <meta name="description" content="HighQuality Studio es una barbería que brinda los mejores cortes de cabello, servicio premium a nuestros clientes, ubicada en Hatillo 5, San Jose.">
+    <title>{{#if metaTitle}}{{metaTitle}}{{else}}HighQuality Studio | Alfonso Acuña{{/if}}</title>
+    <meta name="description" content="{{#if metaDescription}}{{metaDescription}}{{else}}HighQuality Studio es una barbería que brinda los mejores cortes de cabello, servicio premium a nuestros clientes, ubicada en Hatillo 5, San Jose.{{/if}}">
     <meta name="keywords" content="highquality, high quality, barber, highquality Studio, barberia, cortes de pelo, cabello, premium, hatillo 5, san jose, costa rica">
+    <link rel="canonical" href="{{siteUrl}}{{metaPath}}">
     <link rel="shortcut icon" type="image/x-icon" href="/images/simple-logo.png">
 
-    <meta property="og:title" content="HighQuality Studio | Alfonso Acuña">
-    <meta property="og:description" content="HighQuality Studio es una barbería que brinda los mejores cortes de cabello, servicio premium.">
-    <meta property="og:image" content="https://highqualitycr.com/images/simple-logo.png">
-    <meta property="og:url" content="https://highqualitycr.com">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_CR">
+    <meta property="og:site_name" content="HighQuality Studio">
+    <meta property="og:title" content="{{#if metaTitle}}{{metaTitle}}{{else}}HighQuality Studio | Alfonso Acuña{{/if}}">
+    <meta property="og:description" content="{{#if metaDescription}}{{metaDescription}}{{else}}HighQuality Studio es una barbería que brinda los mejores cortes de cabello, servicio premium.{{/if}}">
+    <meta property="og:image" content="{{siteUrl}}{{#if metaImage}}{{metaImage}}{{else}}/images/og-image.jpg{{/if}}">
+    <meta property="og:image:secure_url" content="{{siteUrl}}{{#if metaImage}}{{metaImage}}{{else}}/images/og-image.jpg{{/if}}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:url" content="{{siteUrl}}{{metaPath}}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{#if metaTitle}}{{metaTitle}}{{else}}HighQuality Studio | Alfonso Acuña{{/if}}">
+    <meta name="twitter:description" content="{{#if metaDescription}}{{metaDescription}}{{else}}HighQuality Studio es una barbería que brinda los mejores cortes de cabello, servicio premium.{{/if}}">
+    <meta name="twitter:image" content="{{siteUrl}}{{#if metaImage}}{{metaImage}}{{else}}/images/og-image.jpg{{/if}}">
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">

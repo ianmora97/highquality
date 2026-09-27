@@ -1,4 +1,5 @@
 require('dotenv').config();
+process.env.TZ = 'America/Costa_Rica'; // all Date/moment() calls must read local CR time, not host UTC
 const express    = require('express');
 const hbs        = require('./backend/engine/handlebars.js').instance();
 const bodyParser = require('body-parser');

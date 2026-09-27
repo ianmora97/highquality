@@ -20,7 +20,11 @@ const GALLERY_FALLBACK = [
 // treatment as /galeria, and the same fallback when the collection is empty.
 const HOME_CAROUSEL_COUNT = 6;
 
-router.get('/', asyncHandler(async (_req, res) => {
+function siteUrlOf(req) {
+    return `${req.protocol}://${req.get('host')}`;
+}
+
+router.get('/', asyncHandler(async (req, res) => {
     const [fotos, site] = await Promise.all([
         Gallery.get({ visible: true, limit: HOME_CAROUSEL_COUNT }),
         // Contact links + the plain-text horario block, edited in /dashboard/configuracion
@@ -32,6 +36,10 @@ router.get('/', asyncHandler(async (_req, res) => {
         fotos,
         hasFotos: fotos.length > 0,
         staticFallback: GALLERY_FALLBACK.slice(0, HOME_CAROUSEL_COUNT),
+        siteUrl: siteUrlOf(req),
+        metaPath: '/',
+        metaTitle: 'HighQuality Studio | Barbería Premium en Hatillo, San José',
+        metaDescription: 'Cortes de cabello y barba con servicio premium en Hatillo 5, San José. Reservá tu cita en línea con HighQuality Studio.',
     });
 }));
 
@@ -42,6 +50,10 @@ router.get('/reservar', attachUser, (req, res) => {
         // Pass both shapes for backward compat with reservar.hbs meta tags
         user:   u,
         client: u ? { nombre: u.name, numero: u.phone } : null,
+        siteUrl: siteUrlOf(req),
+        metaPath: '/reservar',
+        metaTitle: 'Reservar Cita | HighQuality Studio',
+        metaDescription: 'Elegí tu horario y reservá tu corte en HighQuality Studio, Hatillo 5, San José. Disponibilidad en tiempo real.',
     });
 });
 
@@ -52,13 +64,17 @@ router.get('/reservar', attachUser, (req, res) => {
 // section. Redirect instead of 404 so existing links and bookmarks still land.
 router.get('/servicios', (_req, res) => res.redirect(301, '/#servicios'));
 
-router.get('/galeria', asyncHandler(async (_req, res) => {
+router.get('/galeria', asyncHandler(async (req, res) => {
     const fotos = await Gallery.get({ visible: true });
     res.render('client/gallery', {
         tab: 'galeria',
         fotos,
         hasFotos: fotos.length > 0,
         staticFallback: GALLERY_FALLBACK,
+        siteUrl: siteUrlOf(req),
+        metaPath: '/galeria',
+        metaTitle: 'Galería | HighQuality Studio',
+        metaDescription: 'Mirá los cortes y trabajos de HighQuality Studio, barbería premium en Hatillo 5, San José.',
     });
 }));
 
