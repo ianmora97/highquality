@@ -11,7 +11,6 @@
         <!-- Desktop Nav Links -->
         <div class="hidden md:flex items-center gap-1">
             <a class="nav-link-client" id="tab-inicio" href="/">Inicio</a>
-            <a class="nav-link-client" id="tab-servicios" href="/servicios">Servicios</a>
             <a class="nav-link-client" id="tab-galeria" href="/galeria">Galería</a>
             <a class="nav-link-client" id="tab-reservar" href="/reservar">Reservar</a>
             <a class="nav-link-client" id="tab-app" href="/app"><i class="fa-solid fa-user me-1"></i>Mi Cuenta</a>
@@ -20,7 +19,7 @@
         <!-- Right side -->
         <div class="flex items-center gap-3">
             <a href="/reservar" class="hidden md:inline-flex btn btn-gold rounded-pill gap-2 nav-cta-btn">
-                <i class="fa-solid fa-scissors"></i> Reservar
+               <i class="fa-solid fa-calendar-check"></i> Reservar
             </a>
             <div class="md:hidden">
                 <button @click="navOpen = true"
@@ -84,13 +83,6 @@
                     <i class="fa-solid fa-house text-xs"></i>
                 </span>
                 <span class="font-medium">Inicio</span>
-            </a>
-            <a id="tab-servicios-m" href="/servicios"
-               class="client-drawer-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/[.05] transition-all text-sm">
-                <span class="w-8 h-8 rounded-lg bg-white/[.06] border border-white/[.05] flex items-center justify-center shrink-0 transition-colors">
-                    <i class="fa-solid fa-scissors text-xs"></i>
-                </span>
-                <span class="font-medium">Servicios</span>
             </a>
             <a id="tab-galeria-m" href="/galeria"
                class="client-drawer-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/[.05] transition-all text-sm">

@@ -1,6 +1,7 @@
 const express = require('express');
 const router  = express.Router();
-const Auth    = require('../controllers/auth.controller');
+const { wrapAll } = require('../helpers/asyncHandler');
+const Auth    = wrapAll(require('../controllers/auth.controller'));
 const { requireApi } = require('../middlewares/auth');
 
 // Client auth

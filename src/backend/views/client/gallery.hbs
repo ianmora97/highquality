@@ -2,56 +2,92 @@
 <link href="https://cdn.jsdelivr.net/npm/lightgallery@2.9.0/css/lightgallery-bundle.min.css" rel="stylesheet">
 
 <style>
-.gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1rem;
+/* Masonry via CSS columns: each photo keeps the ratio it was cropped to instead
+   of being squashed into a uniform square. break-inside keeps a card whole. */
+.gallery-masonry {
+    column-count: 2;
+    column-gap: 0.75rem;
 }
+@media (min-width: 640px) { .gallery-masonry { column-count: 2; column-gap: 1rem; } }
+@media (min-width: 768px) { .gallery-masonry { column-count: 3; } }
+@media (min-width: 1280px) { .gallery-masonry { column-count: 4; } }
+
 .gallery-item {
+    display: block;
     position: relative;
     overflow: hidden;
     border-radius: 0.75rem;
-    aspect-ratio: 1/1;
     cursor: pointer;
     border: 1px solid rgba(255,255,255,0.06);
+    break-inside: avoid;
+    margin-bottom: 0.75rem;
+    background: #0d0d0d;
 }
+@media (min-width: 640px) { .gallery-item { margin-bottom: 1rem; } }
+
 .gallery-item img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s ease;
+    height: auto;
     display: block;
+    transition: transform 0.5s cubic-bezier(0.25,1,0.5,1);
 }
-.gallery-item:hover img { transform: scale(1.06); }
+.gallery-item:hover img { transform: scale(1.05); }
+
 .gallery-item-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0);
-    transition: background 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0.875rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.gallery-item:hover .gallery-item-overlay,
+.gallery-item:focus-visible .gallery-item-overlay { opacity: 1; }
+
+/* Touch devices have no hover, so the caption stays visible there. */
+@media (hover: none) {
+    .gallery-item-overlay {
+        opacity: 1;
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 55%);
+    }
+}
+
+.gallery-item-title { color: #fff; font-weight: 600; font-size: 0.8125rem; line-height: 1.25; }
+.gallery-item-desc  { color: rgba(255,255,255,0.6); font-size: 0.6875rem; margin-top: 0.125rem; }
+.gallery-item-insta { color: #F4C82C; font-size: 0.6875rem; margin-top: 0.25rem; }
+
+.gallery-item-zoom {
+    position: absolute;
+    top: 0.625rem;
+    right: 0.625rem;
+    width: 2rem;
+    height: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-.gallery-item:hover .gallery-item-overlay {
-    background: rgba(0,0,0,0.35);
-}
-.gallery-item-overlay i {
-    color: white;
-    font-size: 2rem;
+    border-radius: 0.5rem;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 0.75rem;
     opacity: 0;
-    transform: scale(0.8);
-    transition: all 0.3s;
+    transform: scale(0.85);
+    transition: all 0.3s ease;
 }
-.gallery-item:hover .gallery-item-overlay i {
-    opacity: 1;
-    transform: scale(1);
-}
-/* LightGallery dark */
-.lg-backdrop { background-color: rgba(0,0,0,0.95) !important; }
+.gallery-item:hover .gallery-item-zoom { opacity: 1; transform: scale(1); }
+
+/* LightGallery dark theme */
+.lg-backdrop { background-color: rgba(0,0,0,0.96) !important; }
 .lg-toolbar { background-color: rgba(0,0,0,0.8) !important; }
 .lg-outer .lg-thumb-outer { background-color: rgba(0,0,0,0.8) !important; }
 .lg-outer .lg-thumb-item.active,
 .lg-outer .lg-thumb-item:hover { border-color: #F4C82C !important; }
+.lg-sub-html { background: linear-gradient(to top, rgba(0,0,0,0.9), transparent) !important; }
+.lg-sub-html h4 { font-weight: 600; margin-bottom: 0.25rem; }
+.lg-sub-html a { color: #F4C82C !important; }
 </style>
 
 <div class="min-h-screen" style="background-color:#141414;">
@@ -64,55 +100,34 @@
             </div>
         </div>
 
-        <div id="lightgallery" class="gallery-grid">
-            <a href="/images/cortes/1.jpg" class="gallery-item">
-                <img src="/images/cortes/1.jpg" alt="Corte 1">
-                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-            </a>
-            <a href="/images/cortes/2.jpg" class="gallery-item">
-                <img src="/images/cortes/2.jpg" alt="Corte 2">
-                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-            </a>
-            <a href="/images/cortes/3.jpg" class="gallery-item">
-                <img src="/images/cortes/3.jpg" alt="Corte 3">
-                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-            </a>
-            <a href="/images/cortes/4.jpg" class="gallery-item">
-                <img src="/images/cortes/4.jpg" alt="Corte 4">
-                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-            </a>
-            <a href="/images/cortes/5.jpg" class="gallery-item">
-                <img src="/images/cortes/5.jpg" alt="Corte 5">
-                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-            </a>
-            <a href="/images/cortes/6.jpg" class="gallery-item">
-                <img src="/images/cortes/6.jpg" alt="Corte 6">
-                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-            </a>
-            <a href="/images/cortes/7.jpg" class="gallery-item">
-                <img src="/images/cortes/7.jpg" alt="Corte 7">
-                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-            </a>
-            <a href="/images/cortes/taper_fade.jpeg" class="gallery-item">
-                <img src="/images/cortes/taper_fade.jpeg" alt="Taper Fade">
-                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-            </a>
-            <a href="/images/cortes/corte1.jpg" class="gallery-item">
-                <img src="/images/cortes/corte1.jpg" alt="Corte Clásico">
-                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-            </a>
-            <a href="/images/cortes/corte2.jpg" class="gallery-item">
-                <img src="/images/cortes/corte2.jpg" alt="Corte 2">
-                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-            </a>
-            <a href="/images/cortes/corte3.jpg" class="gallery-item">
-                <img src="/images/cortes/corte3.jpg" alt="Corte 3">
-                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-            </a>
-            <a href="/images/cortes/corteybarba.jpeg" class="gallery-item">
-                <img src="/images/cortes/corteybarba.jpeg" alt="Corte y Barba">
-                <div class="gallery-item-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-            </a>
+        <div id="lightgallery" class="gallery-masonry">
+            {{#if hasFotos}}
+                {{#each fotos}}
+                    <a href="{{imageUrl}}" class="gallery-item"
+                       {{#if title}}data-sub-html="<h4>{{title}}</h4>{{#if description}}<p>{{description}}</p>{{/if}}{{#if instagramLink}}<p><a href='https://instagram.com/{{instagramLink}}' target='_blank' rel='noopener'>@{{instagramLink}}</a></p>{{/if}}"{{/if}}>
+                        <img src="{{imageUrl}}" alt="{{#if title}}{{title}}{{else}}Trabajo de HighQuality Studio{{/if}}"
+                             loading="lazy" decoding="async"
+                             {{#if width}}width="{{width}}" height="{{height}}"{{/if}}>
+                        <span class="gallery-item-zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
+                        {{#if title}}
+                            <div class="gallery-item-overlay">
+                                <p class="gallery-item-title mb-0">{{title}}</p>
+                                {{#if description}}<p class="gallery-item-desc mb-0">{{description}}</p>{{/if}}
+                                {{#if instagramLink}}<p class="gallery-item-insta mb-0"><i class="fa-brands fa-instagram"></i> @{{instagramLink}}</p>{{/if}}
+                            </div>
+                        {{/if}}
+                    </a>
+                {{/each}}
+            {{else}}
+                {{!-- No photos uploaded yet: fall back to the bundled shots so the
+                      page is never empty. --}}
+                {{#each staticFallback}}
+                    <a href="{{this}}" class="gallery-item">
+                        <img src="{{this}}" alt="Trabajo de HighQuality Studio" loading="lazy" decoding="async">
+                        <span class="gallery-item-zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
+                    </a>
+                {{/each}}
+            {{/if}}
         </div>
     </div>
 </div>
@@ -122,6 +137,7 @@
         selector: 'a',
         speed: 400,
         thumbnail: true,
-        download: false
+        download: false,
+        mobileSettings: { controls: true, showCloseIcon: true, download: false }
     });
 </script>

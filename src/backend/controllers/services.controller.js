@@ -1,31 +1,29 @@
 const Services = require('../models/services/services.model');
+const ServicesSchema = require('../models/services/services.schema');
 const path = require('node:path');
 const fs = require('fs');
-const { uploadImage, deleteImage } = require('../helpers/storage');
-const multer = require('multer');
+const { uploadImage, deleteImage, imageUpload } = require('../helpers/storage');
 
-const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 10 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-        if (!file.mimetype.startsWith('image/')) return cb(new Error('Solo imágenes'), false);
-        cb(null, true);
-    }
-});
-
-exports.uploadMiddleware = upload.single('image');
+exports.uploadMiddleware = imageUpload({ field: 'image', maxMb: 15 });
 
 exports.uploadImage = async (req, res) => {
-    try {
-        if (!req.file) return res.status(400).json({ error: 'No se recibió imagen' });
-        const { id } = req.params;
-        const { url, key } = await uploadImage(req.file.buffer, 'services', 800, 800);
-        const service = await Services.update(id, { imageUrl: url, imageType: 'image' });
-        res.json({ url, key, service });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: err.message });
+    if (!req.file) {
+        const err = new Error('No se recibió imagen.');
+        err.status = 400;
+        throw err;
     }
+    const { id } = req.params;
+
+    // Keep the old object's key so replacing an image doesn't leave it orphaned
+    // in the bucket forever.
+    const previous = await ServicesSchema.findById(id).select('imageKey').lean();
+
+    const { url, key } = await uploadImage(req.file.buffer, 'services', { width: 800, height: 800 });
+    const service = await Services.update(id, { imageUrl: url, imageKey: key, imageType: 'image' });
+
+    if (previous?.imageKey && previous.imageKey !== key) await deleteImage(previous.imageKey);
+
+    res.json({ url, key, service });
 };
 
 exports.get = async (req, res) => {

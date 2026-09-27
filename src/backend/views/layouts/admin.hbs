@@ -48,6 +48,27 @@
     <!-- SweetAlert2 JS -->
     <script src="/scripts/sweetalert2/dist/sweetalert2.min.js"></script>
 
+    <!-- Realtime (socket.io + shared toast/live-pill layer) -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/realtime.js"></script>
+    <script>
+        // The panel (#calendar) handles citas itself; every other dashboard page
+        // still gets told when a client books, so the barber never misses one.
+        document.addEventListener('DOMContentLoaded', function () {
+            if (document.getElementById('calendar')) return;
+            HQ.on('cita:new', function (p) {
+                var cita = p && p.cita;
+                if (!cita || cita.title === 'Cerrado' || p.source !== 'client') return;
+                HQ.toast({
+                    type: 'booking',
+                    title: cita.title + ' agendó una cita',
+                    text: moment(cita.start).calendar(),
+                    duration: 9000
+                });
+            });
+        });
+    </script>
+
     <!-- Modal + Bootstrap compat shim -->
     <script>
         (function() {
@@ -102,7 +123,7 @@
         })();
     </script>
 </head>
-<body class="overflow-x-hidden inter bg-gradient-to-br from-[#12121a] via-[#0d0c14] to-[#08080d] min-h-screen text-[#f1f1f1]">
+<body data-hq-room="admin" class="overflow-x-hidden inter bg-gradient-to-br from-[#12121a] via-[#0d0c14] to-[#08080d] min-h-screen text-[#f1f1f1]">
     {{>admin/header}}
     <main class="inter">
         {{{body}}}

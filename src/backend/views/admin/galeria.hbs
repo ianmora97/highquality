@@ -1,92 +1,425 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script src="/js/admin/galeria.js"></script>
 
-<div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
-    <!-- Header -->
-    <div class="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 mb-4">
-        <div class="flex items-center justify-between flex-wrap gap-3">
-            <div>
-                <h1 class="text-xl font-bold mb-1 flex items-center gap-2">
-                    <i class="fa-solid fa-images text-primary"></i> Galería
-                </h1>
-                <p class="text-gray-500 text-sm mb-0">Fotos del trabajo del Studio</p>
+<div x-data="galeriaPage()">
+
+    <div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mb-4">
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-violet-500/20 via-purple-500/10 to-transparent border border-violet-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-violet-500/20">
+                    <i class="fa-solid fa-images text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-violet-300/70 leading-none mb-1 truncate">Fotos</p>
+                    <h2 class="text-base font-bold text-violet-200 leading-none" x-text="fotos.length"></h2>
+                </div>
             </div>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPhotoModal">
-                <i class="fa-solid fa-plus"></i> Subir Foto
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-transparent border border-emerald-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-eye text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-emerald-300/70 leading-none mb-1 truncate">Públicas</p>
+                    <h2 class="text-base font-bold text-emerald-200 leading-none" x-text="publicas()"></h2>
+                </div>
+            </div>
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-orange-500/20 via-red-500/10 to-transparent border border-orange-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center shrink-0 shadow-lg shadow-orange-500/20">
+                    <i class="fa-solid fa-eye-slash text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-orange-300/70 leading-none mb-1 truncate">Ocultas</p>
+                    <h2 class="text-base font-bold text-orange-200 leading-none" x-text="ocultas()"></h2>
+                </div>
+            </div>
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-blue-500/20 via-primary/10 to-transparent border border-blue-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-primary flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
+                    <i class="fa-brands fa-instagram text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-blue-300/70 leading-none mb-1 truncate">Etiquetadas</p>
+                    <h2 class="text-base font-bold text-blue-200 leading-none" x-text="etiquetadas()"></h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-4">
+            <div class="flex-1 flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                <i class="fa-solid fa-magnifying-glass text-gray-500 text-xs shrink-0"></i>
+                <input type="text" x-model="query" placeholder="Buscar por título o @usuario..."
+                       class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                <button x-show="query" @click="query = ''" class="text-gray-500 hover:text-white shrink-0">
+                    <i class="fa-solid fa-circle-xmark text-xs"></i>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1 p-1 rounded-xl bg-white/[.03] border border-white/8">
+                    <template x-for="f in [['todas','Todas'],['publicas','Públicas'],['ocultas','Ocultas']]" :key="f[0]">
+                        <button @click="filtro = f[0]"
+                                class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
+                                :class="filtro === f[0] ? 'bg-primary/20 text-white border border-primary/40' : 'text-gray-500 hover:text-gray-300 border border-transparent'"
+                                x-text="f[1]"></button>
+                    </template>
+                </div>
+
+                <button @click="ordenando = !ordenando" :title="ordenando ? 'Listo' : 'Reordenar'"
+                        class="h-10 w-10 flex items-center justify-center rounded-xl border text-sm transition-all shrink-0"
+                        :class="ordenando ? 'bg-gold/15 border-gold/40 text-gold' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'">
+                    <i class="fa-solid" :class="ordenando ? 'fa-check' : 'fa-arrow-right-arrow-left'"></i>
+                </button>
+
+                <button @click="abrirNueva()"
+                        class="h-10 px-3.5 flex items-center gap-2 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 active:scale-95 transition-all shrink-0 whitespace-nowrap">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Subir</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Reorder hint -->
+        <div x-show="ordenando" x-cloak
+             class="flex items-center gap-2.5 rounded-xl bg-gold/[.07] border border-gold/25 px-3.5 py-2.5 mb-4">
+            <i class="fa-solid fa-arrow-right-arrow-left text-gold text-xs shrink-0"></i>
+            <p class="text-xs text-gold/90 mb-0 flex-1">
+                Usá las flechas para cambiar el orden en que se ven en la galería pública.
+            </p>
+            <i x-show="savingOrder" class="fa-solid fa-circle-notch fa-spin text-gold text-xs"></i>
+        </div>
+
+        <!-- Skeleton -->
+        <div x-show="loading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+            <template x-for="i in 8" :key="i">
+                <div class="rounded-xl bg-white/[.03] border border-white/8 animate-pulse" style="aspect-ratio: 4 / 5;"></div>
+            </template>
+        </div>
+
+        <!-- Grid -->
+        <div x-show="!loading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+            <template x-for="(f, i) in filtradas()" :key="f._id">
+                <div class="group rounded-xl bg-[#0d0d0d] border overflow-hidden flex flex-col transition-all"
+                     :class="f.visible ? 'border-white/10 hover:border-white/20' : 'border-orange-400/25'">
+
+                    <!-- Photo -->
+                    <div class="relative overflow-hidden bg-black/40" :style="`aspect-ratio: ${ratioCss(f)}`">
+                        <img :src="f.imageUrl" :alt="f.title || 'Foto de la galería'" loading="lazy"
+                             class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                             :class="f.visible ? '' : 'opacity-45 grayscale'">
+
+                        <!-- Zoom -->
+                        <button @click="abrirLightbox(f)"
+                                class="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/40 transition-all"
+                                aria-label="Ver foto">
+                            <i class="fa-solid fa-magnifying-glass-plus text-white text-lg opacity-0 group-hover:opacity-100 transition-all"></i>
+                        </button>
+
+                        <!-- Hidden badge -->
+                        <span x-show="!f.visible" x-cloak
+                              class="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-black/70 border border-orange-400/40 text-[10px] font-semibold uppercase tracking-wider text-orange-300">
+                            <i class="fa-solid fa-eye-slash text-[9px]"></i> Oculta
+                        </span>
+
+                        <!-- Ratio chip -->
+                        <span class="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-black/60 border border-white/10 text-[9px] font-semibold text-gray-300"
+                              x-text="f.aspect || '4:5'"></span>
+
+                        <!-- Reorder arrows -->
+                        <div x-show="ordenando" x-cloak
+                             class="absolute inset-x-0 bottom-0 flex items-stretch gap-px bg-black/70 backdrop-blur-sm">
+                            <button @click="mover(f, -1)" :disabled="i === 0"
+                                    class="flex-1 py-2 text-gold text-xs hover:bg-white/10 disabled:opacity-25 transition-all">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <button @click="mover(f, 1)" :disabled="i === filtradas().length - 1"
+                                    class="flex-1 py-2 text-gold text-xs hover:bg-white/10 disabled:opacity-25 transition-all">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Meta -->
+                    <div class="p-2.5 flex-1 flex flex-col gap-1">
+                        <p class="text-xs font-bold text-white leading-snug line-clamp-1"
+                           x-text="f.title || 'Sin título'"
+                           :class="f.title ? '' : 'text-gray-600 font-normal italic'"></p>
+                        <p x-show="f.description" x-cloak class="text-[11px] text-gray-500 leading-snug line-clamp-1" x-text="f.description"></p>
+                        <a x-show="f.instagramLink" x-cloak :href="`https://instagram.com/${f.instagramLink}`" target="_blank" rel="noopener"
+                           class="text-[11px] text-blue-400 hover:text-blue-300 truncate">
+                            <i class="fa-brands fa-instagram"></i> <span x-text="`@${f.instagramLink}`"></span>
+                        </a>
+
+                        <!-- Visibility switch -->
+                        <div class="flex items-center justify-between gap-2 mt-auto pt-1.5">
+                            <span class="text-[10px] uppercase tracking-wider font-semibold"
+                                  :class="f.visible ? 'text-emerald-400/80' : 'text-gray-600'"
+                                  x-text="f.visible ? 'Pública' : 'Oculta'"></span>
+                            <div class="form-check form-switch mb-0 shrink-0"
+                                 :class="toggling[f._id] ? 'opacity-50 pointer-events-none' : ''">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       :checked="f.visible" @change="toggleVisible(f, $event)"
+                                       :aria-label="`Mostrar ${f.title || 'foto'} en la galería`">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button @click="abrirEditar(f)"
+                            class="w-full flex items-center justify-center gap-1.5 py-2 border-t border-white/8 text-[11px] font-semibold text-gray-500 hover:text-white hover:bg-white/[.04] transition-all">
+                        <i class="fa-solid fa-pen text-[10px]"></i> Editar
+                    </button>
+                </div>
+            </template>
+        </div>
+
+        <!-- Empty: filtered out -->
+        <div x-show="!loading && !filtradas().length && fotos.length" x-cloak class="text-center py-14">
+            <i class="fa-solid fa-magnifying-glass text-gray-700 text-2xl mb-3"></i>
+            <p class="text-sm text-gray-500 mb-4">Ninguna foto coincide con el filtro.</p>
+            <button @click="query = ''; filtro = 'todas'"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm font-semibold hover:bg-white/10 transition-all">
+                <i class="fa-solid fa-rotate-left text-xs"></i> Limpiar filtros
+            </button>
+        </div>
+
+        <!-- Empty: nothing at all -->
+        <div x-show="!loading && !fotos.length" x-cloak class="text-center py-14">
+            <i class="fa-solid fa-images text-gray-700 text-3xl mb-3"></i>
+            <p class="text-sm text-gray-500 mb-1">Todavía no hay fotos.</p>
+            <p class="text-xs text-gray-600 mb-4">Subí la primera para que aparezca en la galería del sitio.</p>
+            <button @click="abrirNueva()"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 transition-all">
+                <i class="fa-solid fa-cloud-arrow-up text-xs"></i> Subir foto
             </button>
         </div>
     </div>
 
-    <!-- Gallery grid -->
-    <div class="grid gap-4" id="galleryGrid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));"></div>
-    <div id="emptyGallery" class="text-center py-16 text-gray-600" style="display:none;">
-        <i class="fa-solid fa-images fa-3x mb-4"></i>
-        <p class="text-lg">No hay fotos aún</p>
+    <!-- ===== LIGHTBOX ===== -->
+    <div x-show="lightbox" x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         @keydown.escape.window="lightbox = null" @click="lightbox = null"
+         class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+         style="background:rgba(0,0,0,0.92);">
+        <button @click="lightbox = null"
+                class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-xl text-gray-300 bg-white/10 hover:bg-white/20 transition-all">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <template x-if="lightbox">
+            <div class="max-w-3xl w-full" @click.stop>
+                <img :src="lightbox.imageUrl" :alt="lightbox.title || ''"
+                     class="w-full max-h-[78vh] object-contain rounded-xl border border-white/10">
+                <div class="mt-3 text-center">
+                    <p class="text-sm font-bold text-white" x-text="lightbox.title || 'Sin título'"></p>
+                    <p x-show="lightbox.description" class="text-xs text-gray-400 mt-0.5" x-text="lightbox.description"></p>
+                    <p class="text-[11px] text-gray-600 mt-1">
+                        <span x-text="`${lightbox.width || '?'} × ${lightbox.height || '?'} px`"></span>
+                        · <span x-text="aspectLabel(lightbox.aspect)"></span>
+                    </p>
+                </div>
+            </div>
+        </template>
     </div>
-</div>
 
-<!-- Upload Modal -->
-<div class="modal" id="addPhotoModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-scrollable" style="max-width:560px;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title"><i class="fa-solid fa-image"></i> Subir Foto</h2>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <!-- ===== FOTO SHEET (subir / editar) ===== -->
+    <div x-show="open"
+         x-effect="document.documentElement.style.overflow = open ? 'hidden' : ''"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         @keydown.escape.window="cerrar()" @click="cerrar()"
+         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+         style="background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);"
+         x-cloak>
+
+        <div x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-full"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 translate-y-full"
+             class="w-full sm:max-w-md bg-[#0d0d0d] border border-white/10 rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[88vh]"
+             :style="dragY ? `transform: translateY(${dragY}px)` : ''"
+             @click.stop>
+
+            <!-- Drag handle (mobile) -->
+            <div class="flex justify-center pt-3 pb-2 sm:hidden cursor-grab shrink-0"
+                 @touchstart="onDragStart($event)" @touchmove="onDragMove($event)" @touchend="onDragEnd($event)">
+                <div class="w-10 h-1.5 rounded-full bg-white/20"></div>
             </div>
-            <div class="modal-body">
-                <!-- Upload area -->
-                <div class="image-upload-area mb-4" id="galleryUploadArea" onclick="document.getElementById('galleryFileInput').click()">
-                    <div id="galleryUploadPlaceholder">
-                        <i class="fa-solid fa-cloud-arrow-up fa-2x text-gray-600 mb-2"></i>
-                        <p class="text-gray-500 text-sm mb-0">Click o arrastra una imagen</p>
-                        <p class="text-gray-600 text-xs">Será recortada a proporción 4:3</p>
-                    </div>
-                </div>
-                <input type="file" id="galleryFileInput" accept="image/*" style="display:none;" onchange="handleGalleryFile(this)">
 
-                <!-- Cropper -->
-                <div id="galleryCropperContainer" style="display:none; margin-bottom:12px;">
-                    <div class="rounded-lg overflow-hidden border border-white/8" style="max-height:280px;">
-                        <img id="galleryCropperImg" style="max-width:100%;">
+            <!-- HEADER -->
+            <div class="px-3.5 pt-2 pb-3.5 shrink-0 border-b border-white/8">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-image text-primary"></i>
                     </div>
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg font-bold text-white leading-tight"
+                            x-text="mode === 'add' ? 'Subir foto' : 'Editar foto'"></h2>
+                        <p class="text-xs text-gray-500 mt-0.5"
+                           x-text="mode === 'add' ? 'Se guarda como JPG optimizado' : (form.title || 'Foto de la galería')"></p>
+                    </div>
+                    <button @click="cerrar()"
+                            class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 bg-white/5 hover:text-white hover:bg-white/10 transition-all shrink-0">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- BODY -->
+            <div class="flex-1 overflow-y-auto px-3.5 py-3.5 min-h-0">
+
+                <input type="file" x-ref="fileInput" class="hidden" @change="onArchivo($event)"
+                       accept="image/*,.heic,.heif">
+
+                <!-- ── 1. empty dropzone ── -->
+                <div x-show="stage === 'empty' && !converting"
+                     @click="elegirArchivo()"
+                     @dragover.prevent="dragOver = true" @dragleave.prevent="dragOver = false" @drop.prevent="onDrop($event)"
+                     class="border-2 border-dashed rounded-xl p-7 text-center cursor-pointer transition-all"
+                     :class="dragOver ? 'border-primary/70 bg-primary/[.08]' : 'border-white/15 bg-white/[.02] hover:border-primary/50 hover:bg-primary/[.04]'">
+                    <i class="fa-solid fa-cloud-arrow-up text-gray-600 text-3xl mb-2"></i>
+                    <p class="text-sm text-gray-300 font-semibold">Tocá para elegir una foto</p>
+                    <p class="text-xs text-gray-600 mt-1">o arrastrala acá</p>
+                    <p class="text-[11px] text-gray-600 mt-2.5">
+                        JPG · PNG · WebP · HEIC de iPhone · hasta 25 MB
+                    </p>
+                </div>
+
+                <!-- converting (HEIC → JPG on the server) -->
+                <div x-show="converting" x-cloak
+                     class="border border-white/8 rounded-xl p-7 text-center bg-white/[.02]">
+                    <i class="fa-solid fa-circle-notch fa-spin text-primary text-2xl mb-2"></i>
+                    <p class="text-sm text-gray-300">Preparando la imagen…</p>
+                    <p class="text-xs text-gray-600 mt-0.5">Convirtiendo el formato del iPhone</p>
+                </div>
+
+                <!-- ── 2. crop ── -->
+                <div x-show="stage === 'cropping'" x-cloak>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Recorte</p>
+                    <div class="flex gap-1.5 overflow-x-auto pb-2 mb-2 -mx-0.5 px-0.5">
+                        <template x-for="a in aspects" :key="a.key">
+                            <button @click="elegirAspecto(a.key)"
+                                    class="shrink-0 px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold transition-all whitespace-nowrap"
+                                    :class="aspect === a.key ? 'bg-gold/15 border-gold/45 text-gold' : 'bg-white/[.03] border-white/8 text-gray-500 hover:text-gray-300'">
+                                <span x-text="a.label"></span>
+                                <span class="opacity-60 ms-1" x-text="a.key === 'libre' ? '' : a.key"></span>
+                            </button>
+                        </template>
+                    </div>
+
+                    <div class="rounded-xl overflow-hidden border border-white/8 bg-black" style="max-height:300px;">
+                        <img x-ref="cropImg" style="max-width:100%; display:block;">
+                    </div>
+
                     <div class="flex gap-2 mt-2">
-                        <button type="button" class="btn btn-sm btn-dark flex-1" onclick="resetGalleryCrop()">
-                            <i class="fa-solid fa-rotate-left"></i> Cambiar
+                        <button @click="resetImagen()"
+                                class="px-3 py-2.5 rounded-xl bg-white/5 border border-white/8 text-xs font-semibold text-gray-300 hover:bg-white/10 transition-all">
+                            <i class="fa-solid fa-rotate-left"></i>
                         </button>
-                        <button type="button" class="btn btn-sm btn-primary flex-1" onclick="confirmGalleryCrop()">
-                            <i class="fa-solid fa-crop"></i> Confirmar
+                        <button @click="rotar()"
+                                class="px-3 py-2.5 rounded-xl bg-white/5 border border-white/8 text-xs font-semibold text-gray-300 hover:bg-white/10 transition-all">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                        <button @click="confirmarCrop()"
+                                class="flex-1 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 active:scale-95 transition-all">
+                            <i class="fa-solid fa-crop me-1"></i> Confirmar recorte
                         </button>
                     </div>
-                </div>
-                <div id="galleryCropConfirmed" style="display:none;" class="text-center mb-3">
-                    <i class="fa-solid fa-circle-check text-green-400 me-1"></i>
-                    <span class="text-green-400 text-sm">Imagen lista para subir</span>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Título <span class="text-gray-500">(opcional)</span></label>
-                    <input type="text" class="form-control" id="gallery-title" placeholder="Ej: Taper Fade">
+                <!-- ── 3. ready preview ── -->
+                <div x-show="stage === 'ready'" x-cloak class="mb-4">
+                    <div class="relative rounded-xl overflow-hidden border border-white/10 bg-black/40">
+                        <img :src="previewUrl" alt="" class="w-full max-h-64 object-contain">
+                        <button x-show="mode === 'add'" @click="resetImagen(); elegirArchivo()"
+                                class="absolute top-2 right-2 w-9 h-9 flex items-center justify-center rounded-xl text-white bg-black/60 border border-white/15 hover:bg-black/80 transition-all"
+                                title="Cambiar imagen">
+                            <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-emerald-400 mt-1.5" x-show="croppedBlob">
+                        <i class="fa-solid fa-circle-check"></i>
+                        Lista — <span x-text="aspectLabel(aspect)"></span> · JPG <span x-text="pesoBlob()"></span>
+                    </p>
+                    <p class="text-[11px] text-gray-600 mt-1.5" x-show="mode === 'edit' && !croppedBlob">
+                        Para cambiar la imagen, subí una foto nueva y borrá esta.
+                    </p>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Descripción <span class="text-gray-500">(opcional)</span></label>
-                    <input type="text" class="form-control" id="gallery-desc" placeholder="Breve descripción">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Instagram <span class="text-gray-500">(opcional — usuario etiquetado)</span></label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-[#1a1a1a] border-white/10 text-gray-500">@</span>
-                        <input type="text" class="form-control" id="gallery-instagram" placeholder="usuario_instagram">
+
+                <!-- ── 4. meta ── -->
+                <div x-show="stage === 'ready'" x-cloak>
+                    <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Título <span class="normal-case tracking-normal">(opcional)</span></label>
+                    <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 mb-3.5 focus-within:border-primary/50 transition-all">
+                        <i class="fa-solid fa-tag text-gray-500 text-xs shrink-0"></i>
+                        <input type="text" x-model="form.title" placeholder="Taper Fade" maxlength="60"
+                               class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                    </div>
+
+                    <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Descripción <span class="normal-case tracking-normal">(opcional)</span></label>
+                    <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 mb-3.5 focus-within:border-primary/50 transition-all">
+                        <i class="fa-solid fa-align-left text-gray-500 text-xs shrink-0"></i>
+                        <input type="text" x-model="form.description" placeholder="Degradado con línea" maxlength="120"
+                               class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                    </div>
+
+                    <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Instagram del cliente <span class="normal-case tracking-normal">(opcional)</span></label>
+                    <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 mb-4 focus-within:border-primary/50 transition-all">
+                        <span class="text-gray-500 text-sm shrink-0">@</span>
+                        <input type="text" x-model="form.instagramLink" placeholder="usuario" maxlength="40" autocapitalize="off" spellcheck="false"
+                               class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                    </div>
+
+                    <div class="flex items-center justify-between rounded-xl bg-white/[.03] border border-white/8 p-3.5">
+                        <div class="min-w-0 pr-3">
+                            <p class="text-sm font-semibold text-white">Mostrar en la galería</p>
+                            <p class="text-xs text-gray-500"
+                               x-text="form.visible ? 'Visible para los clientes en /galeria' : 'Guardada pero oculta del sitio'"></p>
+                        </div>
+                        <div class="form-check form-switch form-check-lg mb-0 shrink-0">
+                            <input class="form-check-input" type="checkbox" role="switch" x-model="form.visible">
+                        </div>
                     </div>
                 </div>
+
+                <p x-show="errorMsg" x-cloak x-text="errorMsg" class="text-xs text-danger mt-3.5"></p>
+
+                <!-- Danger zone -->
+                <div x-show="mode === 'edit'" x-cloak class="mt-5 pt-4 border-t border-white/8">
+                    <button @click="eliminar()" :disabled="saving"
+                            class="w-full py-2.5 rounded-xl border border-red-500/25 bg-red-500/[.06] text-xs font-semibold text-red-400 hover:bg-red-500/15 transition-all disabled:opacity-40">
+                        <i class="fa-solid fa-trash me-1.5"></i> Eliminar foto
+                    </button>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="uploadGalleryPhoto()">
-                    <i class="fa-solid fa-cloud-arrow-up me-1"></i> Subir Foto
-                </button>
+
+            <!-- FOOTER -->
+            <div class="shrink-0 border-t border-white/8 bg-[#0d0d0d]"
+                 style="padding-bottom: calc(0.875rem + env(safe-area-inset-bottom));">
+                <!-- upload progress -->
+                <div x-show="saving && progress > 0" x-cloak class="h-0.5 bg-white/5">
+                    <div class="h-full bg-primary transition-all duration-200" :style="`width:${progress}%`"></div>
+                </div>
+                <div class="px-3.5 py-3.5 flex gap-2">
+                    <button @click="cerrar()"
+                            class="px-4 bg-white/5 border border-white/8 text-gray-400 rounded-xl text-sm hover:bg-white/10 transition-all">
+                        Cancelar
+                    </button>
+                    <button @click="guardar()" :disabled="saving || converting || stage !== 'ready'"
+                            class="flex-1 bg-primary text-white rounded-xl py-3 text-sm font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-40">
+                        <i class="fa-solid" :class="mode === 'add' ? 'fa-cloud-arrow-up' : 'fa-floppy-disk'"></i>
+                        <span class="ms-1.5" x-text="saving
+                            ? (progress ? `Subiendo ${progress}%` : 'Guardando…')
+                            : (mode === 'add' ? 'Subir foto' : 'Guardar cambios')"></span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<script src="/js/admin/galeria.js"></script>

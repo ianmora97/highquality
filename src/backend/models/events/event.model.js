@@ -74,9 +74,8 @@ exports.getMonth = async (month) => {
 };
 
 exports.create = async (event) => {
-    event.createdAt = moment().format();
-    event.updatedAt = moment().format();
-    console.log(event);
+    event.createdAt = new Date();
+    event.updatedAt = new Date();
     const newEvent = new Event(event);
     await newEvent.save();
     return newEvent;
@@ -84,7 +83,7 @@ exports.create = async (event) => {
 
 exports.update = async (id, data) => {
     data.updatedAt = new Date();
-    const event = await Event.findByIdAndUpdate(id, data);
+    const event = await Event.findByIdAndUpdate(id, data, { new: true });
     return event;
 };
 
@@ -101,7 +100,7 @@ exports.pagar = async (id, monto) => {
             backgroundColor: '#6c1313',
             borderColor: '#eb5d5d',
             textColor: '#fff'
-        });
+        }, { new: true });
         return event;
     }else{
         const event = await Event.findByIdAndUpdate(id, {
@@ -110,7 +109,27 @@ exports.pagar = async (id, monto) => {
             backgroundColor: '#064724',
             borderColor: '#44c780',
             textColor: '#fff'
-        });
+        }, { new: true });
         return event;
     }
 }
+
+exports.pagarTodasHoy = async () => {
+    const start = moment().startOf('day').toDate();
+    const end   = moment().endOf('day').toDate();
+    const events = await Event.find({
+        start: { $gte: start, $lte: end },
+        'extendedProps.estado': { $ne: 'PAGO' },
+        'extendedProps.numero': { $ne: '88008800' },
+        title: { $ne: 'Cerrado' }
+    }).lean();
+
+    const updated = [];
+    for (const event of events) {
+        const monto = parseInt(event.extendedProps.precio) || 0;
+        if (monto <= 0) continue;
+        const paid = await exports.pagar(event._id, monto);
+        if (paid) updated.push(paid);
+    }
+    return updated;
+};

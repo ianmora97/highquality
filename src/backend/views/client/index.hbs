@@ -24,7 +24,7 @@
         </p>
         <div class="flex flex-wrap gap-4 hero-buttons">
             <a href="/reservar" class="btn btn-gold btn-lg rounded-pill">
-                <i class="fa-solid fa-scissors me-2"></i>Reservar Cita
+                <i class="fa-solid fa-calendar-check me-1"></i>Reservar Cita
             </a>
             <a href="/galeria" class="btn btn-outline-light btn-lg rounded-pill">
                 <i class="fa-regular fa-images me-2"></i>Ver Galería
@@ -38,7 +38,7 @@
 <section style="background-color:#0d0d0d; border-bottom:1px solid rgba(255,255,255,0.06);">
     <div class="max-w-5xl mx-auto px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
         <div data-aos="fade-up" data-aos-delay="0">
-            <div class="bebas text-gold" style="font-size:3.5rem; line-height:1;">10+</div>
+            <div class="bebas text-gold" style="font-size:3.5rem; line-height:1;">15+</div>
             <p class="text-gray-500 text-xs uppercase tracking-widest mt-1">Años de experiencia</p>
         </div>
         <div data-aos="fade-up" data-aos-delay="80">
@@ -115,7 +115,7 @@
 </section>
 
 <!-- ===== SERVICES ===== -->
-<section class="relative py-24 bg-image-wood overflow-hidden">
+<section id="servicios" class="relative py-24 bg-image-wood overflow-hidden">
     <div class="absolute inset-0 backdrop-image bg-black/78"></div>
 
     <div class="relative z-10 max-w-6xl mx-auto px-6">
@@ -182,12 +182,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="text-center mt-12" data-aos="fade-up">
-            <a href="/servicios" class="btn btn-outline-light btn-lg rounded-pill">
-                Ver todos los servicios <i class="fa-solid fa-arrow-right ms-2"></i>
-            </a>
-        </div>
     </div>
 </section>
 
@@ -232,31 +226,42 @@
                 Ver galería completa <i class="fa-solid fa-arrow-right ms-2"></i>
             </a>
         </div>
-        <div class="gallery-preview-grid">
-            <div class="gallery-preview-item" data-aos="fade-up" data-aos-delay="0">
-                <img src="/images/cortes/1.jpg" alt="Corte 1">
-                <div class="gallery-preview-overlay"><i class="fa-solid fa-magnifying-glass-plus text-white fa-xl"></i></div>
-            </div>
-            <div class="gallery-preview-item" data-aos="fade-up" data-aos-delay="60">
-                <img src="/images/cortes/2.jpg" alt="Corte 2">
-                <div class="gallery-preview-overlay"><i class="fa-solid fa-magnifying-glass-plus text-white fa-xl"></i></div>
-            </div>
-            <div class="gallery-preview-item" data-aos="fade-up" data-aos-delay="120">
-                <img src="/images/cortes/3.jpg" alt="Corte 3">
-                <div class="gallery-preview-overlay"><i class="fa-solid fa-magnifying-glass-plus text-white fa-xl"></i></div>
-            </div>
-            <div class="gallery-preview-item" data-aos="fade-up" data-aos-delay="180">
-                <img src="/images/cortes/4.jpg" alt="Corte 4">
-                <div class="gallery-preview-overlay"><i class="fa-solid fa-magnifying-glass-plus text-white fa-xl"></i></div>
-            </div>
-            <div class="gallery-preview-item" data-aos="fade-up" data-aos-delay="240">
-                <img src="/images/cortes/5.jpg" alt="Corte 5">
-                <div class="gallery-preview-overlay"><i class="fa-solid fa-magnifying-glass-plus text-white fa-xl"></i></div>
-            </div>
-            <div class="gallery-preview-item" data-aos="fade-up" data-aos-delay="300">
-                <img src="/images/cortes/6.jpg" alt="Corte 6">
-                <div class="gallery-preview-overlay"><i class="fa-solid fa-magnifying-glass-plus text-white fa-xl"></i></div>
-            </div>
+        {{!-- Splide in loop mode with the active slide centred and scaled up.
+              Slides come from the gallery (6 newest visible photos) and fall
+              back to the bundled shots when the collection is empty. --}}
+        <div class="gallery-carousel" data-aos="fade-up">
+            <section class="splide" id="galeriaCarousel" aria-label="Nuestro trabajo">
+                <div class="splide__track">
+                    <ul class="splide__list">
+                        {{#if hasFotos}}
+                            {{#each fotos}}
+                                <li class="splide__slide">
+                                    <a href="/galeria" class="gallery-slide" aria-label="Ver galería">
+                                        <img src="{{imageUrl}}" alt="{{#if title}}{{title}}{{else}}Trabajo de HighQuality Studio{{/if}}"
+                                             loading="lazy" decoding="async">
+                                        <span class="gallery-slide-glow"></span>
+                                        {{#if title}}
+                                            <span class="gallery-slide-caption">
+                                                {{title}}
+                                                {{#if instagramLink}}<em>@{{instagramLink}}</em>{{/if}}
+                                            </span>
+                                        {{/if}}
+                                    </a>
+                                </li>
+                            {{/each}}
+                        {{else}}
+                            {{#each staticFallback}}
+                                <li class="splide__slide">
+                                    <a href="/galeria" class="gallery-slide" aria-label="Ver galería">
+                                        <img src="{{this}}" alt="Trabajo de HighQuality Studio" loading="lazy" decoding="async">
+                                        <span class="gallery-slide-glow"></span>
+                                    </a>
+                                </li>
+                            {{/each}}
+                        {{/if}}
+                    </ul>
+                </div>
+            </section>
         </div>
     </div>
 </section>
@@ -284,7 +289,7 @@
         </h2>
         <p class="text-gray-400 mt-3 mb-8" style="font-size:1rem;">Reserva tu cita en línea y asegura tu lugar hoy mismo.</p>
         <a href="/reservar" class="btn btn-gold btn-lg rounded-pill" style="font-size:1.05rem; padding:0.75rem 2.5rem;">
-            <i class="fa-solid fa-scissors me-2"></i>Reservar Cita
+            <i class="fa-solid fa-calendar-check me-2"></i> Reservar Cita
         </a>
     </div>
 </section>
@@ -300,19 +305,32 @@
                 <p class="text-gray-500 text-sm leading-relaxed mb-6">
                     Barbería premium en Hatillo 5, San José. Cortes de cabello y servicio de primera clase para hombres, adolescentes y niños.
                 </p>
-                <div class="flex items-center gap-3">
-                    <a href="tel:+50672451908" class="btn-socials" title="Llamar">
+                <div class="socials-row">
+                    {{#if site.links.tel}}
+                    <a href="{{site.links.tel}}" class="btn-socials btn-socials--tel" aria-label="Llamar" title="Llamar">
                         <i class="fa-solid fa-phone"></i>
                     </a>
-                    <a href="https://www.instagram.com/high_quality_barber.cr" class="btn-socials" target="_blank" title="Instagram">
+                    {{/if}}
+                    {{#if site.links.instagram}}
+                    <a href="{{site.links.instagram}}" class="btn-socials btn-socials--ig" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram">
                         <i class="fa-brands fa-instagram"></i>
                     </a>
-                    <a href="https://wa.me/50672451908?text=Quiero%20sacar%20una%20cita" class="btn-socials" target="_blank" title="WhatsApp">
+                    {{/if}}
+                    {{#if site.links.whatsapp}}
+                    <a href="{{site.links.whatsapp}}" class="btn-socials btn-socials--wa" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp">
                         <i class="fa-brands fa-whatsapp"></i>
                     </a>
-                    <a href="https://maps.app.goo.gl/og9Jny78AHMnbg2z7" class="btn-socials" target="_blank" title="Ubicación">
+                    {{/if}}
+                    {{#if site.links.maps}}
+                    <a href="{{site.links.maps}}" class="btn-socials btn-socials--maps" target="_blank" rel="noopener" aria-label="Google Maps" title="Google Maps">
                         <i class="fa-solid fa-location-dot"></i>
                     </a>
+                    {{/if}}
+                    {{#if site.links.waze}}
+                    <a href="{{site.links.waze}}" class="btn-socials btn-socials--waze" target="_blank" rel="noopener" aria-label="Waze" title="Waze">
+                        <i class="fa-brands fa-waze"></i>
+                    </a>
+                    {{/if}}
                 </div>
             </div>
 
@@ -323,7 +341,6 @@
                     <a href="/" class="footer-link">Inicio</a>
                     <a href="/reservar" class="footer-link">Reservar Cita</a>
                     <a href="/galeria" class="footer-link">Galería</a>
-                    <a href="/servicios" class="footer-link">Servicios</a>
                 </div>
             </div>
 
@@ -331,18 +348,34 @@
             <div>
                 <h5 class="bebas text-white mb-4" style="font-size:1.2rem; letter-spacing:1px;">Contacto</h5>
                 <div class="flex flex-col gap-3">
+                    {{#if site.contact.address}}
                     <div class="flex items-start gap-3">
                         <i class="fa-solid fa-location-dot text-gold mt-1" style="font-size:0.8rem;"></i>
-                        <span class="text-gray-500 text-sm">Hatillo 5, San José,<br>Costa Rica</span>
+                        {{#if site.links.maps}}
+                        <a href="{{site.links.maps}}" target="_blank" rel="noopener" class="text-gray-500 text-sm hover:text-white transition-colors">{{site.contact.address}}</a>
+                        {{else}}
+                        <span class="text-gray-500 text-sm">{{site.contact.address}}</span>
+                        {{/if}}
                     </div>
+                    {{/if}}
+                    {{#if site.contact.phone}}
                     <div class="flex items-center gap-3">
                         <i class="fa-solid fa-phone text-gold" style="font-size:0.8rem;"></i>
-                        <a href="tel:+50672451908" class="text-gray-500 text-sm hover:text-white transition-colors">+506 7245-1908</a>
+                        <a href="{{site.links.tel}}" class="text-gray-500 text-sm hover:text-white transition-colors">{{site.contact.phone}}</a>
                     </div>
+                    {{/if}}
+                    {{#if site.contact.instagram}}
                     <div class="flex items-center gap-3">
                         <i class="fa-brands fa-instagram text-gold" style="font-size:0.8rem;"></i>
-                        <a href="https://www.instagram.com/high_quality_barber.cr" target="_blank" class="text-gray-500 text-sm hover:text-white transition-colors">@high_quality_barber.cr</a>
+                        <a href="{{site.links.instagram}}" target="_blank" rel="noopener" class="text-gray-500 text-sm hover:text-white transition-colors">{{site.contact.instagram}}</a>
                     </div>
+                    {{/if}}
+                    {{#if site.links.waze}}
+                    <div class="flex items-center gap-3">
+                        <i class="fa-brands fa-waze text-gold" style="font-size:0.8rem;"></i>
+                        <a href="{{site.links.waze}}" target="_blank" rel="noopener" class="text-gray-500 text-sm hover:text-white transition-colors">Cómo llegar con Waze</a>
+                    </div>
+                    {{/if}}
                 </div>
             </div>
 
@@ -350,18 +383,12 @@
             <div>
                 <h5 class="bebas text-white mb-4" style="font-size:1.2rem; letter-spacing:1px;">Horario</h5>
                 <div class="flex flex-col gap-2 mb-6">
+                    {{#each site.schedule}}
                     <div class="flex justify-between gap-6">
-                        <span class="text-gray-500 text-sm">Lun – Vie</span>
-                        <span class="text-gray-300 text-sm">9am – 7pm</span>
+                        <span class="text-gray-500 text-sm">{{this.label}}</span>
+                        <span class="text-sm {{#if this.closed}}text-danger{{else}}text-gray-300{{/if}}">{{this.value}}</span>
                     </div>
-                    <div class="flex justify-between gap-6">
-                        <span class="text-gray-500 text-sm">Sábado</span>
-                        <span class="text-gray-300 text-sm">8am – 6pm</span>
-                    </div>
-                    <div class="flex justify-between gap-6">
-                        <span class="text-gray-500 text-sm">Domingo</span>
-                        <span class="text-danger text-sm">Cerrado</span>
-                    </div>
+                    {{/each}}
                 </div>
                 <a href="/reservar" class="btn btn-gold rounded-pill" style="font-size:0.85rem;">
                     <i class="fa-solid fa-scissors me-1"></i>Reservar

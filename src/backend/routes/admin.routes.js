@@ -2,8 +2,9 @@ const express = require('express');
 const router  = express.Router();
 
 const { requirePage } = require('../middlewares/auth');
-const Auth  = require('../controllers/auth.controller');
-const Admin = require('../controllers/admin.controller');
+const { wrapAll } = require('../helpers/asyncHandler');
+const Auth  = wrapAll(require('../controllers/auth.controller'));
+const Admin = wrapAll(require('../controllers/admin.controller'));
 
 // Auth pages
 router.get('/',       (_req, res) => res.render('auth/admin-login', { layout: 'auth', title: 'Admin' }));

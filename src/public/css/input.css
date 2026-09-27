@@ -149,25 +149,75 @@ hr {
 .mostache-hr.hr-black .mostache-hr-inner { border-color: rgb(0, 0, 0); }
 
 /* ===== SOCIALS BUTTON ===== */
+/* Footer social circles. Brand-tinted glass at rest, full brand gradient on
+   hover — the hue comes from `--soc`, set by the `--tel/--ig/--wa/...` modifiers. */
+.socials-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
 .btn-socials {
-  aspect-ratio: 1/1;
-  max-height: 55px;
-  background-color: #f1f1f1 !important;
-  color: #141414 !important;
-  border: none !important;
-  border-radius: 100% !important;
-  transition: all 0.3s;
+  --soc: #f8272e;
+  --soc-2: #f8272e;
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
   display: flex !important;
   justify-content: center;
   align-items: center;
+  font-size: 1.25rem;
+  color: var(--soc) !important;
+  background: color-mix(in srgb, var(--soc) 14%, rgba(255, 255, 255, 0.04));
+  border: 1px solid color-mix(in srgb, var(--soc) 32%, transparent) !important;
+  border-radius: 100% !important;
   cursor: pointer;
-  padding: 0.5rem;
+  overflow: hidden;
+  isolation: isolate;
+  backdrop-filter: blur(6px);
+  transition: color .3s, border-color .3s, transform .3s, box-shadow .3s;
 }
-.btn-socials:hover {
-  background-color: #f8272e !important;
-  color: #f1f1f1 !important;
-  transform: scale(1.1);
+/* The brand gradient lives on a pseudo-element so it can fade in under the icon. */
+.btn-socials::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 100%;
+  background: linear-gradient(135deg, var(--soc), var(--soc-2));
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity .3s, transform .3s;
 }
+.btn-socials:hover,
+.btn-socials:focus-visible {
+  color: #fff !important;
+  border-color: color-mix(in srgb, var(--soc) 65%, transparent) !important;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--soc) 35%, transparent);
+}
+.btn-socials:hover::before,
+.btn-socials:focus-visible::before {
+  opacity: 1;
+  transform: scale(1);
+}
+.btn-socials:active { transform: translateY(-1px) scale(0.96); }
+
+@media (min-width: 640px) {
+  .btn-socials { width: 54px; height: 54px; font-size: 1.3rem; }
+}
+/* The footer brand column only gets wide enough for five 60px circles at `lg`. */
+@media (min-width: 1024px) {
+  .socials-row { gap: 0.85rem; }
+  .btn-socials { width: 60px; height: 60px; font-size: 1.4rem; }
+}
+
+.btn-socials--tel   { --soc: #f4c82c; --soc-2: #e0a800; }
+.btn-socials--ig    { --soc: #e1306c; --soc-2: #f77737; }
+.btn-socials--wa    { --soc: #25d366; --soc-2: #128c7e; }
+.btn-socials--maps  { --soc: #4285f4; --soc-2: #1a73e8; }
+.btn-socials--waze  { --soc: #33ccff; --soc-2: #0b7fa8; }
 
 /* ===== REVIEW OPINION ===== */
 .reviewOpinion {
@@ -1506,42 +1556,126 @@ span.flatpickr-weekday {
 .why-card:hover .why-icon { background: rgba(244,200,44,0.18); }
 
 /* ===== GALLERY PREVIEW ===== */
-.gallery-preview-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 240px);
-  gap: 0.6rem;
-}
-@media (max-width: 700px) {
-  .gallery-preview-grid {
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 180px);
-  }
-}
-.gallery-preview-item {
+/* ===== HOMEPAGE GALLERY CAROUSEL =====
+   Splide in loop mode with focus:'center'. The centred slide sits at full size
+   and full colour; its neighbours shrink and fade, so the eye lands on the
+   middle one. Purely 2D — scale and opacity, no perspective. */
+.gallery-carousel {
   position: relative;
-  overflow: hidden;
-  border-radius: 0.75rem;
-  cursor: pointer;
 }
-.gallery-preview-item img {
+
+/* Neighbours have to spill past the container edge to read as "peeking". */
+.gallery-carousel .splide__track { overflow: visible; }
+.gallery-carousel .splide { overflow: hidden; }
+
+.gallery-carousel .splide__slide {
+  transition: transform 0.55s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.55s ease,
+              filter 0.55s ease;
+  transform: scale(0.8);
+  opacity: 0.4;
+  filter: saturate(0.55);
+}
+.gallery-carousel .splide__slide.is-active {
+  transform: scale(1);
+  opacity: 1;
+  filter: none;
+  z-index: 1;
+}
+
+.gallery-slide {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #111;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+}
+.gallery-slide img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  display: block;
 }
-.gallery-preview-item:hover img { transform: scale(1.06); }
-.gallery-preview-overlay {
+
+/* Gold edge + deeper lift, only on the centred slide. */
+.gallery-slide-glow {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s;
+  border-radius: 1rem;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07);
+  transition: box-shadow 0.55s ease;
+  pointer-events: none;
 }
-.gallery-preview-item:hover .gallery-preview-overlay { opacity: 1; }
+.gallery-carousel .splide__slide.is-active .gallery-slide-glow {
+  box-shadow: inset 0 0 0 2px rgba(244,200,44,0.5),
+              0 22px 50px rgba(0,0,0,0.65);
+}
+
+.gallery-slide-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 2rem 1rem 0.9rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  opacity: 0;
+  transition: opacity 0.55s ease;
+}
+.gallery-slide-caption em {
+  display: block;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 0.75rem;
+  color: #F4C82C;
+  margin-top: 0.15rem;
+}
+.gallery-carousel .splide__slide.is-active .gallery-slide-caption { opacity: 1; }
+
+/* Round arrows, vertically centred over the side slides. */
+.gallery-carousel .splide__arrow {
+  width: 2.875rem;
+  height: 2.875rem;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.16);
+  backdrop-filter: blur(6px);
+  opacity: 1;
+  z-index: 3;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.gallery-carousel .splide__arrow:hover:not(:disabled) {
+  background: #F4C82C;
+  border-color: #F4C82C;
+}
+.gallery-carousel .splide__arrow svg { fill: #fff; width: 1.05rem; height: 1.05rem; }
+.gallery-carousel .splide__arrow:hover:not(:disabled) svg { fill: #111; }
+.gallery-carousel .splide__arrow--prev { left: 0.25rem; }
+.gallery-carousel .splide__arrow--next { right: 0.25rem; }
+
+.gallery-carousel .splide__pagination { bottom: -2.25rem; }
+.gallery-carousel .splide__pagination__page {
+  background: rgba(255,255,255,0.22);
+  margin: 0 0.22rem;
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+.gallery-carousel .splide__pagination__page.is-active {
+  background: #F4C82C;
+  transform: scale(1.35);
+}
+
+@media (max-width: 640px) {
+  .gallery-carousel .splide__slide { transform: scale(0.86); }
+  .gallery-carousel .splide__arrow { width: 2.25rem; height: 2.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-carousel .splide__slide { transition: none; }
+}
 
 /* ===== REVIEW FORM CARD ===== */
 .review-form-card {
@@ -2265,3 +2399,221 @@ span.flatpickr-weekday {
   }
 }
 
+
+/* ============================================================
+   REALTIME — toasts, live pill, slot locking
+   Used by /js/realtime.js, /js/client/reserva.js, /js/admin/index.js
+   ============================================================ */
+
+/* ── Toast stack ─────────────────────────────────────────── */
+.hq-toast-layer {
+  position: fixed;
+  z-index: 100000;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+@media (min-width: 640px) {
+  .hq-toast-layer {
+    left: auto;
+    right: 1.15rem;
+    bottom: auto;
+    top: 1.15rem;
+    width: 22rem;
+  }
+}
+
+.hq-toast {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.75rem 2rem 0.75rem 0.75rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.09);
+  background:
+    linear-gradient(135deg, var(--hq-toast-tint, rgba(29,78,216,0.16)) 0%, rgba(13,13,13,0.96) 58%),
+    #0d0d0d;
+  box-shadow: 0 14px 38px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05);
+  overflow: hidden;
+  backdrop-filter: blur(6px);
+  animation: hqToastIn 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hq-toast-out { animation: hqToastOut 0.26s ease forwards; }
+
+@keyframes hqToastIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes hqToastOut {
+  to { opacity: 0; transform: translateY(-8px) scale(0.98); }
+}
+@media (min-width: 640px) {
+  @keyframes hqToastIn {
+    from { opacity: 0; transform: translateX(20px) scale(0.97); }
+    to   { opacity: 1; transform: translateX(0)    scale(1); }
+  }
+}
+
+.hq-toast-badge {
+  flex-shrink: 0;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  color: #fff;
+  background: var(--hq-toast-grad, linear-gradient(135deg, #1D4ED8, #3b82f6));
+  box-shadow: 0 4px 12px var(--hq-toast-glow, rgba(29,78,216,0.35));
+}
+.hq-toast-body   { min-width: 0; flex: 1; }
+.hq-toast-title  { font-size: 0.82rem; font-weight: 700; color: #f5f5f5; line-height: 1.25; }
+.hq-toast-text   { font-size: 0.74rem; color: #9ca3af; margin-top: 0.15rem; line-height: 1.35; }
+.hq-toast-close {
+  position: absolute;
+  top: 0.45rem; right: 0.45rem;
+  width: 1.3rem; height: 1.3rem;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.62rem;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.hq-toast-close:hover { color: #f1f1f1; background: rgba(255,255,255,0.07); }
+
+.hq-toast-bar {
+  position: absolute;
+  left: 0; bottom: 0;
+  height: 2px;
+  width: 100%;
+  transform-origin: left center;
+  background: var(--hq-toast-grad, linear-gradient(90deg, #1D4ED8, #3b82f6));
+  animation-name: hqToastBar;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+.hq-toast-hold .hq-toast-bar { animation-play-state: paused; }
+@keyframes hqToastBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+/* Per-type hue — never two adjacent toasts on the same hue by accident */
+.hq-toast-violet  { --hq-toast-tint: rgba(139,92,246,0.18); --hq-toast-grad: linear-gradient(135deg,#7c3aed,#a78bfa); --hq-toast-glow: rgba(139,92,246,0.4); }
+.hq-toast-emerald { --hq-toast-tint: rgba(16,185,129,0.16); --hq-toast-grad: linear-gradient(135deg,#059669,#34d399); --hq-toast-glow: rgba(16,185,129,0.35); }
+.hq-toast-amber   { --hq-toast-tint: rgba(245,158,11,0.16); --hq-toast-grad: linear-gradient(135deg,#d97706,#fbbf24); --hq-toast-glow: rgba(245,158,11,0.35); }
+.hq-toast-rose    { --hq-toast-tint: rgba(244,63,94,0.16);  --hq-toast-grad: linear-gradient(135deg,#e11d48,#fb7185); --hq-toast-glow: rgba(244,63,94,0.35); }
+.hq-toast-blue    { --hq-toast-tint: rgba(59,130,246,0.16); --hq-toast-grad: linear-gradient(135deg,#1d4ed8,#60a5fa); --hq-toast-glow: rgba(59,130,246,0.35); }
+
+/* ── Live connection pill ────────────────────────────────── */
+.hq-live-pill {
+  position: fixed;
+  z-index: 99998;
+  bottom: 0.85rem;
+  left: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(13,13,13,0.9);
+  color: #9ca3af;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  transition: opacity 0.3s ease, transform 0.3s ease, padding 0.3s ease;
+}
+.hq-live-dot {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: #6b7280;
+  flex-shrink: 0;
+}
+.hq-live-on           { color: #34d399; border-color: rgba(16,185,129,0.3); }
+.hq-live-on  .hq-live-dot { background: #34d399; box-shadow: 0 0 0 0 rgba(52,211,153,0.6); animation: hqPulse 2s infinite; }
+.hq-live-warn         { color: #fbbf24; border-color: rgba(245,158,11,0.3); }
+.hq-live-warn .hq-live-dot { background: #fbbf24; animation: hqBlink 0.9s infinite; }
+.hq-live-off          { color: #9ca3af; }
+/* Once stable it shrinks to a dot so it never fights with the UI */
+.hq-live-min          { padding: 0.32rem; opacity: 0.55; }
+.hq-live-min .hq-live-text { display: none; }
+.hq-live-min:hover    { padding: 0.32rem 0.7rem; opacity: 1; }
+.hq-live-min:hover .hq-live-text { display: inline; }
+
+@keyframes hqPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(52,211,153,0.55); }
+  70%  { box-shadow: 0 0 0 6px rgba(52,211,153,0); }
+  100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+}
+@keyframes hqBlink { 50% { opacity: 0.25; } }
+
+/* ── Slot taken / held in real time ──────────────────────── */
+/* A slot another client is currently booking: visible but unusable. */
+.slot-locked {
+  pointer-events: none;
+  position: relative;
+  border-color: rgba(148,163,184,0.2) !important;
+  background: rgba(148,163,184,0.05) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.slot-locked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(255,255,255,0.035) 0 6px,
+    transparent 6px 12px
+  );
+}
+.slot-locked .slot-time  { color: #6b7280 !important; text-decoration: line-through; text-decoration-thickness: 1px; }
+.slot-locked .slot-check { opacity: 0 !important; }
+.slot-locked .slot-badge {
+  visibility: visible !important;
+  color: #94a3b8 !important;
+  position: relative;
+  z-index: 1;
+}
+.slot-lock-icon {
+  position: absolute;
+  top: 6px; right: 7px;
+  font-size: 0.52rem;
+  color: #94a3b8;
+  z-index: 1;
+}
+
+/* Slot that just disappeared under the client's feet */
+.slot-vanish { animation: hqSlotVanish 0.45s ease forwards; }
+@keyframes hqSlotVanish {
+  0%   { opacity: 1; transform: scale(1); }
+  35%  { opacity: 1; transform: scale(1.04); border-color: rgba(244,63,94,0.6); }
+  100% { opacity: 0; transform: scale(0.85); }
+}
+
+/* Slot that just became free again */
+.slot-appear { animation: hqSlotAppear 0.45s cubic-bezier(0.16,1,0.3,1); }
+@keyframes hqSlotAppear {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Calendar event landing live in the admin grid ────────── */
+.fc-event.hq-event-new {
+  animation: hqEventLand 1.5s ease;
+}
+@keyframes hqEventLand {
+  0%   { box-shadow: 0 0 0 0 rgba(139,92,246,0.7); filter: brightness(1.5); }
+  100% { box-shadow: 0 0 0 10px rgba(139,92,246,0); filter: brightness(1); }
+}

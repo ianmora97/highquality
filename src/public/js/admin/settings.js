@@ -1,138 +1,249 @@
-var g_methods = new Map();
-var currentEditId = null;
+/* /dashboard/configuracion — payment methods, public contact info, the
+   plain-text horario block and notification switches. */
 
-function init() {
-    switchTab('pago');
-    loadMethods();
-    loadSettings();
+const toast = (icon, title) => Swal.mixin({
+    toast: true, position: 'top-end', showConfirmButton: false, timer: 1600,
+    background: '#0d0d0d', color: '#f1f1f1',
+}).fire({ icon, title });
+
+const BLANK_CONTACT = {
+    address: '', phone: '', whatsapp: '', whatsappText: '',
+    instagram: '', maps: '', waze: '',
+};
+
+// Mirrors the `.btn-socials--*` hues in input.css so the preview matches the page.
+const SOCIAL_STYLE = {
+    tel:       { icon: 'fa-solid fa-phone',        label: 'Llamar',       color: '#f4c82c', color2: '#e0a800' },
+    instagram: { icon: 'fa-brands fa-instagram',   label: 'Instagram',    color: '#e1306c', color2: '#f77737' },
+    whatsapp:  { icon: 'fa-brands fa-whatsapp',    label: 'WhatsApp',     color: '#25d366', color2: '#128c7e' },
+    maps:      { icon: 'fa-solid fa-location-dot', label: 'Google Maps',  color: '#4285f4', color2: '#1a73e8' },
+    waze:      { icon: 'fa-brands fa-waze',        label: 'Waze',         color: '#33ccff', color2: '#0b7fa8' },
+};
+
+const digits = (v) => String(v || '').replace(/\D/g, '');
+
+function configuracionPage() {
+    return {
+        tabs: [
+            { id: 'pago',           label: 'Pagos',          icon: 'fa-solid fa-credit-card' },
+            { id: 'contacto',       label: 'Contacto',       icon: 'fa-solid fa-address-book' },
+            { id: 'horario',        label: 'Horario',        icon: 'fa-solid fa-clock' },
+            { id: 'notificaciones', label: 'Notificaciones', icon: 'fa-solid fa-bell' },
+        ],
+        tab: 'pago',
+
+        // ── settings ──
+        form: { contact: { ...BLANK_CONTACT }, schedule: [] },
+        saved: '',                 // JSON snapshot of the last persisted form
+        whatsappConfirmEnabled: true,
+        saving: false,
+
+        // ── payment methods ──
+        metodos: [],
+        loadingMetodos: true,
+        sheet: false,
+        metodoMode: 'add',
+        metodoId: null,
+        metodoForm: { name: '', details: '' },
+        metodoError: '',
+        savingMetodo: false,
+        dragY: 0,
+        dragging: false,
+
+        init() {
+            this.cargarSettings();
+            this.cargarMetodos();
+        },
+
+        // ───────── settings ─────────
+        async cargarSettings() {
+            const { data } = await axios.get('/api/v1/settings');
+            this.whatsappConfirmEnabled = !!data.whatsappConfirmEnabled;
+            this.form = {
+                contact:  { ...BLANK_CONTACT, ...(data.contact || {}) },
+                schedule: (data.schedule || []).map(r => ({
+                    label: r.label || '', value: r.value || '', closed: !!r.closed,
+                })),
+            };
+            this.saved = JSON.stringify(this.form);
+        },
+
+        dirty() {
+            return this.saved !== '' && JSON.stringify(this.form) !== this.saved;
+        },
+
+        descartar() {
+            this.form = JSON.parse(this.saved);
+        },
+
+        async guardar() {
+            this.saving = true;
+            try {
+                const { data } = await axios.put('/api/v1/settings', {
+                    contact:  this.form.contact,
+                    schedule: this.form.schedule,
+                });
+                this.form = {
+                    contact:  { ...BLANK_CONTACT, ...(data.contact || {}) },
+                    schedule: (data.schedule || []).map(r => ({
+                        label: r.label || '', value: r.value || '', closed: !!r.closed,
+                    })),
+                };
+                this.saved = JSON.stringify(this.form);
+                toast('success', 'Configuración guardada');
+            } catch (e) {
+                toast('error', 'No se pudo guardar');
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        async toggleWhatsappConfirm(enabled) {
+            this.whatsappConfirmEnabled = enabled;
+            await axios.put('/api/v1/settings', { whatsappConfirmEnabled: enabled });
+            toast('success', enabled ? 'Mensajes activados' : 'Mensajes desactivados');
+        },
+
+        // ───────── contacto preview ─────────
+        igHandle() {
+            const raw = (this.form.contact.instagram || '').trim();
+            if (!raw) return '';
+            if (/^https?:\/\//i.test(raw)) {
+                const m = raw.match(/instagram\.com\/([^/?#]+)/i);
+                return m ? '@' + m[1] : raw;
+            }
+            return '@' + raw.replace(/^@/, '');
+        },
+
+        igUrl() {
+            const raw = (this.form.contact.instagram || '').trim();
+            if (!raw) return '';
+            return /^https?:\/\//i.test(raw) ? raw : 'https://www.instagram.com/' + raw.replace(/^@/, '');
+        },
+
+        previewSocials() {
+            const c   = this.form.contact;
+            const tel = digits(c.phone);
+            const wa  = digits(c.whatsapp);
+            const out = [];
+            if (tel)     out.push({ key: 'tel',       href: 'tel:+' + tel, ...SOCIAL_STYLE.tel });
+            if (c.instagram) out.push({ key: 'instagram', href: this.igUrl(), ...SOCIAL_STYLE.instagram });
+            if (wa)      out.push({ key: 'whatsapp',  href: `https://wa.me/${wa}?text=${encodeURIComponent(c.whatsappText || '')}`, ...SOCIAL_STYLE.whatsapp });
+            if (c.maps)  out.push({ key: 'maps',      href: c.maps, ...SOCIAL_STYLE.maps });
+            if (c.waze)  out.push({ key: 'waze',      href: c.waze, ...SOCIAL_STYLE.waze });
+            return out;
+        },
+
+        // ───────── horario (texto) ─────────
+        agregarFila() {
+            this.form.schedule.push({ label: '', value: '', closed: false });
+        },
+        quitarFila(i) {
+            this.form.schedule.splice(i, 1);
+        },
+        moverFila(i, delta) {
+            const j = i + delta;
+            if (j < 0 || j >= this.form.schedule.length) return;
+            const rows = this.form.schedule;
+            [rows[i], rows[j]] = [rows[j], rows[i]];
+        },
+
+        // ───────── métodos de pago ─────────
+        async cargarMetodos() {
+            this.loadingMetodos = true;
+            const { data } = await axios.get('/api/v1/payment-method/all');
+            this.metodos = data;
+            this.loadingMetodos = false;
+        },
+
+        activos()    { return this.metodos.filter(m => m.enable).length; },
+        inactivos()  { return this.metodos.filter(m => !m.enable).length; },
+
+        abrirNuevoMetodo() {
+            this.metodoMode = 'add';
+            this.metodoId   = null;
+            this.metodoForm = { name: '', details: '' };
+            this.metodoError = '';
+            this.abrirSheet();
+        },
+
+        abrirEditarMetodo(id) {
+            const m = this.metodos.find(x => x._id === id);
+            if (!m) return;
+            this.metodoMode = 'edit';
+            this.metodoId   = id;
+            this.metodoForm = { name: m.name || '', details: m.details || '' };
+            this.metodoError = '';
+            this.abrirSheet();
+        },
+
+        abrirSheet() {
+            this.sheet = true;
+            document.body.style.overflow = 'hidden';
+        },
+
+        cerrarSheet() {
+            this.sheet = false;
+            this.dragY = 0;
+            document.body.style.overflow = '';
+        },
+
+        async guardarMetodo() {
+            const name = (this.metodoForm.name || '').trim();
+            if (!name) {
+                this.metodoError = 'El nombre es requerido.';
+                return;
+            }
+            this.savingMetodo = true;
+            try {
+                const body = { name, details: (this.metodoForm.details || '').trim() };
+                if (this.metodoId) await axios.put(`/api/v1/payment-method/${this.metodoId}`, body);
+                else               await axios.post('/api/v1/payment-method', body);
+                this.cerrarSheet();
+                await this.cargarMetodos();
+                toast('success', this.metodoId ? 'Actualizado' : 'Agregado');
+            } catch (e) {
+                this.metodoError = 'No se pudo guardar.';
+            } finally {
+                this.savingMetodo = false;
+            }
+        },
+
+        async toggleMetodo(id, enable) {
+            await axios.put(`/api/v1/payment-method/${id}`, { enable });
+            await this.cargarMetodos();
+        },
+
+        async borrarMetodo(id) {
+            const r = await Swal.fire({
+                title: '¿Eliminar?',
+                text: 'Este método no estará disponible en los pagos.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar',
+                background: '#0d0d0d',
+                color: '#f1f1f1',
+            });
+            if (!r.isConfirmed) return;
+            await axios.delete(`/api/v1/payment-method/${id}`);
+            await this.cargarMetodos();
+            toast('success', 'Eliminado');
+        },
+
+        // ── drag-to-dismiss (mobile sheet) ──
+        onDragStart(e) {
+            this.dragging = true;
+            this._dragStartY = e.touches[0].clientY;
+        },
+        onDragMove(e) {
+            if (!this.dragging) return;
+            this.dragY = Math.max(0, e.touches[0].clientY - this._dragStartY);
+        },
+        onDragEnd() {
+            this.dragging = false;
+            if (this.dragY > 90) this.cerrarSheet();
+            this.dragY = 0;
+        },
+    };
 }
-
-function switchTab(name) {
-    document.querySelectorAll('.settings-tab').forEach(el => el.style.display = 'none');
-    document.querySelectorAll('.settings-tab-btn').forEach(btn => {
-        btn.classList.remove('text-white', 'border-primary');
-        btn.classList.add('text-gray-400', 'border-transparent');
-    });
-    const tab = document.getElementById('tab-' + name);
-    const btn = document.getElementById('tab-btn-' + name);
-    if (tab) tab.style.display = 'block';
-    if (btn) {
-        btn.classList.remove('text-gray-400', 'border-transparent');
-        btn.classList.add('text-white', 'border-primary');
-    }
-}
-
-async function loadMethods() {
-    const { data } = await axios.get('/api/v1/payment-method/all');
-    g_methods.clear();
-    data.forEach(m => g_methods.set(m._id, m));
-    renderMethods(data);
-}
-
-function renderMethods(data) {
-    const list = document.getElementById('paymentMethodsList');
-    const empty = document.getElementById('emptyMethods');
-    if (!data.length) {
-        list.innerHTML = '';
-        empty.style.display = 'block';
-        return;
-    }
-    empty.style.display = 'none';
-    list.innerHTML = data.map(m => `
-        <div class="flex items-center justify-between px-4 py-3 hover:bg-white/[.02] transition-colors" id="method-row-${m._id}">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${m.enable ? 'bg-success/10 text-success' : 'bg-white/5 text-gray-600'}">
-                    <i class="fa-solid fa-${m.details ? 'mobile-screen' : 'money-bill-wave'} text-sm"></i>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-white">${m.name}</p>
-                    ${m.details ? `<p class="text-xs text-gray-500">${m.details}</p>` : ''}
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <div class="form-check form-switch mb-0">
-                    <input class="form-check-input" type="checkbox" role="switch"
-                        ${m.enable ? 'checked' : ''} onchange="toggleMethod('${m._id}', this.checked)">
-                </div>
-                <button class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:text-white hover:bg-white/8 transition-all" onclick="openEditModal('${m._id}')">
-                    <i class="fa-solid fa-pen text-xs"></i>
-                </button>
-                <button class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:text-danger hover:bg-danger/10 transition-all" onclick="deleteMethod('${m._id}')">
-                    <i class="fa-solid fa-trash text-xs"></i>
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
-
-function openAddModal() {
-    currentEditId = null;
-    document.getElementById('methodModalTitle').innerHTML = '<i class="fa-solid fa-credit-card"></i> Nuevo Método';
-    document.getElementById('method-name').value = '';
-    document.getElementById('method-details').value = '';
-    document.getElementById('methodModal').classList.add('modal-open');
-    document.body.style.overflow = 'hidden';
-}
-
-function openEditModal(id) {
-    const m = g_methods.get(id);
-    currentEditId = id;
-    document.getElementById('methodModalTitle').innerHTML = '<i class="fa-solid fa-pen"></i> Editar Método';
-    document.getElementById('method-name').value = m.name;
-    document.getElementById('method-details').value = m.details || '';
-    document.getElementById('methodModal').classList.add('modal-open');
-    document.body.style.overflow = 'hidden';
-}
-
-async function saveMethod() {
-    const name = document.getElementById('method-name').value.trim();
-    if (!name) {
-        Swal.fire({ icon: 'warning', text: 'El nombre es requerido', background: '#0d0d0d', color: '#f1f1f1' });
-        return;
-    }
-    const body = { name, details: document.getElementById('method-details').value.trim() };
-    if (currentEditId) {
-        await axios.put(`/api/v1/payment-method/${currentEditId}`, body);
-    } else {
-        await axios.post('/api/v1/payment-method', body);
-    }
-    document.getElementById('methodModal').classList.remove('modal-open');
-    document.body.style.overflow = '';
-    await loadMethods();
-    const toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, background: '#0d0d0d', color: '#f1f1f1' });
-    toast.fire({ icon: 'success', title: currentEditId ? 'Actualizado' : 'Agregado' });
-}
-
-async function toggleMethod(id, enable) {
-    await axios.put(`/api/v1/payment-method/${id}`, { enable });
-    await loadMethods();
-}
-
-async function deleteMethod(id) {
-    const result = await Swal.fire({
-        title: '¿Eliminar?',
-        text: 'Este método no estará disponible en los pagos.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Eliminar',
-        cancelButtonText: 'Cancelar',
-        background: '#0d0d0d',
-        color: '#f1f1f1',
-    });
-    if (!result.isConfirmed) return;
-    await axios.delete(`/api/v1/payment-method/${id}`);
-    await loadMethods();
-}
-
-async function loadSettings() {
-    const { data } = await axios.get('/api/v1/settings');
-    document.getElementById('whatsapp-confirm-switch').checked = data.whatsappConfirmEnabled;
-}
-
-async function toggleWhatsappConfirm(enabled) {
-    await axios.put('/api/v1/settings', { whatsappConfirmEnabled: enabled });
-    const toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, background: '#0d0d0d', color: '#f1f1f1' });
-    toast.fire({ icon: 'success', title: enabled ? 'Mensajes activados' : 'Mensajes desactivados' });
-}
-
-document.addEventListener('DOMContentLoaded', init);

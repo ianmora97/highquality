@@ -1,57 +1,334 @@
+<script src="/scripts/flatpickr/dist/flatpickr.min.js"></script>
+<link rel="stylesheet" href="/scripts/flatpickr/dist/themes/dark.css">
+
 <div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
-    <!-- Header -->
-    <div class="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 mb-4">
-        <h1 class="text-xl font-bold mb-1 flex items-center gap-2">
-            <i class="fa-solid fa-clock text-primary"></i> Horarios
-        </h1>
-        <p class="text-gray-500 text-sm mb-0">Configura el horario de atención por día. Define el rango de horas de inicio y cierre. Las citas se generan cada 30 minutos.</p>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mb-4">
+        <div class="rounded-lg p-2.5 bg-gradient-to-br from-violet-500/20 via-purple-500/10 to-transparent border border-violet-400/25 flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-violet-500/20">
+                <i class="fa-solid fa-calendar-check text-white text-xs"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-[10px] text-violet-300/70 leading-none mb-1 truncate">Días abiertos</p>
+                <h2 class="text-base font-bold text-violet-200 leading-none" id="kpiDiasAbiertos">-</h2>
+            </div>
+        </div>
+        <div class="rounded-lg p-2.5 bg-gradient-to-br from-blue-500/20 via-primary/10 to-transparent border border-blue-400/25 flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-primary flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
+                <i class="fa-solid fa-business-time text-white text-xs"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-[10px] text-blue-300/70 leading-none mb-1 truncate">Horas / semana</p>
+                <h2 class="text-base font-bold text-blue-200 leading-none" id="kpiHorasSemana">-</h2>
+            </div>
+        </div>
+        <div class="rounded-lg p-2.5 bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-transparent border border-emerald-400/25 flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
+                <i class="fa-solid fa-list-check text-white text-xs"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-[10px] text-emerald-300/70 leading-none mb-1 truncate">Citas / semana</p>
+                <h2 class="text-base font-bold text-emerald-200 leading-none" id="kpiCitasSemana">-</h2>
+            </div>
+        </div>
+        <div class="rounded-lg p-2.5 bg-gradient-to-br from-orange-500/20 via-red-500/10 to-transparent border border-orange-400/25 flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center shrink-0 shadow-lg shadow-orange-500/20">
+                <i class="fa-solid fa-calendar-xmark text-white text-xs"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-[10px] text-orange-300/70 leading-none mb-1 truncate">Días cerrados</p>
+                <h2 class="text-base font-bold text-orange-200 leading-none" id="kpiDiasCerrados">-</h2>
+            </div>
+        </div>
     </div>
 
     <!-- Horarios list -->
     <div class="flex flex-col gap-3" id="horarios"></div>
 </div>
 
-<!-- Edit Horario Modal -->
-<div class="modal" id="editHorario" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-scrollable" style="max-width:480px;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div>
-                    <h2 class="modal-title"><i class="fa-solid fa-clock"></i> Editar Horario</h2>
-                    <span class="text-sm text-gray-500" id="editDayName"></span>
+<!-- ===== EDITAR HORARIO SHEET ===== -->
+<div id="editHorarioSheet"
+     x-data="editHorarioData()"
+     x-show="open"
+     x-effect="document.documentElement.style.overflow = open ? 'hidden' : ''"
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-150"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @keydown.escape.window="cerrar()"
+     @open-edit-horario.window="recibir($event.detail)"
+     @click="cerrar()"
+     class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+     style="background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);"
+     x-cloak>
+
+    <!-- Panel -->
+    <div x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-full"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-full"
+         class="w-full sm:max-w-md bg-[#0d0d0d] border border-white/10 rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[86vh]"
+         :style="dragY ? `transform: translateY(${dragY}px)` : ''"
+         @click.stop>
+
+        <!-- Drag handle (mobile) -->
+        <div class="flex justify-center pt-3 pb-2 sm:hidden cursor-grab shrink-0"
+             @touchstart="onDragStart($event)"
+             @touchmove="onDragMove($event)"
+             @touchend="onDragEnd($event)">
+            <div class="w-10 h-1.5 rounded-full bg-white/20"></div>
+        </div>
+
+        <!-- HEADER -->
+        <div class="px-3.5 pt-2 pb-3.5 shrink-0 border-b border-white/8">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-clock text-primary"></i>
                 </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p class="text-gray-400 text-sm mb-4">
-                    Las citas se generarán cada <strong class="text-white">30 minutos</strong> desde la hora de inicio hasta 30 min antes de la hora de cierre.
-                </p>
-                <div class="flex flex-col gap-4">
-                    <div>
-                        <label class="form-label">Hora de inicio</label>
-                        <input type="time" class="form-control" id="editStartTime" step="1800">
-                        <small class="text-gray-500">Primera cita disponible</small>
-                    </div>
-                    <div>
-                        <label class="form-label">Hora de cierre</label>
-                        <input type="time" class="form-control" id="editEndTime" step="1800">
-                        <small class="text-gray-500">Hora de cierre (última cita = cierre - 30 min)</small>
-                    </div>
+                <div class="flex-1 min-w-0">
+                    <h2 class="text-lg font-bold text-white leading-tight">Editar horario</h2>
+                    <p class="text-xs text-gray-500 mt-0.5" x-text="dayName"></p>
                 </div>
-                <!-- Preview slots -->
-                <div class="mt-4">
-                    <p class="text-xs text-gray-500 mb-2">Vista previa de citas disponibles:</p>
-                    <div id="slotsPreview" class="flex flex-wrap gap-1"></div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-light" onclick="actualizarHorario()">
-                    <i class="fa-solid fa-floppy-disk"></i> Guardar
+                <button @click="cerrar()"
+                        class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 bg-white/5 hover:text-white hover:bg-white/10 transition-all shrink-0">
+                    <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
         </div>
+
+        <!-- BODY -->
+        <div class="flex-1 overflow-y-auto px-3.5 py-3.5 min-h-0">
+
+            <!-- Enable toggle -->
+            <div class="flex items-center justify-between rounded-xl bg-white/[.03] border border-white/8 p-3.5 mb-4">
+                <div class="min-w-0 pr-3">
+                    <p class="text-sm font-semibold text-white">Día habilitado</p>
+                    <p class="text-xs text-gray-500" x-text="enable ? 'Se reciben citas este día' : 'Día cerrado, sin citas'"></p>
+                </div>
+                <div class="form-check form-switch form-check-lg mb-0 shrink-0">
+                    <input class="form-check-input" type="checkbox" role="switch" x-model="enable">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] text-gray-500 uppercase tracking-widest">Bloques de trabajo</span>
+                <span class="text-xs text-gray-500" x-text="totalCitas() + ' citas'"></span>
+            </div>
+            <p class="text-xs text-gray-600 mb-3">
+                El tiempo entre bloques queda libre (almuerzo o descanso) y no genera citas.
+            </p>
+
+            <div class="space-y-2.5">
+                <template x-for="(b, i) in blocks" :key="b.id">
+                    <div class="rounded-xl bg-white/[.03] border border-white/8 p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-semibold uppercase tracking-widest text-primary" x-text="'Bloque ' + (i + 1)"></span>
+                            <button @click="quitarBloque(i)" x-show="blocks.length > 1"
+                                    class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 focus-within:border-primary/50 transition-all">
+                                <i class="fa-solid fa-play text-gold text-[10px] shrink-0"></i>
+                                <input type="text" placeholder="Inicio" readonly
+                                       x-init="montarPicker($el, b, 'start')"
+                                       class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600 cursor-pointer">
+                            </div>
+                            <div class="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-3 focus-within:border-primary/50 transition-all">
+                                <i class="fa-solid fa-stop text-info text-[10px] shrink-0"></i>
+                                <input type="text" placeholder="Cierre" readonly
+                                       x-init="montarPicker($el, b, 'end')"
+                                       class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600 cursor-pointer">
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-gray-500 mt-2" x-text="resumenBloque(b)"></p>
+                    </div>
+                </template>
+            </div>
+
+            <button @click="agregarBloque()"
+                    class="w-full mt-2.5 py-2.5 rounded-xl border border-dashed border-white/15 text-xs font-semibold text-gray-400 hover:text-white hover:border-primary/40 hover:bg-primary/5 transition-all">
+                <i class="fa-solid fa-plus me-1.5"></i> Agregar bloque
+            </button>
+
+            <p x-show="errorMsg" x-text="errorMsg" class="text-xs text-danger mt-3"></p>
+
+            <!-- Preview slots -->
+            <div class="rounded-xl bg-white/[.03] border border-white/8 p-3.5 mt-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] text-gray-500 uppercase tracking-widest">Citas generadas</span>
+                    <span class="text-xs text-gray-400" x-text="totalCitas() + ' horarios'"></span>
+                </div>
+                <template x-for="(b, i) in blocks" :key="'prev-' + b.id">
+                    <div class="mb-2.5 last:mb-0" x-show="slotsBloque(b).length">
+                        <p class="text-[10px] text-gray-600 mb-1.5" x-text="rangoBloque(b)"></p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <template x-for="s in slotsBloque(b)" :key="b.id + s">
+                                <span class="text-xs px-2 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary" x-text="s"></span>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+                <p x-show="!totalCitas()" class="text-xs text-gray-600">Define inicio y cierre de cada bloque</p>
+                <p x-show="totalCitas()" class="text-[11px] text-gray-600 mt-3 pt-2.5 border-t border-white/8">
+                    <i class="fa-solid fa-circle-info me-1"></i>
+                    El mismo día también se abren las medias horas dentro de estos bloques.
+                </p>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="shrink-0 px-3.5 py-3.5 border-t border-white/8 bg-[#0d0d0d] flex gap-2"
+             style="padding-bottom: calc(1rem + env(safe-area-inset-bottom));">
+            <button @click="cerrar()"
+                    class="px-4 bg-white/5 border border-white/8 text-gray-400 rounded-xl text-sm hover:bg-white/10 transition-all">
+                Cancelar
+            </button>
+            <button @click="guardar()" :disabled="loading"
+                    class="flex-1 bg-primary text-white rounded-xl py-3 text-sm font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-40">
+                <i class="fa-solid fa-floppy-disk me-1.5"></i>
+                <span x-text="loading ? 'Guardando...' : 'Guardar cambios'"></span>
+            </button>
+        </div>
     </div>
 </div>
+
+<script>
+function editHorarioData() {
+    return {
+        open: false,
+        loading: false,
+        dragY: 0,
+        dragging: false,
+        _dragStartY: 0,
+
+        currentId: null,
+        dayName: '',
+        enable: true,
+        blocks: [],
+        errorMsg: '',
+        _seq: 0,
+
+        recibir(detail) {
+            const item = g_horarios.get(detail.id);
+            if (!item) return;
+            this.currentId = detail.id;
+            this.dayName = DAYS_MAP[item.day] || item.day;
+            this.enable = !!item.enable;
+            const source = (item.blocks && item.blocks.length) ? item.blocks : [{ start: '09:00', end: '18:00' }];
+            this.blocks = source.map(b => ({ id: ++this._seq, start: b.start, end: b.end }));
+            this.errorMsg = '';
+            this.open = true;
+        },
+
+        // flatpickr owns the input; the row is keyed by block id so Alpine never
+        // recreates it while the picker is open.
+        montarPicker(el, block, field) {
+            flatpickr(el, {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: 'h:i K',
+                minuteIncrement: 30,
+                time_24hr: false,
+                defaultDate: block[field] ? timeStrToDate(block[field]) : null,
+                onChange: (dates, str, fp) => {
+                    if (!dates[0]) return;
+                    // Typing in the minute field bypasses minuteIncrement, so snap it back.
+                    const snapped = snapToHalfHour(dates[0]);
+                    if (snapped.getTime() !== dates[0].getTime()) fp.setDate(snapped, false);
+                    block[field] = dateToTimeStr(snapped);
+                    this.errorMsg = '';
+                },
+            });
+        },
+
+        slotsBloque(b) {
+            return (b.start && b.end && b.start < b.end) ? computePreviewSlots(b.start, b.end) : [];
+        },
+
+        rangoBloque(b) {
+            return (b.start && b.end) ? `${formatTime12(b.start)} – ${formatTime12(b.end)}` : '';
+        },
+
+        resumenBloque(b) {
+            const slots = this.slotsBloque(b);
+            if (!slots.length) return 'Define inicio y cierre';
+            return `${slots.length} citas · última ${slots[slots.length - 1]}`;
+        },
+
+        totalCitas() {
+            return this.blocks.reduce((n, b) => n + this.slotsBloque(b).length, 0);
+        },
+
+        agregarBloque() {
+            const last = this.blocks[this.blocks.length - 1];
+            const start = last && last.end ? addMinutesToTimeStr(last.end, 60) : '09:00';
+            this.blocks.push({ id: ++this._seq, start, end: addMinutesToTimeStr(start, 240) });
+            this.errorMsg = '';
+        },
+
+        quitarBloque(i) {
+            this.blocks.splice(i, 1);
+            this.errorMsg = '';
+        },
+
+        validar() {
+            const clean = this.blocks.filter(b => b.start && b.end);
+            if (!clean.length) return 'Define al menos un bloque de trabajo';
+            if (clean.some(b => b.start >= b.end)) return 'La hora de inicio debe ser antes que la de cierre';
+            if (clean.some(b => !this.slotsBloque(b).length)) return 'Cada bloque debe durar al menos 30 minutos';
+            const sorted = [...clean].sort((a, b) => a.start.localeCompare(b.start));
+            for (let i = 1; i < sorted.length; i++) {
+                if (sorted[i].start < sorted[i - 1].end) return 'Los bloques no se pueden traslapar';
+            }
+            return '';
+        },
+
+        async guardar() {
+            const error = this.validar();
+            if (error) { this.errorMsg = error; return; }
+            this.errorMsg = '';
+            this.loading = true;
+            try {
+                await axios.put(`/api/v1/horario/${this.currentId}`, {
+                    enable: this.enable,
+                    blocks: this.blocks.map(b => ({ start: b.start, end: b.end })),
+                });
+                this.open = false;
+                await bringData();
+                const toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, background: '#0d0d0d', color: '#f1f1f1' });
+                toast.fire({ icon: 'success', title: 'Horario actualizado' });
+            } catch (e) {
+                this.errorMsg = 'Error al guardar. Intenta de nuevo.';
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        cerrar() { this.open = false; },
+
+        // ── drag to dismiss ──
+        onDragStart(e) {
+            this.dragging = true;
+            this._dragStartY = e.touches[0].clientY;
+        },
+        onDragMove(e) {
+            if (!this.dragging) return;
+            this.dragY = Math.max(0, e.touches[0].clientY - this._dragStartY);
+        },
+        onDragEnd() {
+            this.dragging = false;
+            if (this.dragY > 90) this.cerrar();
+            this.dragY = 0;
+        }
+    };
+}
+</script>
 
 <script src="/js/admin/horarios.js"></script>

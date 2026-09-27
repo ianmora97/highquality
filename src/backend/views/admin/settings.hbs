@@ -1,93 +1,463 @@
-<div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
-
-    <!-- Header -->
-    <div class="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 mb-4">
-        <h1 class="text-xl font-bold mb-1 flex items-center gap-2">
-            <i class="fa-solid fa-gear text-primary"></i> Configuración del Sistema
-        </h1>
-        <p class="text-gray-500 text-sm mb-0">Administra las opciones globales del sistema</p>
-    </div>
-
-    <!-- Tabs -->
-    <div class="flex gap-1 mb-4 border-b border-white/8 pb-0">
-        <button onclick="switchTab('pago')" id="tab-btn-pago"
-                class="settings-tab-btn px-4 py-2.5 text-sm font-medium text-gray-400 border-b-2 border-transparent -mb-px transition-all hover:text-white"
-                data-active="false">
-            <i class="fa-solid fa-credit-card me-1.5"></i> Opciones de Pago
-        </button>
-        <button onclick="switchTab('whatsapp')" id="tab-btn-whatsapp"
-                class="settings-tab-btn px-4 py-2.5 text-sm font-medium text-gray-400 border-b-2 border-transparent -mb-px transition-all hover:text-white"
-                data-active="false">
-            <i class="fa-brands fa-whatsapp me-1.5"></i> Whatsapp
-        </button>
-    </div>
-
-    <!-- Tab: Opciones de Pago -->
-    <div id="tab-pago" class="settings-tab">
-        <div class="bg-[#0d0d0d] border border-white/8 rounded-xl overflow-hidden">
-            <div class="flex items-center justify-between p-4 border-b border-white/8">
-                <div>
-                    <h2 class="font-semibold text-white text-sm">Métodos de Pago</h2>
-                </div>
-                <button onclick="openAddModal()" class="btn btn-primary">
-                    <i class="fa-solid fa-plus"></i> Agregar
-                </button>
-            </div>
-
-            <!-- List -->
-            <div id="paymentMethodsList" class="divide-y divide-white/5">
-                <!-- JS fills this -->
-            </div>
-            <div id="emptyMethods" class="text-center py-12 text-gray-600" style="display:none;">
-                <i class="fa-solid fa-credit-card fa-2x mb-3"></i>
-                <p class="text-sm">No hay métodos de pago</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tab: Whatsapp -->
-    <div id="tab-whatsapp" class="settings-tab" style="display:none;">
-        <div class="bg-[#0d0d0d] border border-white/8 rounded-xl overflow-hidden">
-            <div class="flex items-center justify-between p-4">
-                <div>
-                    <h2 class="font-semibold text-white text-sm">Mensajes de Confirmación</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Envía un Whatsapp al cliente al confirmar una cita.</p>
-                </div>
-                <div class="form-check form-switch mb-0">
-                    <input class="form-check-input" type="checkbox" role="switch" id="whatsapp-confirm-switch"
-                        onchange="toggleWhatsappConfirm(this.checked)">
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Add/Edit Modal -->
-<div class="modal" id="methodModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" style="max-width:420px;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="methodModalTitle"><i class="fa-solid fa-credit-card"></i> Nuevo Método</h2>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-4">
-                    <label class="form-label">Nombre <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="method-name" placeholder="Ej: Efectivo, Sinpe Móvil">
-                </div>
-                <div class="mb-4">
-                    <label class="form-label">Detalles <span class="text-gray-500">(opcional)</span></label>
-                    <input type="text" class="form-control" id="method-details" placeholder="Ej: número de teléfono, cuenta, etc.">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="saveMethod()">
-                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script src="/js/admin/settings.js"></script>
+
+<div x-data="configuracionPage()" x-cloak>
+
+    <div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4 pb-28">
+
+        <!-- ───────── Header ───────── -->
+        <div class="rounded-xl p-4 mb-4 bg-gradient-to-br from-slate-500/20 via-slate-400/8 to-transparent border border-slate-400/25">
+            <div class="flex items-start gap-3">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-300 to-slate-600 flex items-center justify-center shrink-0 shadow-lg shadow-slate-500/20">
+                    <i class="fa-solid fa-gear text-white text-lg"></i>
+                </div>
+                <div class="min-w-0">
+                    <h1 class="text-xl font-bold text-white leading-tight">Configuración</h1>
+                    <p class="text-gray-500 text-sm mt-0.5">Pagos, contacto público, horario visible y notificaciones.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ───────── Tabs ───────── -->
+        <div class="flex items-center gap-1 p-1 mb-4 rounded-2xl bg-white/[.03] border border-white/8 overflow-x-auto">
+            <template x-for="t in tabs" :key="t.id">
+                <button @click="tab = t.id"
+                        class="flex-1 min-w-max px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap flex items-center justify-center gap-2"
+                        :class="tab === t.id
+                            ? 'bg-primary/20 text-white border border-primary/40 shadow-lg shadow-primary/10'
+                            : 'text-gray-500 hover:text-gray-300 border border-transparent'">
+                    <i :class="t.icon" class="text-xs"></i>
+                    <span x-text="t.label"></span>
+                </button>
+            </template>
+        </div>
+
+        <!-- ═════════ Tab: Pagos ═════════ -->
+        <div x-show="tab === 'pago'">
+
+            <div class="grid grid-cols-2 gap-2.5 mb-4">
+                <div class="rounded-lg p-2.5 bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-transparent border border-emerald-400/25 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-circle-check text-white text-xs"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10px] text-emerald-300/70 leading-none mb-1 truncate">Activos</p>
+                        <h2 class="text-base font-bold text-emerald-200 leading-none" x-text="activos()">0</h2>
+                    </div>
+                </div>
+                <div class="rounded-lg p-2.5 bg-gradient-to-br from-orange-500/20 via-red-500/10 to-transparent border border-orange-400/25 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center shrink-0 shadow-lg shadow-orange-500/20">
+                        <i class="fa-solid fa-circle-pause text-white text-xs"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10px] text-orange-300/70 leading-none mb-1 truncate">Inactivos</p>
+                        <h2 class="text-base font-bold text-orange-200 leading-none" x-text="inactivos()">0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-[#0d0d0d] border border-white/8 rounded-2xl overflow-hidden">
+                <div class="flex items-center justify-between gap-3 p-4 border-b border-white/8">
+                    <div class="min-w-0">
+                        <h2 class="font-bold text-white text-sm">Métodos de pago</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Los activos aparecen al cobrar una cita.</p>
+                    </div>
+                    <button @click="abrirNuevoMetodo()"
+                            class="h-10 px-3.5 flex items-center gap-2 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 active:scale-95 transition-all shrink-0">
+                        <i class="fa-solid fa-plus text-xs"></i><span>Agregar</span>
+                    </button>
+                </div>
+
+                <!-- Skeleton -->
+                <div x-show="loadingMetodos" class="divide-y divide-white/5">
+                    <template x-for="i in 3" :key="i">
+                        <div class="flex items-center gap-3 px-4 py-3.5 animate-pulse">
+                            <div class="w-9 h-9 rounded-xl bg-white/5 shrink-0"></div>
+                            <div class="flex-1 space-y-2">
+                                <div class="h-3 w-32 bg-white/5 rounded"></div>
+                                <div class="h-2 w-20 bg-white/5 rounded"></div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div x-show="!loadingMetodos" class="divide-y divide-white/5">
+                    <template x-for="m in metodos" :key="m._id">
+                        <div class="flex items-center gap-3 px-4 py-3.5 hover:bg-white/[.02] transition-colors">
+                            <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border"
+                                 :class="m.enable ? 'bg-emerald-500/10 border-emerald-400/25 text-emerald-300' : 'bg-white/5 border-white/8 text-gray-600'">
+                                <i class="fa-solid text-sm" :class="m.details ? 'fa-mobile-screen' : 'fa-money-bill-wave'"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-semibold text-white truncate" x-text="m.name"></p>
+                                <p class="text-xs text-gray-500 truncate" x-text="m.details || 'Sin detalles'"></p>
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                           :checked="m.enable" @change="toggleMetodo(m._id, $event.target.checked)">
+                                </div>
+                                <button @click="abrirEditarMetodo(m._id)"
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-white hover:bg-white/8 transition-all">
+                                    <i class="fa-solid fa-pen text-xs"></i>
+                                </button>
+                                <button @click="borrarMetodo(m._id)"
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-danger hover:bg-danger/10 transition-all">
+                                    <i class="fa-solid fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div x-show="!loadingMetodos && !metodos.length" class="text-center py-12 px-4">
+                    <div class="w-14 h-14 rounded-2xl bg-white/[.03] border border-white/8 flex items-center justify-center mx-auto mb-3">
+                        <i class="fa-solid fa-credit-card text-gray-600 text-xl"></i>
+                    </div>
+                    <p class="text-sm text-gray-400 font-semibold">Sin métodos de pago</p>
+                    <p class="text-xs text-gray-600 mt-1">Agrega Efectivo o Sinpe Móvil para empezar a cobrar.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═════════ Tab: Contacto ═════════ -->
+        <div x-show="tab === 'contacto'" class="grid lg:grid-cols-3 gap-4">
+
+            <div class="lg:col-span-2 bg-[#0d0d0d] border border-white/8 rounded-2xl overflow-hidden">
+                <div class="p-4 border-b border-white/8">
+                    <h2 class="font-bold text-white text-sm">Datos de contacto</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Se muestran en el pie de la página principal.</p>
+                </div>
+
+                <div class="p-4 space-y-4">
+                    <!-- Dirección -->
+                    <div>
+                        <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Dirección</label>
+                        <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                            <i class="fa-solid fa-location-dot text-gold text-xs shrink-0"></i>
+                            <input type="text" x-model="form.contact.address" placeholder="Hatillo 5, San José, Costa Rica"
+                                   class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                        </div>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div>
+                        <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Teléfono</label>
+                        <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                            <i class="fa-solid fa-phone text-gold text-xs shrink-0"></i>
+                            <input type="text" x-model="form.contact.phone" placeholder="+506 7245-1908" inputmode="tel"
+                                   class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                        </div>
+                        <p class="text-[11px] text-gray-600 mt-1">Se muestra tal cual y también arma el botón de llamada.</p>
+                    </div>
+
+                    <!-- WhatsApp -->
+                    <div>
+                        <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">WhatsApp</label>
+                        <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                            <i class="fa-brands fa-whatsapp text-[#25d366] text-sm shrink-0"></i>
+                            <input type="text" x-model="form.contact.whatsapp" placeholder="50672451908" inputmode="numeric"
+                                   class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                        </div>
+                        <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 mt-2 focus-within:border-primary/50 transition-all">
+                            <i class="fa-solid fa-comment-dots text-gray-500 text-xs shrink-0"></i>
+                            <input type="text" x-model="form.contact.whatsappText" placeholder="Quiero sacar una cita" maxlength="120"
+                                   class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                        </div>
+                        <p class="text-[11px] text-gray-600 mt-1">Número con código de país (sin +) y el mensaje que se escribe solo.</p>
+                    </div>
+
+                    <!-- Instagram -->
+                    <div>
+                        <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Instagram</label>
+                        <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                            <i class="fa-brands fa-instagram text-[#e1306c] text-sm shrink-0"></i>
+                            <input type="text" x-model="form.contact.instagram" placeholder="high_quality_barber.cr"
+                                   class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                        </div>
+                        <p class="text-[11px] text-gray-600 mt-1">Usuario sin @, o pega el link completo del perfil.</p>
+                    </div>
+
+                    <!-- Google Maps -->
+                    <div>
+                        <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Google Maps</label>
+                        <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                            <i class="fa-solid fa-map-location-dot text-[#4285f4] text-xs shrink-0"></i>
+                            <input type="url" x-model="form.contact.maps" placeholder="https://maps.app.goo.gl/..."
+                                   class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                        </div>
+                    </div>
+
+                    <!-- Waze -->
+                    <div>
+                        <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Waze</label>
+                        <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                            <i class="fa-brands fa-waze text-[#33ccff] text-sm shrink-0"></i>
+                            <input type="url" x-model="form.contact.waze" placeholder="https://waze.com/ul/..."
+                                   class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                        </div>
+                        <p class="text-[11px] text-gray-600 mt-1">Déjalo vacío y el botón de Waze no aparece en la página.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live preview -->
+            <div class="bg-[#0d0d0d] border border-white/8 rounded-2xl overflow-hidden h-max lg:sticky lg:top-4">
+                <div class="p-4 border-b border-white/8">
+                    <h2 class="font-bold text-white text-sm">Vista previa</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Así se ve en el pie de página.</p>
+                </div>
+                <div class="p-4">
+                    <div class="flex flex-wrap items-center gap-2.5 mb-4">
+                        <template x-for="s in previewSocials()" :key="s.key">
+                            <a :href="s.href" target="_blank" rel="noopener" :title="s.label"
+                               class="w-11 h-11 rounded-full flex items-center justify-center text-white border transition-transform hover:scale-110"
+                               :style="`background:linear-gradient(135deg, ${s.color}, ${s.color2}); border-color:${s.color}55;`">
+                                <i :class="s.icon"></i>
+                            </a>
+                        </template>
+                        <p x-show="!previewSocials().length" class="text-xs text-gray-600">Sin enlaces configurados.</p>
+                    </div>
+                    <div class="space-y-2.5 text-sm">
+                        <div class="flex items-start gap-2.5" x-show="form.contact.address">
+                            <i class="fa-solid fa-location-dot text-gold text-xs mt-1"></i>
+                            <span class="text-gray-400" x-text="form.contact.address"></span>
+                        </div>
+                        <div class="flex items-center gap-2.5" x-show="form.contact.phone">
+                            <i class="fa-solid fa-phone text-gold text-xs"></i>
+                            <span class="text-gray-400" x-text="form.contact.phone"></span>
+                        </div>
+                        <div class="flex items-center gap-2.5" x-show="form.contact.instagram">
+                            <i class="fa-brands fa-instagram text-gold text-xs"></i>
+                            <span class="text-gray-400" x-text="igHandle()"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═════════ Tab: Horario (texto) ═════════ -->
+        <div x-show="tab === 'horario'" class="grid lg:grid-cols-3 gap-4">
+
+            <div class="lg:col-span-2 bg-[#0d0d0d] border border-white/8 rounded-2xl overflow-hidden">
+                <div class="flex items-center justify-between gap-3 p-4 border-b border-white/8">
+                    <div class="min-w-0">
+                        <h2 class="font-bold text-white text-sm">Horario visible</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Texto libre para la página principal.</p>
+                    </div>
+                    <button @click="agregarFila()"
+                            class="h-9 px-3 flex items-center gap-2 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 active:scale-95 transition-all shrink-0">
+                        <i class="fa-solid fa-plus text-[10px]"></i><span>Fila</span>
+                    </button>
+                </div>
+
+                <div class="p-4 bg-amber-500/[.06] border-b border-amber-400/20 flex items-start gap-2.5">
+                    <i class="fa-solid fa-circle-info text-amber-400 text-xs mt-0.5"></i>
+                    <p class="text-[11px] text-amber-200/80 leading-relaxed">
+                        Solo texto informativo. No afecta los turnos disponibles —
+                        esos se configuran en <a href="/dashboard/horarios" class="underline hover:text-amber-100">Horarios</a>.
+                    </p>
+                </div>
+
+                <div class="p-4 space-y-2.5">
+                    <template x-for="(row, i) in form.schedule" :key="i">
+                        <div class="flex items-center gap-2 rounded-xl bg-white/[.03] border border-white/8 p-2">
+                            <div class="flex flex-col gap-1 shrink-0">
+                                <button @click="moverFila(i, -1)" :disabled="i === 0"
+                                        class="w-6 h-5 flex items-center justify-center rounded text-gray-600 hover:text-white hover:bg-white/8 disabled:opacity-25 transition-all">
+                                    <i class="fa-solid fa-chevron-up text-[9px]"></i>
+                                </button>
+                                <button @click="moverFila(i, 1)" :disabled="i === form.schedule.length - 1"
+                                        class="w-6 h-5 flex items-center justify-center rounded text-gray-600 hover:text-white hover:bg-white/8 disabled:opacity-25 transition-all">
+                                    <i class="fa-solid fa-chevron-down text-[9px]"></i>
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1 min-w-0">
+                                <input type="text" x-model="row.label" placeholder="Lun – Vie" maxlength="40"
+                                       class="w-full min-w-0 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-primary/50 transition-all placeholder:text-gray-600">
+                                <input type="text" x-model="row.value" placeholder="9am – 7pm" maxlength="40"
+                                       class="w-full min-w-0 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary/50 transition-all placeholder:text-gray-600"
+                                       :class="row.closed ? 'text-red-400' : 'text-white'">
+                            </div>
+
+                            <button @click="row.closed = !row.closed" :title="row.closed ? 'Marcado como cerrado' : 'Marcar como cerrado'"
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg border transition-all shrink-0"
+                                    :class="row.closed ? 'bg-danger/15 border-danger/40 text-red-400' : 'bg-white/[.03] border-white/8 text-gray-600 hover:text-gray-300'">
+                                <i class="fa-solid fa-ban text-xs"></i>
+                            </button>
+                            <button @click="quitarFila(i)"
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-danger hover:bg-danger/10 transition-all shrink-0">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </template>
+
+                    <div x-show="!form.schedule.length" class="text-center py-8">
+                        <p class="text-sm text-gray-400 font-semibold">Sin filas de horario</p>
+                        <p class="text-xs text-gray-600 mt-1">Agrega una fila para mostrar el horario en la página.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="bg-[#0d0d0d] border border-white/8 rounded-2xl overflow-hidden h-max lg:sticky lg:top-4">
+                <div class="p-4 border-b border-white/8">
+                    <h2 class="font-bold text-white text-sm">Vista previa</h2>
+                </div>
+                <div class="p-4">
+                    <h5 class="bebas text-white mb-3" style="font-size:1.2rem; letter-spacing:1px;">Horario</h5>
+                    <div class="flex flex-col gap-2">
+                        <template x-for="(row, i) in form.schedule" :key="i">
+                            <div class="flex justify-between gap-6">
+                                <span class="text-gray-500 text-sm" x-text="row.label || '—'"></span>
+                                <span class="text-sm" :class="row.closed ? 'text-danger' : 'text-gray-300'" x-text="row.value || '—'"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═════════ Tab: Notificaciones ═════════ -->
+        <div x-show="tab === 'notificaciones'">
+            <div class="bg-[#0d0d0d] border border-white/8 rounded-2xl overflow-hidden">
+                <div class="p-4 border-b border-white/8">
+                    <h2 class="font-bold text-white text-sm">Notificaciones</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Mensajes automáticos a los clientes.</p>
+                </div>
+                <div class="flex items-center justify-between gap-3 p-4">
+                    <div class="flex items-start gap-3 min-w-0">
+                        <div class="w-10 h-10 rounded-xl bg-[#25d366]/10 border border-[#25d366]/25 flex items-center justify-center shrink-0">
+                            <i class="fa-brands fa-whatsapp text-[#25d366] text-lg"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-white">Confirmación por WhatsApp</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Envía un WhatsApp al cliente cuando se confirma su cita.</p>
+                        </div>
+                    </div>
+                    <div class="form-check form-switch form-check-lg mb-0 shrink-0">
+                        <input class="form-check-input" type="checkbox" role="switch"
+                               :checked="whatsappConfirmEnabled"
+                               @change="toggleWhatsappConfirm($event.target.checked)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ───────── Sticky save bar (contacto / horario) ───────── -->
+    <div x-show="dirty() && (tab === 'contacto' || tab === 'horario')"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 translate-y-4"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-4"
+         class="fixed bottom-0 inset-x-0 z-40 px-4 pb-4 pt-3"
+         style="background:linear-gradient(to top, rgba(0,0,0,.92), rgba(0,0,0,0)); backdrop-filter:blur(4px);">
+        <div class="max-w-screen-xl mx-auto flex items-center gap-2">
+            <p class="flex-1 text-xs text-gray-400 min-w-0">
+                <i class="fa-solid fa-circle-dot text-amber-400 text-[9px] me-1"></i> Cambios sin guardar
+            </p>
+            <button @click="descartar()" :disabled="saving"
+                    class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-xs font-semibold text-gray-300 hover:bg-white/10 transition-all disabled:opacity-50">
+                Descartar
+            </button>
+            <button @click="guardar()" :disabled="saving"
+                    class="px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2">
+                <i class="fa-solid" :class="saving ? 'fa-spinner fa-spin' : 'fa-floppy-disk'"></i>
+                <span x-text="saving ? 'Guardando...' : 'Guardar cambios'"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ───────── Bottom sheet: método de pago ───────── -->
+    <div x-show="sheet"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @keydown.escape.window="cerrarSheet()"
+         @click="cerrarSheet()"
+         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+         style="background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);"
+         x-cloak>
+
+        <div x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-full"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 translate-y-full"
+             class="w-full sm:max-w-md bg-[#0d0d0d] border border-white/10 rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92dvh]"
+             :style="dragY ? `transform: translateY(${dragY}px)` : ''"
+             @click.stop>
+
+            <div class="flex justify-center pt-3 pb-2 sm:hidden cursor-grab shrink-0"
+                 @touchstart="onDragStart($event)" @touchmove="onDragMove($event)" @touchend="onDragEnd($event)">
+                <div class="w-10 h-1.5 rounded-full bg-white/20"></div>
+            </div>
+
+            <div class="px-3.5 pt-2 pb-3.5 shrink-0 border-b border-white/8">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-credit-card text-primary"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg font-bold text-white leading-tight"
+                            x-text="metodoMode === 'add' ? 'Nuevo método' : 'Editar método'"></h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Disponible al cobrar una cita</p>
+                    </div>
+                    <button @click="cerrarSheet()"
+                            class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 bg-white/5 hover:text-white hover:bg-white/10 transition-all shrink-0">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto px-3.5 py-3.5 min-h-0">
+                <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Nombre</label>
+                <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 mb-3.5 focus-within:border-primary/50 transition-all">
+                    <i class="fa-solid fa-tag text-gray-500 text-xs shrink-0"></i>
+                    <input type="text" x-model="metodoForm.name" placeholder="Efectivo, Sinpe Móvil..." maxlength="40"
+                           @keydown.enter="guardarMetodo()"
+                           class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                </div>
+
+                <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Detalles <span class="normal-case tracking-normal text-gray-600">(opcional)</span></label>
+                <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                    <i class="fa-solid fa-circle-info text-gray-500 text-xs shrink-0"></i>
+                    <input type="text" x-model="metodoForm.details" placeholder="Número de teléfono, cuenta..." maxlength="80"
+                           @keydown.enter="guardarMetodo()"
+                           class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                </div>
+
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                    <template x-for="p in ['Efectivo', 'Sinpe Móvil', 'Tarjeta', 'Transferencia']" :key="p">
+                        <button @click="metodoForm.name = p"
+                                class="text-[11px] px-2 py-1 rounded-lg border transition-all"
+                                :class="metodoForm.name === p ? 'bg-gold/15 border-gold/40 text-gold' : 'bg-white/[.03] border-white/8 text-gray-500 hover:text-gray-300'"
+                                x-text="p"></button>
+                    </template>
+                </div>
+
+                <p x-show="metodoError" class="text-xs text-red-400 mt-3" x-text="metodoError"></p>
+            </div>
+
+            <div class="px-3.5 py-3 border-t border-white/8 flex gap-2 shrink-0">
+                <button @click="cerrarSheet()"
+                        class="flex-1 py-3 rounded-xl bg-white/5 border border-white/8 text-sm font-semibold text-gray-300 hover:bg-white/10 transition-all">
+                    Cancelar
+                </button>
+                <button @click="guardarMetodo()" :disabled="savingMetodo"
+                        class="flex-1 py-3 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                    <i class="fa-solid" :class="savingMetodo ? 'fa-spinner fa-spin' : 'fa-floppy-disk'"></i>
+                    <span x-text="savingMetodo ? 'Guardando...' : 'Guardar'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

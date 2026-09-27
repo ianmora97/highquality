@@ -5,15 +5,10 @@ const bodyParser = require('body-parser');
 const app        = express();
 const path       = require('node:path');
 const http       = require('http');
-const https      = require('https');
 const cookieParser = require('cookie-parser');
-const { cert }   = require('./backend/middlewares/https');
 const helmet     = require('helmet');
 const passport   = require('passport');
 require('./backend/config/passport'); // register all strategies
-
-// const {createTelegramMessagesCron} = require('./backend/helpers/cron');
-// createTelegramMessagesCron();
 
 // ? Settings
 app.set('port', process.env.PORT);
@@ -47,20 +42,34 @@ app.use('/scripts',    require('./backend/routes/static.routes'));
 app.use('/dashboard',  require('./backend/routes/admin.routes.js'));
 app.use('/api/v1',     require('./backend/routes/api.routes.js'));
 
+// ? Error handling — must come after every route
+app.use(require('./backend/middlewares/errors').notFound);
+app.use(require('./backend/middlewares/errors').errorHandler);
+
 // ? Start server
-var server = http.createServer(app).listen(app.get('port'), () => {
+const realtime = require('./backend/helpers/realtime');
+
+const server = http.createServer(app).listen(app.get('port'), () => {
     console.log(`[OK] SERVER STARTED ON PORT ${app.get('port')}`);
     require('./backend/connections/mongo.js');
+    require('./backend/connections/indexes.js').ensureIndexes();
 });
-if (process.env.NODE_ENV === 'prod') {
-    server = https.createServer(cert(), app).listen(443, () => {
-        console.log('[OK] PRODUCTION SERVER STARTED');
-    });
-}
 
-const { Server } = require('socket.io');
-const io = new Server(server);
-io.on('connection', () => {});
+// ? Realtime (socket.io) — attached to every listening server
+const io = realtime.attach(server);
 app.set('socketio', io);
+app.set('realtime', realtime);
 
-module.exports = { app, server, io };
+// ? Last-resort guards.
+// Node 22 exits the process on an unhandled rejection. Everything reachable
+// through a route is now wrapped (see helpers/asyncHandler), so anything that
+// lands here is a bug worth a loud log — but it must not take the site down
+// with it while it is being fixed.
+process.on('unhandledRejection', (reason) => {
+    console.error('[unhandledRejection]', reason);
+});
+process.on('uncaughtException', (err) => {
+    console.error('[uncaughtException]', err);
+});
+
+module.exports = { app, server, io, realtime };

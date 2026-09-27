@@ -1,44 +1,203 @@
-<div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
+<script src="/js/admin/reviews.js"></script>
 
-    <!-- Header -->
-    <div class="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 mb-4">
-        <div class="flex items-center justify-between flex-wrap gap-3">
-            <div>
-                <h1 class="text-xl font-bold mb-1 flex items-center gap-2">
-                    <i class="fa-solid fa-star text-gold"></i> Reviews
-                </h1>
-                <p class="text-gray-500 text-sm mb-0">Opiniones de los clientes</p>
+<div x-data="reviewsPage()">
+    <div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mb-4">
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-violet-500/20 via-purple-500/10 to-transparent border border-violet-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-violet-500/20">
+                    <i class="fa-solid fa-comments text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-violet-300/70 leading-none mb-1 truncate">Reseñas</p>
+                    <h2 class="text-base font-bold text-violet-200 leading-none" x-text="summary.total"></h2>
+                </div>
             </div>
-            <div class="flex items-center gap-6">
-                <div class="text-center">
-                    <div class="text-xl font-bold text-white" id="totalitems">—</div>
-                    <div class="text-xs text-gray-500">Total</div>
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-orange-500/20 via-red-500/10 to-transparent border border-orange-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center shrink-0 shadow-lg shadow-orange-500/20">
+                    <i class="fa-solid fa-hourglass-half text-white text-xs"></i>
                 </div>
-                <div class="text-center">
-                    <div class="text-xl font-bold text-yellow-400" id="displayCount">—</div>
-                    <div class="text-xs text-gray-500">Visibles</div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-orange-300/70 leading-none mb-1 truncate">Pendientes</p>
+                    <h2 class="text-base font-bold text-orange-200 leading-none" x-text="summary.pending"></h2>
                 </div>
-                <div class="text-center">
-                    <div class="text-xl font-bold text-primary" id="avgStars">—</div>
-                    <div class="text-xs text-gray-500">Promedio ★</div>
+            </div>
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-amber-400/20 via-yellow-500/10 to-transparent border border-amber-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-300 to-yellow-600 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
+                    <i class="fa-solid fa-star text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-amber-300/70 leading-none mb-1 truncate">Promedio ★</p>
+                    <h2 class="text-base font-bold text-amber-200 leading-none" x-text="summary.avgStars || '—'"></h2>
+                </div>
+            </div>
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-transparent border border-emerald-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-check text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-emerald-300/70 leading-none mb-1 truncate">Aprobadas</p>
+                    <h2 class="text-base font-bold text-emerald-200 leading-none" x-text="summary.approved"></h2>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Filter tabs -->
-    <div class="flex gap-2 mb-4">
-        <button class="btn btn-sm btn-primary" onclick="filterReviews('all')" id="filter-all">Todos</button>
-        <button class="btn btn-sm btn-dark" onclick="filterReviews('visible')" id="filter-visible">
-            <i class="fa-solid fa-eye"></i> Visibles
-        </button>
-        <button class="btn btn-sm btn-dark" onclick="filterReviews('hidden')" id="filter-hidden">
-            <i class="fa-solid fa-eye-slash"></i> Ocultos
-        </button>
-    </div>
+        <!-- Toolbar -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
+            <div class="flex-1 flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                <i class="fa-solid fa-magnifying-glass text-gray-500 text-xs shrink-0"></i>
+                <input type="text" x-model="query" @input="onQueryInput()" placeholder="Buscar por nombre, teléfono o texto..."
+                       class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                <button x-show="query" @click="query = ''; buscar()" class="text-gray-500 hover:text-white shrink-0">
+                    <i class="fa-solid fa-circle-xmark text-xs"></i>
+                </button>
+            </div>
 
-    <!-- Reviews grid -->
-    <div class="grid gap-3" id="list" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));"></div>
+            <div class="relative shrink-0" @click.away="ordenOpen = false">
+                <button @click="ordenOpen = !ordenOpen"
+                        class="h-10 px-3 flex items-center gap-2 rounded-xl bg-white/[.03] border border-white/8 text-xs font-semibold text-gray-400 hover:text-white transition-all whitespace-nowrap">
+                    <i class="fa-solid fa-arrow-down-wide-short text-[11px]"></i>
+                    <span class="hidden sm:inline" x-text="ordenLabel()"></span>
+                    <i class="fa-solid fa-chevron-down text-[9px]"></i>
+                </button>
+                <div x-show="ordenOpen" x-transition.opacity.duration.120ms x-cloak
+                     class="absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-52 max-w-[calc(100vw-2rem)] p-1 rounded-xl bg-[#0d0d0d] border border-white/10 shadow-2xl z-30">
+                    <template x-for="o in ordenes" :key="o[0]">
+                        <button @click="orden = o[0]; ordenOpen = false"
+                                class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-all text-left"
+                                :class="orden === o[0] ? 'bg-primary/20 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'">
+                            <i :class="'fa-solid ' + o[2]" class="text-[11px] w-3.5 text-center"></i>
+                            <span x-text="o[1]"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter chips -->
+        <div class="flex items-center gap-1 p-1 mb-4 rounded-xl bg-white/[.03] border border-white/8 overflow-x-auto">
+            <template x-for="f in filtros" :key="f[0]">
+                <button @click="filtro = f[0]"
+                        class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 shrink-0"
+                        :class="filtro === f[0] ? 'bg-primary/20 text-white border border-primary/40' : 'text-gray-500 hover:text-gray-300 border border-transparent'">
+                    <i :class="'fa-solid ' + f[2]" class="text-[10px]"></i>
+                    <span x-text="f[1]"></span>
+                    <span class="text-[10px] opacity-70" x-text="'(' + filtroCount(f[0]) + ')'"></span>
+                </button>
+            </template>
+        </div>
+
+        <!-- Skeleton -->
+        <div x-show="loading" class="grid gap-2.5" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
+            <template x-for="i in 6" :key="i">
+                <div class="h-[168px] rounded-xl bg-white/[.03] border border-white/8 animate-pulse"></div>
+            </template>
+        </div>
+
+        <!-- Grid -->
+        <div x-show="!loading" class="grid gap-2.5" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
+            <template x-for="r in reviews" :key="r._id">
+                <div class="rounded-xl p-3.5 border border-white/10 flex flex-col gap-3" style="background:#0d0d0d;">
+
+                    <!-- Header -->
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-start gap-2.5 min-w-0">
+                            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-300 to-yellow-600 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
+                                <span class="text-xs font-bold text-white" x-text="iniciales(r)"></span>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-bold text-white leading-snug truncate" x-text="r.nombre || 'Anónimo'"></p>
+                                <p class="text-[11px] text-gray-500 font-mono" x-show="r.phone" x-text="tel(r)"></p>
+                                <p class="text-[11px] text-gold" x-show="r.clientStats" x-text="r.clientStats && (r.clientStats.citas + (r.clientStats.citas === 1 ? ' cita' : ' citas') + (r.clientStats.topServicio ? ' · ' + r.clientStats.topServicio : ''))"></p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md border shrink-0"
+                              :class="statusBadge(r.status).cls" x-text="statusBadge(r.status).text"></span>
+                    </div>
+
+                    <!-- Stars -->
+                    <div class="flex gap-0.5">
+                        <template x-for="i in 5" :key="i">
+                            <i class="text-xs" :class="i <= r.stars ? 'fa-solid fa-star text-gold' : 'fa-regular fa-star text-gray-700'"></i>
+                        </template>
+                    </div>
+
+                    <!-- Review text -->
+                    <p class="text-gray-300 text-sm leading-relaxed flex-1" x-text="'“' + r.review + '”'"></p>
+
+                    <p class="text-[11px] text-gray-600" x-text="cuando(r.createdAt)" :title="fecha(r.createdAt)"></p>
+
+                    <!-- Existing reply -->
+                    <div x-show="r.reply && !replyOpen[r._id]" class="rounded-lg bg-primary/[.06] border border-primary/20 p-2.5 flex gap-2">
+                        <i class="fa-solid fa-scissors text-primary text-xs mt-0.5 shrink-0"></i>
+                        <p class="text-xs text-gray-300 leading-relaxed"><span class="text-white font-semibold">Tu respuesta: </span><span x-text="r.reply"></span></p>
+                    </div>
+
+                    <!-- Reply editor -->
+                    <div x-show="replyOpen[r._id]" x-cloak class="space-y-2">
+                        <textarea x-model="replyDraft[r._id]" rows="2" maxlength="400" placeholder="Escribe una respuesta pública para este cliente..."
+                                  class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none placeholder:text-gray-600 focus:border-primary/50 transition-all"></textarea>
+                        <div class="flex gap-2">
+                            <button @click="replyOpen[r._id] = false" class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/8 text-[11px] font-semibold text-gray-400 hover:text-white transition-all">Cancelar</button>
+                            <button @click="guardarRespuesta(r)" :disabled="savingId === r._id"
+                                    class="flex-1 px-3 py-1.5 rounded-lg bg-primary text-white text-[11px] font-bold hover:opacity-90 transition-all disabled:opacity-40">
+                                <span x-text="savingId === r._id ? 'Guardando...' : 'Publicar respuesta'"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex items-center gap-1.5 pt-2 border-t border-white/5" x-show="!replyOpen[r._id]">
+                        <button x-show="r.status !== 'approved'" @click="aprobar(r)" :disabled="savingId === r._id"
+                                class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-emerald-500/10 border border-emerald-400/25 text-emerald-300 text-[11px] font-semibold hover:bg-emerald-500/20 transition-all disabled:opacity-40">
+                            <i class="fa-solid fa-check text-[10px]"></i> Aprobar
+                        </button>
+                        <button x-show="r.status !== 'rejected'" @click="rechazar(r)" :disabled="savingId === r._id"
+                                class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-white/[.03] border border-white/8 text-gray-400 text-[11px] font-semibold hover:text-red-300 hover:bg-red-500/[.06] transition-all disabled:opacity-40">
+                            <i class="fa-solid fa-ban text-[10px]"></i> Rechazar
+                        </button>
+                        <button @click="toggleReply(r)"
+                                class="w-9 h-9 flex items-center justify-center rounded-lg bg-white/[.03] border border-white/8 text-gray-400 hover:text-white transition-all shrink-0">
+                            <i class="fa-solid fa-reply text-xs"></i>
+                        </button>
+                        <button @click="eliminar(r)" :disabled="savingId === r._id"
+                                class="w-9 h-9 flex items-center justify-center rounded-lg bg-white/[.03] border border-white/8 text-gray-500 hover:text-red-400 transition-all shrink-0 disabled:opacity-40">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Load more -->
+        <div x-show="!loading && hayMas()" class="flex justify-center mt-4">
+            <button @click="verMas()" :disabled="loadingMore"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm font-semibold hover:bg-white/10 transition-all disabled:opacity-40">
+                <i class="fa-solid text-xs" :class="loadingMore ? 'fa-spinner fa-spin' : 'fa-chevron-down'"></i>
+                <span x-text="loadingMore ? 'Cargando...' : 'Mostrar más'"></span>
+                <span x-show="!loadingMore" class="text-gray-600" x-text="'(' + (total - reviews.length) + ')'"></span>
+            </button>
+        </div>
+
+        <p x-show="!loading && total" class="text-center text-[11px] text-gray-600 mt-3">
+            Mostrando <span x-text="reviews.length"></span> de <span x-text="total"></span> reseñas
+        </p>
+
+        <!-- Empty states -->
+        <div x-show="!loading && !total && summary.total" class="text-center py-14">
+            <i class="fa-solid fa-magnifying-glass text-gray-700 text-2xl mb-3"></i>
+            <p class="text-sm text-gray-500 mb-4">Ninguna reseña coincide con la búsqueda.</p>
+            <button @click="limpiar()"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm font-semibold hover:bg-white/10 transition-all">
+                <i class="fa-solid fa-rotate-left text-xs"></i> Limpiar filtros
+            </button>
+        </div>
+
+        <div x-show="!loading && !summary.total" class="text-center py-14">
+            <i class="fa-solid fa-star text-gray-700 text-3xl mb-3"></i>
+            <p class="text-sm text-gray-500 mb-1">Todavía no hay reseñas.</p>
+            <p class="text-xs text-gray-600">Aparecerán aquí en cuanto un cliente deje una desde su cuenta.</p>
+        </div>
+    </div>
 </div>
-
-<script src="/js/admin/reviews.js"></script>

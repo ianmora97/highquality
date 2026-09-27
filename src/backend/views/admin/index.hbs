@@ -63,6 +63,11 @@
         </div>
     </div>
 
+    <button id="btnPagarTodasHoy" onclick="marcarTodasPagadasHoy()"
+            class="w-full mb-2 flex items-center justify-center gap-2 rounded-lg py-2.5 px-4 bg-gradient-to-br from-emerald-500/25 via-emerald-500/10 to-transparent border border-emerald-400/30 text-emerald-200 text-sm font-semibold hover:bg-emerald-500/20 active:scale-[.98] transition-all">
+        <i class="fa-solid fa-money-check-dollar"></i> Marcar todas las citas de hoy como pagadas
+    </button>
+
     <!-- Ahora / Próxima -->
     <div class="kpi-card kpi-hideable rounded-xl border border-white/8 bg-white/[.03] overflow-hidden mb-2" style="animation-delay:320ms;">
         <div class="flex items-center gap-2.5 px-3.5 py-3 border-b border-white/8">
@@ -151,10 +156,7 @@
 
     <!-- View switcher (horizontal scroll strip on mobile, centered row on desktop) -->
     <div class="flex gap-2 my-4 overflow-x-auto no-scrollbar snap-x snap-mandatory px-4 -mx-2 sm:px-0 sm:mx-0 sm:justify-center sm:overflow-visible sm:flex-wrap" id="calViewSwitcher">
-        <button class="cal-view-btn active shrink-0 snap-start" id="btnViewWeek" onclick="switchCalView('timeGridWeek')">
-            <i class="fa-solid fa-calendar-week"></i> Semana
-        </button>
-        <button class="cal-view-btn shrink-0 snap-start" id="btnView3Days" onclick="switchCalView('dayGridThreeWeek')">
+        <button class="cal-view-btn active shrink-0 snap-start" id="btnView3Days" onclick="switchCalView('dayGridThreeWeek')">
             <i class="fa-solid fa-table-columns"></i> 3 Días
         </button>
         <button class="cal-view-btn shrink-0 snap-start" id="btnViewDay" onclick="switchCalView('timeGridDay')">
@@ -175,6 +177,7 @@
 <div id="nuevaCitaSheet"
      x-data="nuevaCitaData()"
      x-show="open"
+     @hq-citas-changed.window="if (open && step === 2) cargarHoras()"
      x-effect="document.documentElement.style.overflow = open ? 'hidden' : ''"
      x-transition:enter="transition ease-out duration-200"
      x-transition:enter-start="opacity-0"
@@ -209,7 +212,7 @@
         </div>
 
         <!-- HEADER -->
-        <div class="px-5 pt-2 pb-3 shrink-0">
+        <div class="px-4 pt-2 pb-3 shrink-0">
             <div class="flex items-start gap-3">
                 <button x-show="puedeVolver()" @click="volver()"
                         class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 bg-white/5 hover:text-white hover:bg-white/10 transition-all shrink-0">
@@ -250,7 +253,7 @@
         </div>
 
         <!-- BODY -->
-        <div class="flex-1 overflow-y-auto px-5 pb-2 min-h-0">
+        <div class="flex-1 overflow-y-auto px-4 pb-2 min-h-0">
 
             <!-- FLOW -->
             <div x-show="view === 'flow'">
@@ -484,7 +487,7 @@
         </div>
 
         <!-- FOOTER -->
-        <div class="shrink-0 px-5 py-4 border-t border-white/8 bg-[#0d0d0d]"
+        <div class="shrink-0 px-4 py-4 border-t border-white/8 bg-[#0d0d0d]"
              style="padding-bottom: calc(1rem + env(safe-area-inset-bottom));">
 
             <!-- Flow footer -->
@@ -679,7 +682,7 @@ function nuevaCitaData() {
                 this.cliente = client;
                 this.view = 'flow';
                 this.step = 1;
-                showToast('success', 'Cliente creado');
+                HQ.toast({ type: 'success', title: 'Cliente creado' });
             } catch (e) {
                 this.errorCliente = 'No se pudo guardar el cliente.';
             } finally { this.loading = false; }
@@ -746,10 +749,12 @@ function nuevaCitaData() {
                     }
                 });
                 this.cerrar();
-                showToast('success', 'Cita agendada');
-                calendar.today();
+                // The calendar refresh + toast arrive over the socket (cita:new),
+                // so nothing is done here — and the view no longer jumps to today.
             } catch (e) {
-                showToast('error', 'Error al agendar');
+                const msg = e.response?.data?.error || 'Error al agendar';
+                HQ.toast({ type: 'error', title: 'No se agendó', text: msg, duration: 7000 });
+                if (e.response?.status === 409) await this.cargarHoras();
             } finally { this.loading = false; }
         },
 
@@ -781,7 +786,8 @@ function nuevaCitaData() {
 
             this.loading = true;
             try {
-                await Promise.all(horas.map(h => {
+                // A slot that is already taken must not abort the rest of the close.
+                const results = await Promise.allSettled(horas.map(h => {
                     const start = moment(`${this.fecha} ${h}`, 'YYYY-MM-DD h:mm a');
                     return axios.post('/api/v1/event', {
                         title: 'Cerrado',
@@ -800,11 +806,28 @@ function nuevaCitaData() {
                         }
                     });
                 }));
+
+                const ok      = results.filter(r => r.status === 'fulfilled').length;
+                const ocupado = results.filter(r => r.status === 'rejected' && r.reason?.response?.status === 409).length;
+                const fallido = results.length - ok - ocupado;
+
+                if (!ok) {
+                    this.errorCerrado = ocupado
+                        ? 'Todas esas horas ya tienen cita agendada.'
+                        : 'No se pudo cerrar el horario.';
+                    return;
+                }
+
                 this.cerrar();
-                showToast('success', 'Horario cerrado');
-                calendar.today();
+                HQ.toast({
+                    type: fallido ? 'warn' : 'success',
+                    title: `Horario cerrado (${ok} ${ok === 1 ? 'espacio' : 'espacios'})`,
+                    text: ocupado
+                        ? `${ocupado} ${ocupado === 1 ? 'hora ya tenía' : 'horas ya tenían'} cita y se respetaron.`
+                        : undefined
+                });
             } catch (e) {
-                showToast('error', 'Error al cerrar el horario');
+                this.errorCerrado = 'Error al cerrar el horario.';
             } finally { this.loading = false; }
         },
 
@@ -1144,10 +1167,11 @@ function citaDetailData() {
                 const start = moment(this._reagendarDateObj).hour(hh).minute(mm).second(0).millisecond(0);
                 const end = start.clone().add(30, 'minutes');
                 await axios.put(`/api/v1/event/${this.ev._id}`, { start: start.toISOString(), end: end.toISOString() });
-                this.cerrar();
-                showToast('success', 'Cita reagendada');
-                calendar.today();
-            } catch(e) { showToast('error', 'Error al reagendar'); }
+                this.cerrar();   // cita:update repaints the calendar and toasts
+            } catch(e) {
+                const msg = e.response?.data?.error || 'Error al reagendar';
+                HQ.toast({ type: 'error', title: 'No se reagendó', text: msg, duration: 7000 });
+            }
             finally { this.loading = false; }
         },
 
@@ -1174,10 +1198,8 @@ function citaDetailData() {
             this.loading = true;
             try {
                 await axios.put(`/api/v1/event/${this.ev._id}/pagar`, { monto });
-                this.cerrar();
-                showToast('success', 'Pago registrado');
-                calendar.today();
-            } catch(e) { showToast('error', 'Error al guardar'); }
+                this.cerrar();   // cita:update repaints the calendar and toasts
+            } catch(e) { HQ.toast({ type: 'error', title: 'Error al guardar el pago' }); }
             finally { this.loading = false; }
         },
 
@@ -1185,10 +1207,8 @@ function citaDetailData() {
             this.loading = true;
             try {
                 await axios.put(`/api/v1/event/${this.ev._id}/pagar`, { monto: 0 });
-                this.cerrar();
-                showToast('warning', 'Marcado como pendiente');
-                calendar.today();
-            } catch(e) { showToast('error', 'Error'); }
+                this.cerrar();   // cita:update repaints the calendar and toasts
+            } catch(e) { HQ.toast({ type: 'error', title: 'No se pudo marcar como pendiente' }); }
             finally { this.loading = false; }
         },
 
@@ -1196,10 +1216,8 @@ function citaDetailData() {
             this.loading = true;
             try {
                 await axios.delete(`/api/v1/event/${this.ev._id}`);
-                this.cerrar();
-                showToast('success', 'Cita eliminada');
-                calendar.today();
-            } catch(e) { showToast('error', 'Error al eliminar'); }
+                this.cerrar();   // cita:delete repaints the calendar and toasts
+            } catch(e) { HQ.toast({ type: 'error', title: 'Error al eliminar la cita' }); }
             finally { this.loading = false; }
         }
     };

@@ -1,47 +1,42 @@
 const Horario = require('../models/horario/horario.model');
+const { normalizeBlocks, baseSlots, hydrateHorario } = require('../helpers/slots');
+const realtime = require('../helpers/realtime');
 
-function computeHoursFromRange(startTime, endTime) {
-    if (!startTime || !endTime) return null;
-    const slots = [];
-    const [sh, sm] = startTime.split(':').map(Number);
-    const [eh, em] = endTime.split(':').map(Number);
-    let cur = sh * 60 + sm;
-    const end = eh * 60 + em;
-    while (cur < end) {
-        const h = Math.floor(cur / 60);
-        const m = cur % 60;
-        const ampm = h < 12 ? 'am' : 'pm';
-        const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-        slots.push(`${h12}:${String(m).padStart(2, '0')} ${ampm}`);
-        cur += 30;
-    }
-    return slots;
+// Blocks are the source of truth; hours/startTime/endTime are stored derived so
+// anything reading the collection directly still sees a coherent schedule.
+function withDerived(body) {
+    if (!body || !Array.isArray(body.blocks)) return body;
+    const blocks = normalizeBlocks(body.blocks);
+    return {
+        ...body,
+        blocks,
+        hours: baseSlots(blocks),
+        startTime: blocks.length ? blocks[0].start : '',
+        endTime: blocks.length ? blocks[blocks.length - 1].end : '',
+    };
 }
 
 exports.get = async (req, res) => {
     const horarios = await Horario.get();
-    const result = horarios.map(h => {
-        if (h.startTime && h.endTime) {
-            h.hours = computeHoursFromRange(h.startTime, h.endTime);
-        }
-        return h;
-    });
-    res.json(result);
+    res.json(horarios.map(hydrateHorario));
 };
 
 exports.create = async (req, res) => {
-    const horario = await Horario.create(req.body);
+    const horario = await Horario.create(withDerived(req.body));
+    realtime.horarioChanged(horario);
     res.json(horario);
 };
 
 exports.update = async (req, res) => {
     const {id} = req.params;
-    const horario = await Horario.update(id, req.body);
+    const horario = await Horario.update(id, withDerived(req.body));
+    realtime.horarioChanged(horario);
     res.json(horario);
 };
 
 exports.delete = async (req, res) => {
     const {id} = req.params;
     const horario = await Horario.delete(id);
+    realtime.horarioChanged(horario);
     res.json(horario);
 };

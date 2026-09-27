@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const moment = require('moment');
 
 const EventSchema = new mongoose.Schema({
     title: {
@@ -55,12 +54,12 @@ const EventSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         required: true,
-        default: moment().format()
+        default: Date.now
     },
     updatedAt: {
         type: Date,
         required: true,
-        default: moment().format()
+        default: Date.now
     },
 });
 

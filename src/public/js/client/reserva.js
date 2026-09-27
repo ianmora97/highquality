@@ -1,6 +1,4 @@
 // ===== CONSTANTS =====
-const AVOID_HOURS = ["13:30", "15:00", "19:30"];
-
 const DAYS_MAP_ES_EN = {
     "domingo": "Sunday",
     "sábado": "Saturday",
@@ -20,6 +18,12 @@ var currentDateSelected = null; // YYYY-MM-DD
 var currentStep = 1;
 var calYear, calMonth;
 
+// ===== REALTIME STATE =====
+var g_slotsRendered = [];           // slot labels ('h:mm a') currently on screen
+var g_heldSlots     = new Set();    // ISO starts another client is booking right now
+var g_myHold        = null;         // ISO start this browser is holding
+var g_refreshTimer  = null;
+
 // ===== INIT =====
 async function init() {
     moment.locale('es');
@@ -35,6 +39,7 @@ async function init() {
     updateStepUI();
     initStep4();
     setupInputMasks();
+    initRealtime();
 }
 
 // ===== STEP 4 STATE =====
@@ -167,6 +172,14 @@ function calcTotal() {
 }
 
 // ===== STEP 2 — CUSTOM CALENDAR =====
+// Slots the client may book: base (hourly) always, half-hour slots only the same day.
+function slotsForDate(horario, momentDate) {
+    if (!horario || !horario.enable) return [];
+    const base = [...(horario.hours || [])];
+    if (!momentDate.isSame(moment(), 'day')) return sortHours(base);
+    return sortHours([...base, ...(horario.halfHours || [])]);
+}
+
 function isDayEnabled(momentDate) {
     const dayEs = momentDate.format('dddd'); // Spanish locale: "lunes", etc.
     const dayEn = DAYS_MAP_ES_EN[dayEs];
@@ -174,14 +187,13 @@ function isDayEnabled(momentDate) {
 
     if (!horario || !horario.enable) return false;
 
+    const slots = slotsForDate(horario, momentDate);
+    if (!slots.length) return false;
+
     // Same-day: check if any future slots remain after filtering past times
     if (momentDate.isSame(moment(), 'day')) {
         const nowHHmm = moment().format('HH:mm');
-        const hasAvailable = horario.hours.some(h => {
-            const slotHHmm = moment(h, 'h:mm a').format('HH:mm');
-            return slotHHmm > nowHHmm;
-        });
-        return hasAvailable;
+        return slots.some(h => moment(h, 'h:mm a').format('HH:mm') > nowHHmm);
     }
 
     return true;
@@ -196,7 +208,7 @@ async function hasAvailableSlots(dateStr) {
 
         if (!horario || !horario.enable) return false;
 
-        let slots = [...horario.hours];
+        let slots = slotsForDate(horario, date);
 
         // Same-day: filter past slots
         if (date.isSame(moment(), 'day')) {
@@ -204,17 +216,6 @@ async function hasAvailableSlots(dateStr) {
             slots = slots.filter(h => {
                 const slotHHmm = moment(h, 'h:mm a').format('HH:mm');
                 return slotHHmm > nowHHmm;
-            });
-        }
-
-        // Filter avoid hours
-        slots = slots.filter(h => !AVOID_HOURS.includes(moment(h, 'h:mm a').format('HH:mm')));
-
-        // Viernes: remove 3pm and 3:30pm
-        if (dayEs === 'viernes') {
-            slots = slots.filter(h => {
-                const h24 = moment(h, 'h:mm a').format('HH:mm');
-                return h24 !== '15:00' && h24 !== '15:30';
             });
         }
 
@@ -341,18 +342,8 @@ async function loadTimeSlots() {
 
     showNocturnalSchedule(date);
 
-    let arr = [...day.hours];
-    arr = additionalHalfHourSlots(arr, date, day.hours);
-    arr = arr.filter(h => !AVOID_HOURS.includes(moment(h, 'h:mm a').format('HH:mm')));
+    let arr = slotsForDate(day, date);
     arr = await removeHoursBookedfromthatday(arr, date.clone());
-
-    // Viernes: remove 3pm and 3:30pm
-    if (dayEs === 'viernes') {
-        arr = arr.filter(h => {
-            const h24 = moment(h, 'h:mm a').format('HH:mm');
-            return h24 !== '15:00' && h24 !== '15:30';
-        });
-    }
 
     // Same-day: hide slots whose time already passed
     if (date.isSame(moment(), 'day')) {
@@ -365,41 +356,51 @@ async function loadTimeSlots() {
 
     const container = document.getElementById('horasDisponibles');
     container.innerHTML = '';
+    if (horaSeleccionada) releaseSlot();
     horaSeleccionada = null;
 
     const hasHalfSlots = arr.some(h => h.includes('30'));
     document.getElementById('time-legend').style.display = hasHalfSlots ? 'flex' : 'none';
 
     if (arr.length === 0) {
+        g_slotsRendered = [];
         container.innerHTML =
             '<p class="text-center text-gray-500 py-8">No hay horas disponibles para este día.</p>';
         return;
     }
 
+    g_slotsRendered = arr.slice();
     arr.forEach((e, i) => showHorario(e, i));
 }
 
 function showHorario(e, i) {
     const HORA_FORMAT = moment(e, 'h:mm a').format('h-mm');
     const isHalf = e.includes('30');
+    const iso    = slotIso(e);
     const wrapper = document.createElement('div');
     wrapper.id        = `hora-div-${HORA_FORMAT}`;
     wrapper.className = 'animate__animated animate__zoomIn animate__faster';
     wrapper.style.animationDelay = `${i * 30}ms`;
+    wrapper.dataset.start = iso || '';
+    wrapper.dataset.hora  = e;
     wrapper.innerHTML = `
         <input type="radio" name="horaDeCitaSelect" class="time-slot-radio"
                id="hora-cita-${HORA_FORMAT}" onclick="changeHora('${e}')" autocomplete="off">
         <label class="time-slot-card ${isHalf ? 'slot-half' : 'slot-full'}" for="hora-cita-${HORA_FORMAT}">
             <i class="fa-solid fa-check slot-check"></i>
             <span class="slot-time">${e}</span>
-            <span class="slot-badge">${isHalf ? 'Media hora' : 'Hora completa'}</span>
+            <span class="slot-badge">${isHalf ? 'Media hora' : ''}</span>
         </label>
     `;
     document.getElementById('horasDisponibles').appendChild(wrapper);
+
+    // A slot someone else is booking right now must never look pickable.
+    if (iso && g_heldSlots.has(iso)) applyLock(wrapper, true);
 }
 
 function changeHora(hora) {
     horaSeleccionada = hora;
+    holdSlot(hora);
     updateStepUI();
 }
 
@@ -420,16 +421,6 @@ async function removeHoursBookedfromthatday(arr, date) {
         .filter(e => moment(e.start).format('YYYY-MM-DD') === dayStr)
         .map(e => moment(e.start).format('h:mm a'));
     return arr.filter(h => !bookedHours.includes(h));
-}
-
-function additionalHalfHourSlots(arr, date, dayHours) {
-    // Half-hour slots only for the current day, available all day long.
-    if (!date.isSame(moment(), 'day')) return arr;
-    dayHours.forEach(e => {
-        const plus30 = moment(e, 'h:mm a').add(30, 'minutes').format('h:mm a');
-        if (!dayHours.includes(plus30)) arr.push(plus30);
-    });
-    return sortHours(arr);
 }
 
 // ===== STEP 4 — SUMMARY =====
@@ -542,6 +533,13 @@ function onBackClick() {
 }
 
 function goToStep(n, direction) {
+    // Stepping back out of the hour picker abandons the selection: free the hold
+    // so the next client can take that slot immediately.
+    if (currentStep >= 3 && n < 3) {
+        releaseSlot();
+        horaSeleccionada = null;
+    }
+
     const currentEl = document.getElementById(`step-${currentStep}`);
     const nextEl    = document.getElementById(`step-${n}`);
 
@@ -632,6 +630,7 @@ async function agendarCita() {
         nextBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i>Agendando...';
 
         await axios.post('/api/v1/event/book', data);
+        g_myHold = null;   // the cita exists now; the server dropped the hold
 
         Swal.fire({
             title: '¡Cita Agendada!',
@@ -655,34 +654,264 @@ async function agendarCita() {
         }).then(() => location.reload());
 
     } catch (err) {
+        const status = err.response?.status;
         const msg = err.response?.data?.error || 'No se pudo agendar la cita. Por favor intenta nuevamente.';
-        Swal.fire({ icon: 'error', title: 'Error al agendar', text: msg, background: bg, color });
+
         const nextBtn = document.getElementById('btn-next');
         nextBtn.disabled = false;
         nextBtn.innerHTML = '<i class="fa-solid fa-calendar-check me-2"></i>Agendar Cita';
+
+        // 409 = another booking won the race, or the schedule moved under us.
+        // Send the client back to a grid that tells the truth.
+        if (status === 409) {
+            g_myHold = null;
+            horaSeleccionada = null;
+            Swal.fire({
+                icon: 'warning',
+                title: 'Esa hora ya no está libre',
+                text: msg,
+                confirmButtonText: 'Elegir otra hora',
+                background: bg,
+                color
+            }).then(async () => {
+                goToStep(3, 'back');
+                await loadTimeSlots();
+            });
+            return;
+        }
+
+        Swal.fire({ icon: 'error', title: 'Error al agendar', text: msg, background: bg, color });
     }
 }
 
-// ===== SOCKET.IO — real-time slot removal =====
-const socket = io();
+// ===== REALTIME =====
+// Every change made anywhere in the app (another client booking, the barber
+// adding/cancelling a cita, the schedule being edited) lands here over the
+// socket. Nothing on this page polls.
 
-socket.on('nueva-cita', (cita) => {
-    if (currentStep !== 3 || !currentDateSelected) return;
-    const citaDate = moment(cita.start);
-    if (!citaDate.isSame(moment(currentDateSelected), 'day')) return;
+function slotIso(hora) {
+    if (!currentDateSelected || !hora) return null;
+    const m = moment(`${currentDateSelected} ${hora}`, 'YYYY-MM-DD h:mm a');
+    return m.isValid() ? m.toDate().toISOString() : null;
+}
 
-    const slotKey = citaDate.format('h-mm');
-    const el = document.getElementById(`hora-div-${slotKey}`);
-    if (el) el.remove();
+function slotWrapper(iso) {
+    return document.querySelector(`#horasDisponibles [data-start="${iso}"]`);
+}
 
-    if (document.getElementById('horasDisponibles').children.length === 0) {
-        document.getElementById('horasDisponibles').innerHTML =
-            '<p class="text-center text-gray-500 py-8">No hay horas disponibles.</p>';
+function slotLabelFromIso(iso) {
+    return moment(iso).format('h:mm a');
+}
+
+function isSameSelectedDay(iso) {
+    return !!currentDateSelected && moment(iso).isSame(moment(currentDateSelected), 'day');
+}
+
+// ── holds: while this browser has an hour selected, nobody else can take it ──
+function holdSlot(hora) {
+    const iso = slotIso(hora);
+    if (!iso) return;
+    g_myHold = iso;
+    HQ.emit('slot:hold', { start: iso });
+}
+
+function releaseSlot() {
+    if (!g_myHold) return;
+    HQ.emit('slot:release', { start: g_myHold });
+    g_myHold = null;
+}
+
+function applyLock(wrapper, locked) {
+    if (!wrapper) return;
+    const label = wrapper.querySelector('.time-slot-card');
+    const radio = wrapper.querySelector('.time-slot-radio');
+    if (!label) return;
+
+    if (locked) {
+        label.classList.add('slot-locked');
+        if (radio) { radio.checked = false; radio.disabled = true; }
+        if (!label.querySelector('.slot-lock-icon')) {
+            label.insertAdjacentHTML('afterbegin', '<i class="fa-solid fa-lock slot-lock-icon"></i>');
+        }
+        const badge = label.querySelector('.slot-badge');
+        if (badge) {
+            if (badge.dataset.original === undefined) badge.dataset.original = badge.textContent;
+            badge.textContent = 'En proceso';
+        }
+    } else {
+        label.classList.remove('slot-locked');
+        if (radio) radio.disabled = false;
+        const icon = label.querySelector('.slot-lock-icon');
+        if (icon) icon.remove();
+        const badge = label.querySelector('.slot-badge');
+        if (badge && badge.dataset.original !== undefined) badge.textContent = badge.dataset.original;
     }
-    if (horaSeleccionada === citaDate.format('h:mm a')) {
+}
+
+// ── grid refresh (debounced: a burst of events must cause one reload) ────────
+function scheduleSlotRefresh(delay) {
+    clearTimeout(g_refreshTimer);
+    g_refreshTimer = setTimeout(async () => {
+        if (currentStep === 3 && currentDateSelected) await loadTimeSlots();
+        if (calYear !== undefined) await renderCalendarMonth(calYear, calMonth);
+    }, delay === undefined ? 350 : delay);
+}
+
+// ── a slot is gone for good (someone booked it) ─────────────────────────────
+function removeSlotLive(iso, opts) {
+    const wrapper = slotWrapper(iso);
+    const label   = slotLabelFromIso(iso);
+    g_slotsRendered = g_slotsRendered.filter(h => h !== label);
+
+    if (wrapper) {
+        wrapper.classList.remove('animate__animated', 'animate__zoomIn');
+        wrapper.classList.add('slot-vanish');
+        setTimeout(() => {
+            wrapper.remove();
+            refreshSlotChrome();
+        }, 440);
+    }
+
+    // It was the hour this client had picked — clear selection, do not fail on submit.
+    if (horaSeleccionada === label) {
         horaSeleccionada = null;
+        g_myHold = null;
+        updateStepUI();
+    } else if (opts && opts.notify && wrapper) {
+        HQ.toast({
+            type: 'info',
+            title: 'Horario actualizado',
+            text: `Las ${label} ya no están disponibles.`,
+            duration: 4000
+        });
     }
-});
+}
+
+function refreshSlotChrome() {
+    const container = document.getElementById('horasDisponibles');
+    if (!container) return;
+    const legend = document.getElementById('time-legend');
+    if (container.children.length === 0) {
+        container.innerHTML =
+            '<p class="text-center text-gray-500 py-8">No hay horas disponibles para este día.</p>';
+        if (legend) legend.style.display = 'none';
+        return;
+    }
+    // The legend only makes sense while half-hour slots are actually on screen.
+    const hasHalf = [...container.children].some(c => (c.dataset.hora || '').includes('30'));
+    if (legend) legend.style.display = hasHalf ? 'flex' : 'none';
+}
+
+// ── wiring ──────────────────────────────────────────────────────────────────
+function initRealtime() {
+    HQ.connect({ room: 'booking' });
+
+    // Full list of held slots on connect / reconnect.
+    HQ.on('slots:snapshot', (list) => {
+        g_heldSlots = new Set((list || []).map(h => h.start));
+        g_heldSlots.forEach(iso => applyLock(slotWrapper(iso), true));
+        // Reconnected with an hour still selected — claim it again.
+        if (g_myHold) HQ.emit('slot:hold', { start: g_myHold });
+    });
+
+    // A hold has a server-side TTL so a client that walks away frees the slot.
+    // While the hour is still selected on screen, keep renewing it.
+    setInterval(() => {
+        if (g_myHold && horaSeleccionada) HQ.emit('slot:hold', { start: g_myHold });
+    }, 45000);
+
+    HQ.on('slot:held', (payload) => {
+        const start = payload && payload.start;
+        if (!start) return;
+        g_heldSlots.add(start);
+        if (isSameSelectedDay(start)) applyLock(slotWrapper(start), true);
+    });
+
+    HQ.on('slot:released', (payload) => {
+        const start = payload && payload.start;
+        if (!start) return;
+        g_heldSlots.delete(start);
+        if (isSameSelectedDay(start)) applyLock(slotWrapper(start), false);
+    });
+
+    HQ.on('slot:granted', (payload) => {
+        g_myHold = payload && payload.start ? payload.start : g_myHold;
+    });
+
+    // Our own hold timed out (tab left open for a long while) — take it back
+    // if the hour is still selected, otherwise forget it.
+    HQ.on('slot:released', (payload) => {
+        const start = payload && payload.start;
+        if (!start || start !== g_myHold) return;
+        if (horaSeleccionada) HQ.emit('slot:hold', { start: start });
+        else g_myHold = null;
+    });
+
+    // Our hold was refused — someone selected it a moment earlier.
+    HQ.on('slot:denied', (payload) => {
+        const start = payload && payload.start;
+        if (!start) return;
+        g_heldSlots.add(start);
+        applyLock(slotWrapper(start), true);
+        if (horaSeleccionada === slotLabelFromIso(start)) {
+            horaSeleccionada = null;
+            g_myHold = null;
+            updateStepUI();
+        }
+        HQ.toast({
+            type: 'warn',
+            title: 'Hora ocupada',
+            text: 'Otro cliente está reservando esa hora. Elige otra.',
+            duration: 6000
+        });
+    });
+
+    // New cita anywhere — from another client or from the barber.
+    HQ.on('cita:new', (payload) => {
+        const cita = payload && payload.cita;
+        if (!cita) return;
+        const iso = new Date(cita.start).toISOString();
+        g_heldSlots.delete(iso);
+        if (!isSameSelectedDay(cita.start)) {
+            scheduleSlotRefresh(600);   // keep the month availability dots honest
+            return;
+        }
+        removeSlotLive(iso, { notify: true });
+        scheduleSlotRefresh(1200);
+    });
+
+    // Cita cancelled → the hour is free again.
+    HQ.on('cita:delete', (payload) => {
+        const cita = payload && payload.cita;
+        if (cita && isSameSelectedDay(cita.start)) {
+            HQ.toast({
+                type: 'success',
+                title: 'Se liberó un espacio',
+                text: `Las ${slotLabelFromIso(cita.start)} volvieron a estar disponibles.`,
+                duration: 5000
+            });
+        }
+        scheduleSlotRefresh();
+    });
+
+    // Reagendada / pagada → the grid may change either way.
+    HQ.on('cita:update', () => scheduleSlotRefresh());
+
+    // Barber edited the working hours or closed a day while we were browsing.
+    HQ.on('horario:update', async () => {
+        await bringServices();
+        HQ.toast({ type: 'info', title: 'Horarios actualizados', text: 'La disponibilidad se acaba de refrescar.' });
+        scheduleSlotRefresh(0);
+    });
+
+    HQ.on('special:update', () => {
+        HQ.toast({ type: 'info', title: 'Disponibilidad actualizada' });
+        scheduleSlotRefresh(0);
+    });
+
+    // Never leave a stale hold behind.
+    window.addEventListener('beforeunload', releaseSlot);
+}
 
 // ===== UTILS =====
 function sortHours(hours) {

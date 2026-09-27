@@ -8,6 +8,7 @@ async function init() {
     document.querySelectorAll('.kpi-card').forEach(el => {
         el.addEventListener('animationend', () => { el.style.animation = 'none'; }, { once: true });
     });
+    initRealtime();
 }
 async function insightsThisWeek() {
     const sort = moment().startOf('isoWeek').format()
@@ -61,19 +62,11 @@ function fillClients(data) {
         g_clients.set(parseInt(e.numero), e);
     });
 }
+// Admin can book any slot of the day, half hours included.
 async function addHalfHourtoMap() {
     g_horarios.forEach((e) => {
-        let hours = e.hours;
-        hours = sortHours(hours);
-        e.hours = hours;
-        const length = hours.length;
-        for (let i = 0; i < (length - 1); i++) {
-            const h = hours[i];
-            const half = moment(h, 'h:mm a').add(30, 'minutes').format('h:mm a');
-            e.hours.push(half);
-        }
+        e.hours = sortHours([...(e.hours || []), ...(e.halfHours || [])]);
     });
-    console.log("Horarios con media hora añadida", g_horarios);
 }
 function addHalfHour(arr) {
     const array = [];
@@ -91,7 +84,7 @@ var slotDays = {
     min: '09:00:00',
     max: '20:00:00'
 };
-var expected_view = 'timeGridWeek';
+var expected_view = 'dayGridThreeWeek';
 function clampTimeStr(hhmm, deltaHours) {
     const [h, m] = hhmm.split(':').map(Number);
     let total = h * 60 + m + deltaHours * 60;
@@ -107,17 +100,13 @@ async function createCalendar() {
         if (!e.enable) hiddenDays.push(parseInt(moment(DAYS_MAP_EN_ES[e.day], 'dddd').format('d')));
         else {
             e.hours = sortHours(e.hours);
-            const day = DAYS_MAP_EN_ES[e.day];
-            const hours = e.hours;
-            const startTime = moment(hours[0], 'h:mm a').format('HH:mm');
-            const endTime = moment(hours[hours.length - 1], 'h:mm a').add(1, 'hour').format('HH:mm');
-            businessHours.push({
-                daysOfWeek: [parseInt(moment(day, 'dddd').format('d'))],
-                startTime,
-                endTime,
+            const dayOfWeek = parseInt(moment(DAYS_MAP_EN_ES[e.day], 'dddd').format('d'));
+            // One entry per work block, so lunch gaps stay unshaded on the calendar.
+            (e.blocks || []).forEach(({ start: startTime, end: endTime }) => {
+                businessHours.push({ daysOfWeek: [dayOfWeek], startTime, endTime });
+                if (earliestStart === null || startTime < earliestStart) earliestStart = startTime;
+                if (latestEnd === null || endTime > latestEnd) latestEnd = endTime;
             });
-            if (earliestStart === null || startTime < earliestStart) earliestStart = startTime;
-            if (latestEnd === null || endTime > latestEnd) latestEnd = endTime;
         }
     });
     if (earliestStart !== null && latestEnd !== null) {
@@ -211,12 +200,11 @@ function switchCalView(viewName) {
 
 function updateCalViewButtons(activeView) {
     const map = {
-        'timeGridWeek': 'btnViewWeek',
         'dayGridThreeWeek': 'btnView3Days',
         'timeGridDay': 'btnViewDay',
         'dayGridMonth': 'btnViewMonth'
     };
-    ['btnViewWeek', 'btnView3Days', 'btnViewDay', 'btnViewMonth'].forEach(id => {
+    ['btnView3Days', 'btnViewDay', 'btnViewMonth'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.remove('active');
     });
@@ -229,6 +217,8 @@ function updateCalViewButtons(activeView) {
 
 function eventDidMount(info) {
     const { event } = info;
+    // Lets the realtime layer find the DOM node of a cita that just arrived.
+    info.el.dataset.eventId = event.id || event.extendedProps._id || '';
     const estado = event.extendedProps.estado;
     if (estado === 'PAGO') {
         info.el.style.borderLeft = '3px solid #22c55e';
@@ -293,17 +283,6 @@ function eventClick(info) {
         }
     }));
 }
-function showToast(icon, title) {
-    Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 1800,
-        timerProgressBar: true,
-        background: '#0d0d0d',
-        color: '#f1f1f1',
-    }).fire({ icon, title });
-}
 async function dateSet(info) {
     const { startStr, endStr } = info;
     const startM = moment(startStr);
@@ -316,13 +295,54 @@ async function dateSet(info) {
         $("#date").html(`${start} - ${end}`);
     }
 
-    const sort = moment(startStr).startOf('isoWeek').format()
+    await refreshCalendarData();
+}
+
+// Refetch the events for the range the calendar is showing and rebuild the KPIs.
+// Called by datesSet and by every realtime event, so the panel never polls.
+var g_calRefreshTimer = null;
+async function refreshCalendarData() {
+    if (!calendar) return;
+    const sort = moment(calendar.view.currentStart).startOf('isoWeek').format();
     const { data } = await axios.get(`/api/v1/event?sort=${sort}`);
+    // removeAllEventSources() leaves behind events added ad-hoc by the realtime
+    // layer, so clear those too or an optimistically shown cita is drawn twice.
+    calendar.removeAllEvents();
     calendar.removeAllEventSources();
-    calendar.addEventSource(data);
+    // FullCalendar looks events up by `id`; Mongo gives us `_id`.
+    calendar.addEventSource(data.map(e => ({ ...e, id: e._id })));
 
     // Update KPIs for the currently visible week
     analytics(data);
+    addNextAppointmentToNavbar();
+    return data;
+}
+
+async function marcarTodasPagadasHoy() {
+    if (!confirm('¿Marcar todas las citas de hoy como pagadas?')) return;
+    const btn = document.getElementById('btnPagarTodasHoy');
+    btn.disabled = true;
+    try {
+        const { data } = await axios.put('/api/v1/event/pagar-dia');
+        HQ.toast({ type: 'money', title: 'Citas actualizadas', text: `${data.actualizadas} cita(s) marcada(s) como pagada(s).` });
+        scheduleCalendarRefresh(0);
+    } catch (e) {
+        HQ.toast({ type: 'error', title: 'Error al marcar las citas como pagadas' });
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// A burst of realtime events (closing a whole day fires one per slot) must cause
+// a single refetch, not one per event.
+function scheduleCalendarRefresh(delay) {
+    clearTimeout(g_calRefreshTimer);
+    g_calRefreshTimer = setTimeout(() => {
+        refreshCalendarData().catch(() => {});
+        loadEarningsChart().catch(() => {});
+        // Any open Alpine sheet re-reads the free hours from this.
+        window.dispatchEvent(new CustomEvent('hq-citas-changed'));
+    }, delay === undefined ? 400 : delay);
 }
 async function analytics(data) {
     const today = moment().format('YYYY-MM-DD');
@@ -712,7 +732,7 @@ function sentenceCase(str) {
 
 function ifWindowResize() {
     window.addEventListener('resize', function () {
-        expected_view = "timeGridWeek";
+        expected_view = "dayGridThreeWeek";
         let viewport = $(window).width();
         if (viewport < 600) {
             expected_view = 'dayGridFourWeek';
@@ -752,6 +772,110 @@ function addNextAppointmentToNavbar() {
             $("#nextAppointment").html('No hay citas próximas');
         }
 
+    });
+}
+
+// ===== REALTIME =====
+// The panel is a live board: client bookings, cancellations and payments made
+// anywhere land straight in the calendar, with a toast naming what happened.
+
+function citaSummary(cita) {
+    const hora      = moment(cita.start).format('h:mm a');
+    const fecha     = moment(cita.start).format('ddd D MMM');
+    const esHoy     = moment(cita.start).isSame(moment(), 'day');
+    const servicios = (cita.extendedProps && cita.extendedProps.servicios) || [];
+    return {
+        hora,
+        cuando: esHoy ? `hoy a las ${hora}` : `${fecha} a las ${hora}`,
+        servicios: servicios.join(', '),
+        nombre: cita.title || 'Cliente'
+    };
+}
+
+function flashEvent(id) {
+    // eventDidMount has not run yet for a freshly added event, so wait a tick.
+    setTimeout(() => {
+        document.querySelectorAll('.fc-event').forEach(el => {
+            if (el.dataset.eventId === String(id)) {
+                el.classList.add('hq-event-new');
+                setTimeout(() => el.classList.remove('hq-event-new'), 1600);
+            }
+        });
+    }, 120);
+}
+
+function initRealtime() {
+    if (typeof HQ === 'undefined') return;
+    HQ.connect({ room: 'admin' });
+
+    HQ.on('cita:new', (payload) => {
+        const cita = payload && payload.cita;
+        if (!cita) return;
+        const info = citaSummary(cita);
+
+        // Show it immediately, then reconcile with the server.
+        if (calendar && !calendar.getEventById(cita._id)) {
+            try { calendar.addEvent({ ...cita, id: cita._id }); } catch (e) {}
+        }
+        scheduleCalendarRefresh();
+        setTimeout(() => flashEvent(cita._id), 700);
+
+        if (cita.title === 'Cerrado') {
+            HQ.toast({ type: 'info', title: 'Horario cerrado', text: `Bloqueado ${info.cuando}.`, duration: 3500 });
+            return;
+        }
+
+        if (payload.source === 'client') {
+            HQ.toast({
+                type: 'booking',
+                title: `${info.nombre} agendó una cita`,
+                text: `${info.cuando}${info.servicios ? ' · ' + info.servicios : ''}`,
+                duration: 9000
+            });
+        } else {
+            HQ.toast({ type: 'success', title: 'Cita agendada', text: `${info.nombre} — ${info.cuando}` });
+        }
+    });
+
+    HQ.on('cita:update', (payload) => {
+        const cita = payload && payload.cita;
+        if (!cita) return;
+        const info = citaSummary(cita);
+        scheduleCalendarRefresh(150);
+        if (payload.reason === 'pago') {
+            const estado = cita.extendedProps && cita.extendedProps.estado;
+            HQ.toast({
+                type: estado === 'PAGO' ? 'money' : 'warn',
+                title: estado === 'PAGO' ? 'Pago registrado' : 'Marcada por pagar',
+                text: `${info.nombre} — ${info.cuando}`
+            });
+        } else {
+            HQ.toast({ type: 'info', title: 'Cita reagendada', text: `${info.nombre} — ${info.cuando}` });
+        }
+    });
+
+    HQ.on('cita:delete', (payload) => {
+        const cita = payload && payload.cita;
+        if (!cita) return;
+        const info = citaSummary(cita);
+        if (calendar) {
+            const ev = calendar.getEventById(cita._id);
+            if (ev) ev.remove();
+        }
+        scheduleCalendarRefresh(150);
+        HQ.toast({ type: 'trash', title: 'Cita eliminada', text: `${info.nombre} — ${info.cuando}` });
+    });
+
+    // Schedule edited from /dashboard/horarios in another tab.
+    HQ.on('horario:update', async () => {
+        await bringServices();
+        HQ.toast({ type: 'info', title: 'Horarios actualizados' });
+        scheduleCalendarRefresh(0);
+    });
+
+    HQ.on('special:update', () => {
+        HQ.toast({ type: 'info', title: 'Cierres actualizados' });
+        scheduleCalendarRefresh(0);
     });
 }
 

@@ -1,118 +1,255 @@
-var g_reviews = new Map();
-var currentFilter = 'all';
+/* Admin — Reviews
+ * KPIs + searchable/sortable review queue + inline approve/reject/reply,
+ * server-paginated (GET /api/v1/review?page=...) so a growing review table
+ * never ships more than one page's worth of cards to the browser.
+ */
 
-function init() {
-    bringData();
+const PAGE_SIZE = 12;
+const SEARCH_DEBOUNCE_MS = 350;
+
+function toastOk(title, text) {
+    if (window.HQ) return HQ.toast({ type: 'success', title, text, duration: 2400 });
+    Swal.fire({ icon: 'success', title, text, background: '#0d0d0d', color: '#f1f1f1' });
 }
 
-async function bringData() {
-    const { data } = await axios.get('/api/v1/review');
-    g_reviews.clear();
-    data.forEach(e => g_reviews.set(e._id, e));
-    updateStats();
-    renderList();
+function toastErr(title, text) {
+    if (window.HQ) return HQ.toast({ type: 'error', title, text, duration: 4000 });
+    Swal.fire({ icon: 'error', title, text, background: '#0d0d0d', color: '#f1f1f1' });
 }
 
-function updateStats() {
-    const all = [...g_reviews.values()];
-    document.getElementById('totalitems').textContent = all.length;
-    document.getElementById('displayCount').textContent = all.filter(r => r.display).length;
-    const avg = all.length ? (all.reduce((s, r) => s + r.stars, 0) / all.length).toFixed(1) : '—';
-    document.getElementById('avgStars').textContent = avg;
+function reviewsPage() {
+    return {
+        // ── list state (server-paginated) ──
+        reviews: [],
+        summary: { total: 0, pending: 0, approved: 0, rejected: 0, avgStars: 0, distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } },
+        loading: true,
+        loadingMore: false,
+        page: 1,
+        pages: 1,
+        total: 0,
+        query: '',
+        filtro: 'todos',        // todos | pending | approved | rejected
+        orden: 'recientes',     // recientes | antiguas | altas | bajas
+        ordenOpen: false,
+        _searchTimer: null,
+
+        // ── per-card reply UI ──
+        replyOpen: {},          // { [reviewId]: bool }
+        replyDraft: {},         // { [reviewId]: string }
+        savingId: null,
+
+        ordenes: [
+            ['recientes', 'Más recientes',    'fa-clock-rotate-left'],
+            ['antiguas',  'Más antiguas',     'fa-clock'],
+            ['altas',     'Mejor calificadas', 'fa-arrow-up-short-wide'],
+            ['bajas',     'Peor calificadas',  'fa-arrow-down-short-wide'],
+        ],
+
+        filtros: [
+            ['todos',    'Todas',      'fa-comments'],
+            ['pending',  'Pendientes', 'fa-hourglass-half'],
+            ['approved', 'Aprobadas',  'fa-check'],
+            ['rejected', 'Rechazadas', 'fa-ban'],
+        ],
+
+        init() {
+            this.$watch('filtro', () => this.buscar());
+            this.$watch('orden', () => this.buscar());
+            this.cargar(1, false);
+        },
+
+        // ═══ data ═══
+        onQueryInput() {
+            clearTimeout(this._searchTimer);
+            this._searchTimer = setTimeout(() => this.buscar(), SEARCH_DEBOUNCE_MS);
+        },
+
+        buscar() { this.cargar(1, false); },
+
+        async cargar(page, append) {
+            if (append) this.loadingMore = true; else this.loading = true;
+            try {
+                const { data } = await axios.get('/api/v1/review', {
+                    params: {
+                        page,
+                        limit: PAGE_SIZE,
+                        search: this.query.trim(),
+                        status: this.filtro === 'todos' ? undefined : this.filtro,
+                        orden: this.orden,
+                    },
+                });
+                this.reviews = append ? this.reviews.concat(data.data) : data.data;
+                this.summary = data.summary;
+                this.page    = data.page;
+                this.pages   = data.pages;
+                this.total   = data.total;
+            } catch (e) {
+                toastErr('No se pudieron cargar las reseñas');
+            } finally {
+                this.loading = false;
+                this.loadingMore = false;
+            }
+        },
+
+        /** Re-fetch every page currently loaded (1..this.page), keeping scroll depth. */
+        async recargar() {
+            const upTo = this.page;
+            try {
+                let acc = [];
+                let last = null;
+                for (let p = 1; p <= upTo; p++) {
+                    const { data } = await axios.get('/api/v1/review', {
+                        params: {
+                            page: p, limit: PAGE_SIZE, search: this.query.trim(),
+                            status: this.filtro === 'todos' ? undefined : this.filtro,
+                            orden: this.orden,
+                        },
+                    });
+                    acc = acc.concat(data.data);
+                    last = data;
+                }
+                this.reviews = acc;
+                if (last) { this.summary = last.summary; this.pages = last.pages; this.total = last.total; }
+            } catch (e) {
+                toastErr('No se pudo actualizar la lista');
+            }
+        },
+
+        hayMas() { return this.page < this.pages; },
+        verMas() { if (this.hayMas()) this.cargar(this.page + 1, true); },
+        limpiar() { this.query = ''; this.filtro = 'todos'; this.orden = 'recientes'; this.buscar(); },
+        ordenLabel() {
+            const hit = this.ordenes.find(o => o[0] === this.orden);
+            return hit ? hit[1] : '';
+        },
+        filtroCount(key) {
+            if (key === 'todos') return this.summary.total;
+            return this.summary[key] || 0;
+        },
+
+        // ═══ card helpers ═══
+        iniciales(r) {
+            const parts = String(r.nombre || '?').trim().split(/\s+/).slice(0, 2);
+            return parts.map(p => p.charAt(0).toUpperCase()).join('') || '?';
+        },
+
+        tel(r) { return r.phone ? String(r.phone).replace(/(\d{4})(\d{4})/, '$1-$2') : ''; },
+
+        fecha(v) { return v ? moment(v).format('D MMM YYYY, h:mm a') : ''; },
+        cuando(v) { return v ? moment(v).fromNow() : ''; },
+
+        statusBadge(status) {
+            if (status === 'approved') return { text: 'Aprobada',  cls: 'bg-emerald-500/10 border-emerald-400/25 text-emerald-300' };
+            if (status === 'rejected') return { text: 'Rechazada', cls: 'bg-red-500/10 border-red-400/25 text-red-400' };
+            return { text: 'Pendiente', cls: 'bg-orange-500/10 border-orange-400/25 text-orange-300' };
+        },
+
+        // ═══ actions ═══
+        async aprobar(r) {
+            this.savingId = r._id;
+            try {
+                await axios.patch(`/api/v1/review/${r._id}/approve`);
+                r.status = 'approved';
+                this.dropIfFiltered(r);
+                await this.recargarSummary();
+                toastOk('Reseña aprobada', 'Ya es visible en el sitio.');
+            } catch (e) {
+                toastErr(e.response?.data?.error || 'No se pudo aprobar.');
+            } finally {
+                this.savingId = null;
+            }
+        },
+
+        async rechazar(r) {
+            const result = await Swal.fire({
+                title: '¿Rechazar esta reseña?',
+                text: 'No se mostrará en el sitio. Puedes revertirlo después.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Rechazar',
+                cancelButtonText: 'Cancelar',
+                background: '#0d0d0d',
+                color: '#f1f1f1',
+                customClass: { confirmButton: 'hq-swal-danger' },
+            });
+            if (!result.isConfirmed) return;
+
+            this.savingId = r._id;
+            try {
+                await axios.patch(`/api/v1/review/${r._id}/reject`);
+                r.status = 'rejected';
+                this.dropIfFiltered(r);
+                await this.recargarSummary();
+                toastOk('Reseña rechazada');
+            } catch (e) {
+                toastErr(e.response?.data?.error || 'No se pudo rechazar.');
+            } finally {
+                this.savingId = null;
+            }
+        },
+
+        toggleReply(r) {
+            this.replyOpen[r._id] = !this.replyOpen[r._id];
+            if (this.replyDraft[r._id] === undefined) this.replyDraft[r._id] = r.reply || '';
+        },
+
+        async guardarRespuesta(r) {
+            const reply = (this.replyDraft[r._id] || '').trim();
+            this.savingId = r._id;
+            try {
+                const { data } = await axios.patch(`/api/v1/review/${r._id}/reply`, { reply });
+                r.reply = data.reply;
+                r.repliedAt = data.repliedAt;
+                this.replyOpen[r._id] = false;
+                toastOk(reply ? 'Respuesta publicada' : 'Respuesta eliminada');
+            } catch (e) {
+                toastErr(e.response?.data?.error || 'No se pudo guardar la respuesta.');
+            } finally {
+                this.savingId = null;
+            }
+        },
+
+        async eliminar(r) {
+            const result = await Swal.fire({
+                title: '¿Eliminar reseña?',
+                text: `"${(r.review || '').slice(0, 80)}"`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                background: '#0d0d0d',
+                color: '#f1f1f1',
+                customClass: { confirmButton: 'hq-swal-danger' },
+            });
+            if (!result.isConfirmed) return;
+
+            this.savingId = r._id;
+            try {
+                await axios.delete(`/api/v1/review/${r._id}`);
+                this.reviews = this.reviews.filter(x => x._id !== r._id);
+                this.total -= 1;
+                await this.recargarSummary();
+                toastOk('Reseña eliminada');
+            } catch (e) {
+                toastErr(e.response?.data?.error || 'No se pudo eliminar.');
+            } finally {
+                this.savingId = null;
+            }
+        },
+
+        /** Drop a review from the current view once its status no longer matches the active filter. */
+        dropIfFiltered(r) {
+            if (this.filtro !== 'todos' && this.filtro !== r.status) {
+                this.reviews = this.reviews.filter(x => x._id !== r._id);
+                this.total = Math.max(0, this.total - 1);
+            }
+        },
+
+        async recargarSummary() {
+            try {
+                const { data } = await axios.get('/api/v1/review', { params: { page: 1, limit: 1 } });
+                this.summary = data.summary;
+            } catch (e) { /* KPI refresh is best-effort */ }
+        },
+    };
 }
-
-function renderList() {
-    const list = document.getElementById('list');
-    list.innerHTML = '';
-    let items = [...g_reviews.values()];
-    if (currentFilter === 'visible') items = items.filter(r => r.display);
-    if (currentFilter === 'hidden')  items = items.filter(r => !r.display);
-    if (!items.length) {
-        list.innerHTML = '<p class="text-gray-500 text-center py-8 col-span-full">No hay reviews</p>';
-        return;
-    }
-    items.forEach((e, i) => addReview(e, i + 1));
-}
-
-function filterReviews(type) {
-    currentFilter = type;
-    ['all','visible','hidden'].forEach(t => {
-        const btn = document.getElementById('filter-' + t);
-        btn.classList.toggle('btn-primary', t === type);
-        btn.classList.toggle('btn-dark', t !== type);
-    });
-    renderList();
-}
-
-function addReview(item, i) {
-    const stars = Array.from({length: 5}, (_, idx) =>
-        `<i class="fa-${idx < item.stars ? 'solid' : 'regular'} fa-star" style="color:#F4C82C; font-size:0.85rem;"></i>`
-    ).join('');
-
-    const card = document.createElement('div');
-    card.className = 'animate__animated animate__fadeInUp';
-    card.style.animationDelay = `${i * 40}ms`;
-    card.innerHTML = `
-        <div class="rounded-xl p-4 border border-white/10 h-full flex flex-col gap-3"
-             style="background:#0d0d0d; ${item.display ? 'border-color:rgba(244,200,44,0.3);' : ''}">
-            <!-- Header -->
-            <div class="flex items-start justify-between gap-2">
-                <div>
-                    <div class="font-semibold text-white">${item.nombre || 'Anónimo'}</div>
-                    <div class="flex gap-1 mt-1">${stars}</div>
-                </div>
-                <span class="text-xs px-2 py-1 rounded-full ${item.display ? 'bg-yellow-400/10 text-yellow-400' : 'bg-gray-800 text-gray-500'}">
-                    <i class="fa-solid fa-${item.display ? 'eye' : 'eye-slash'} me-1"></i>${item.display ? 'Visible' : 'Oculto'}
-                </span>
-            </div>
-            <!-- Review text -->
-            <p class="text-gray-400 text-sm leading-relaxed flex-1">"${item.review}"</p>
-            <!-- Date -->
-            <div class="text-xs text-gray-600">${new Date(item.createdAt || Date.now()).toLocaleDateString('es-CR', {year:'numeric',month:'short',day:'numeric'})}</div>
-            <!-- Actions -->
-            <div class="flex items-center justify-between pt-2 border-t border-white/5">
-                <button type="button" class="btn btn-sm btn-dark" onclick="toggleDisplay('${item._id}')">
-                    <i class="fa-solid fa-${item.display ? 'eye-slash' : 'eye'} me-1"></i>
-                    ${item.display ? 'Ocultar' : 'Mostrar'}
-                </button>
-                <button type="button" class="btn btn-sm" style="background:rgba(220,38,38,0.15); color:#f87171; border:1px solid rgba(220,38,38,0.3);"
-                        onclick="eliminarReview('${item._id}')">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `;
-    document.getElementById('list').appendChild(card);
-}
-
-async function toggleDisplay(id) {
-    const review = g_reviews.get(id);
-    await axios.put(`/api/v1/review/${id}`, { display: !review.display });
-    await bringData();
-}
-
-async function eliminarReview(id) {
-    const op = g_reviews.get(id);
-    const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
-    const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
-    const result = await Swal.fire({
-        icon: 'warning',
-        title: '¿Eliminar review?',
-        text: op.review.substring(0, 80),
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar',
-        customClass: { confirmButton: 'btn btn-danger ms-2', cancelButton: 'btn btn-dark' },
-        buttonsStyling: false,
-        background: bg,
-        color
-    });
-    if (result.isConfirmed) {
-        await axios.delete('/api/v1/review/' + id);
-        const toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, background: bg, color });
-        toast.fire({ icon: 'success', title: 'Eliminado' });
-        await bringData();
-    }
-}
-
-document.addEventListener('DOMContentLoaded', init);

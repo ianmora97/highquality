@@ -1,69 +1,440 @@
-<!-- DataTables -->
-<script src="/scripts/datatables.net/js/dataTables.min.js"></script>
-<script src="/scripts/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/js/admin/clientes.js"></script>
 
-<div class="container-md-fluid py-3">
+<div x-data="clientesPage()">
 
-    <!-- Header -->
-    <div class="rounded-xl p-4 mb-4 border border-white/10 flex items-center justify-between animate__animated animate__fadeInUp" style="background:#0d0d0d;">
-        <div>
-            <h1 class="text-2xl font-bold mb-1">
-                <i class="fa-solid fa-users" style="color:#3004f3;"></i> Clientes
-            </h1>
-            <p class="text-gray-500 text-sm mb-1">Todos los clientes registrados</p>
-            <span class="text-xs text-gray-600">
-                <i class="fa-solid fa-clock"></i> Actualizado: <span id="lastUpdated" class="text-primary">ahora</span>
-            </span>
-        </div>
-        <div class="text-right">
-            <span class="bebas text-5xl font-bold" style="color:#F4C82C;" id="totalitems">—</span>
-            <p class="text-xs text-gray-500 mt-0">clientes</p>
-        </div>
-    </div>
+    <div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
 
-    <!-- Search bar -->
-    <div class="mb-3">
-        <div class="relative">
-            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
-            <input type="text" id="barraBuscar" placeholder="Buscar cliente..."
-                   class="form-control pl-9 py-2.5">
-        </div>
-    </div>
-
-    <!-- Table -->
-    <div class="rounded-xl border border-white/10 overflow-hidden animate__animated animate__fadeInUp" id="table-container" style="background:#0d0d0d;">
-        <table id="table" class="table table-custom table-striped nowrap align-middle w-100 position-relative">
-            <thead>
-                <tr id="thead">
-                    <th data-priority="1"><i class="fa-solid fa-id-card"></i> Nombre</th>
-                    <th data-priority="2"><i class="fa-solid fa-calendar-days"></i> Citas</th>
-                    <th data-priority="3"><i class="fa-solid fa-phone"></i> Teléfono</th>
-                </tr>
-            </thead>
-            <tbody id="tbody">
-                <tr class="placeholder-glow">
-                    <td><span class="placeholder col-10"></span></td>
-                    <td><span class="placeholder col-10"></span></td>
-                    <td><span class="placeholder col-10"></span></td>
-                </tr>
-                <tr class="placeholder-glow">
-                    <td><span class="placeholder col-10"></span></td>
-                    <td><span class="placeholder col-10"></span></td>
-                    <td><span class="placeholder col-10"></span></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Pagination info -->
-    <div class="flex items-center justify-between py-3 px-2 mt-2 rounded-xl border border-white/10 animate__animated animate__fadeInUp" style="background:#0d0d0d;">
-        <small class="text-gray-500 text-xs" id="info">
-            <div class="placeholder-glow">
-                <span class="placeholder" style="width:200px;"></span>
+        <!-- KPIs -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mb-4">
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-violet-500/20 via-purple-500/10 to-transparent border border-violet-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-violet-500/20">
+                    <i class="fa-solid fa-users text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-violet-300/70 leading-none mb-1 truncate">Clientes</p>
+                    <h2 class="text-base font-bold text-violet-200 leading-none" x-text="summary.total"></h2>
+                </div>
             </div>
-        </small>
-        <div class="pagination-tables" id="pagination"></div>
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-blue-500/20 via-primary/10 to-transparent border border-blue-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-primary flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
+                    <i class="fa-solid fa-circle-user text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-blue-300/70 leading-none mb-1 truncate">Con cuenta</p>
+                    <h2 class="text-base font-bold text-blue-200 leading-none" x-text="summary.conCuenta"></h2>
+                </div>
+            </div>
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-transparent border border-emerald-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-repeat text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-emerald-300/70 leading-none mb-1 truncate">Recurrentes</p>
+                    <h2 class="text-base font-bold text-emerald-200 leading-none" x-text="summary.recurrentes"></h2>
+                </div>
+            </div>
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-orange-500/20 via-red-500/10 to-transparent border border-orange-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center shrink-0 shadow-lg shadow-orange-500/20">
+                    <i class="fa-solid fa-coins text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-orange-300/70 leading-none mb-1 truncate">Ingresos</p>
+                    <h2 class="text-base font-bold text-orange-200 leading-none truncate" x-text="dinero(summary.ingresos)"></h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
+            <div class="flex-1 flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                <i class="fa-solid fa-magnifying-glass text-gray-500 text-xs shrink-0"></i>
+                <input type="text" x-model="query" @input="onQueryInput()" placeholder="Buscar por nombre o teléfono..."
+                       class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                <button x-show="query" @click="query = ''; buscar()" class="text-gray-500 hover:text-white shrink-0">
+                    <i class="fa-solid fa-circle-xmark text-xs"></i>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Sort -->
+                <div class="relative" @click.away="ordenOpen = false">
+                    <button @click="ordenOpen = !ordenOpen"
+                            class="h-10 px-3 flex items-center gap-2 rounded-xl bg-white/[.03] border border-white/8 text-xs font-semibold text-gray-400 hover:text-white transition-all whitespace-nowrap">
+                        <i class="fa-solid fa-arrow-down-wide-short text-[11px]"></i>
+                        <span class="hidden sm:inline" x-text="ordenLabel()"></span>
+                        <i class="fa-solid fa-chevron-down text-[9px]"></i>
+                    </button>
+                    <div x-show="ordenOpen" x-transition.opacity.duration.120ms x-cloak
+                         class="absolute left-0 sm:left-auto sm:right-0 mt-1.5 w-52 max-w-[calc(100vw-2rem)] p-1 rounded-xl bg-[#0d0d0d] border border-white/10 shadow-2xl z-30">
+                        <template x-for="o in ordenes" :key="o[0]">
+                            <button @click="orden = o[0]; ordenOpen = false"
+                                    class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-all text-left"
+                                    :class="orden === o[0] ? 'bg-primary/20 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'">
+                                <i :class="'fa-solid ' + o[2]" class="text-[11px] w-3.5 text-center"></i>
+                                <span x-text="o[1]"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <button @click="abrirNuevo()"
+                        class="h-10 px-3.5 flex items-center gap-2 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 active:scale-95 transition-all shrink-0 whitespace-nowrap">
+                    <i class="fa-solid fa-user-plus text-xs"></i>
+                    <span>Nuevo</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter chips -->
+        <div class="flex items-center gap-1 p-1 mb-4 rounded-xl bg-white/[.03] border border-white/8 overflow-x-auto">
+            <template x-for="f in [['todos','Todos','fa-users'],['cuenta','Con cuenta','fa-circle-user'],['sincuenta','Sin cuenta','fa-user-slash'],['vip','Frecuentes','fa-crown']]" :key="f[0]">
+                <button @click="filtro = f[0]"
+                        class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap flex items-center gap-1.5 shrink-0"
+                        :class="filtro === f[0] ? 'bg-primary/20 text-white border border-primary/40' : 'text-gray-500 hover:text-gray-300 border border-transparent'">
+                    <i :class="'fa-solid ' + f[2]" class="text-[10px]"></i>
+                    <span x-text="f[1]"></span>
+                </button>
+            </template>
+        </div>
+
+        <!-- Skeleton -->
+        <div x-show="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            <template x-for="i in 9" :key="i">
+                <div class="h-[124px] rounded-xl bg-white/[.03] border border-white/8 animate-pulse"></div>
+            </template>
+        </div>
+
+        <!-- Grid -->
+        <div x-show="!loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            <template x-for="c in clientes" :key="c._id">
+                <div class="rounded-xl bg-[#0d0d0d] border border-white/10 hover:border-white/20 transition-all flex flex-col overflow-hidden">
+
+                    <button @click="abrirEditar(c)" class="p-3 text-left w-full">
+                        <div class="flex items-start gap-2.5">
+                            <!-- Avatar -->
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 shadow-lg"
+                                 :class="hue(c).ring">
+                                <span class="text-xs font-bold text-white" x-text="iniciales(c)"></span>
+                            </div>
+
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-1.5">
+                                    <h5 class="text-sm font-bold text-white leading-snug truncate" x-text="c.name || 'Sin nombre'"></h5>
+                                    <i x-show="esVip(c)" class="fa-solid fa-crown text-gold text-[10px] shrink-0" title="Cliente frecuente"></i>
+                                </div>
+                                <p class="text-xs text-gray-500 font-mono" x-text="tel(c)"></p>
+                            </div>
+
+                            <span class="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-1 rounded-md border shrink-0"
+                                  :class="c.hasAccount ? 'bg-emerald-500/10 border-emerald-400/25 text-emerald-300' : 'bg-white/[.04] border-white/10 text-gray-500'"
+                                  x-text="c.hasAccount ? 'Cuenta' : 'Sin cuenta'"></span>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="grid grid-cols-2 gap-1.5 mt-2.5">
+                            <div class="rounded-lg bg-white/[.03] border border-white/8 px-2 py-1.5">
+                                <p class="text-[9px] text-gray-600 uppercase tracking-wider leading-none mb-1">Citas</p>
+                                <p class="text-xs font-bold text-white leading-none">
+                                    <span x-text="c.citas || 0"></span>
+                                    <span class="text-[10px] font-normal text-gray-500" x-show="c.citasPagas"
+                                          x-text="'· ' + c.citasPagas + (c.citasPagas === 1 ? ' pagada' : ' pagadas')"></span>
+                                </p>
+                            </div>
+                            <div class="rounded-lg bg-white/[.03] border border-white/8 px-2 py-1.5">
+                                <p class="text-[9px] text-gray-600 uppercase tracking-wider leading-none mb-1">Gastado</p>
+                                <p class="text-xs font-bold text-gold leading-none truncate" x-text="dinero(c.totalGastado)"></p>
+                            </div>
+                        </div>
+
+                        <p class="text-[11px] text-gray-500 mt-2 flex items-center gap-1.5">
+                            <i class="fa-solid fa-clock-rotate-left text-[9px] text-gray-600"></i>
+                            <span x-text="cuando(c.ultimaVisita)"></span>
+                            <span x-show="c.topServicio" class="text-gray-700">·</span>
+                            <span x-show="c.topServicio" class="truncate text-gray-600" x-text="c.topServicio"></span>
+                        </p>
+                    </button>
+
+                    <!-- Quick actions -->
+                    <div class="flex border-t border-white/8 divide-x divide-white/8">
+                        <a :href="'tel:' + c.phone"
+                           class="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-semibold text-gray-500 hover:text-white hover:bg-white/[.04] transition-all">
+                            <i class="fa-solid fa-phone text-[10px]"></i> Llamar
+                        </a>
+                        <a :href="'https://wa.me/506' + c.phone" target="_blank" rel="noopener"
+                           class="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-semibold text-gray-500 hover:text-emerald-300 hover:bg-emerald-500/[.06] transition-all">
+                            <i class="fa-brands fa-whatsapp text-[11px]"></i> WhatsApp
+                        </a>
+                        <button @click="abrirEditar(c)"
+                                class="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-semibold text-gray-500 hover:text-white hover:bg-white/[.04] transition-all">
+                            <i class="fa-solid fa-pen text-[10px]"></i> Editar
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Load more -->
+        <div x-show="!loading && hayMas()" class="flex justify-center mt-4">
+            <button @click="verMas()" :disabled="loadingMore"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm font-semibold hover:bg-white/10 transition-all disabled:opacity-40">
+                <i class="fa-solid text-xs" :class="loadingMore ? 'fa-spinner fa-spin' : 'fa-chevron-down'"></i>
+                <span x-text="loadingMore ? 'Cargando...' : 'Mostrar más'"></span>
+                <span x-show="!loadingMore" class="text-gray-600" x-text="'(' + (total - clientes.length) + ')'"></span>
+            </button>
+        </div>
+
+        <p x-show="!loading && total" class="text-center text-[11px] text-gray-600 mt-3">
+            Mostrando <span x-text="clientes.length"></span> de <span x-text="total"></span> clientes
+        </p>
+
+        <!-- Empty states -->
+        <div x-show="!loading && !total && summary.total" class="text-center py-14">
+            <i class="fa-solid fa-magnifying-glass text-gray-700 text-2xl mb-3"></i>
+            <p class="text-sm text-gray-500 mb-4">Ningún cliente coincide con la búsqueda.</p>
+            <button @click="limpiar()"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm font-semibold hover:bg-white/10 transition-all">
+                <i class="fa-solid fa-rotate-left text-xs"></i> Limpiar filtros
+            </button>
+        </div>
+
+        <div x-show="!loading && !summary.total" class="text-center py-14">
+            <i class="fa-solid fa-users text-gray-700 text-3xl mb-3"></i>
+            <p class="text-sm text-gray-500 mb-1">Todavía no hay clientes.</p>
+            <p class="text-xs text-gray-600 mb-4">Se agregan solos con cada reserva, o créalos a mano.</p>
+            <button @click="abrirNuevo()"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 transition-all">
+                <i class="fa-solid fa-user-plus text-xs"></i> Crear cliente
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== CLIENTE SHEET (agregar / editar) ===== -->
+    <div x-show="open"
+         x-effect="document.documentElement.style.overflow = open ? 'hidden' : ''"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @keydown.escape.window="cerrar()"
+         @click="cerrar()"
+         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+         style="background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);"
+         x-cloak>
+
+        <!-- Panel -->
+        <div x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-full"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 translate-y-full"
+             class="w-full sm:max-w-md bg-[#0d0d0d] border border-white/10 rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[86vh]"
+             :style="dragY ? `transform: translateY(${dragY}px)` : ''"
+             @click.stop>
+
+            <!-- Drag handle (mobile) -->
+            <div class="flex justify-center pt-3 pb-2 sm:hidden cursor-grab shrink-0"
+                 @touchstart="onDragStart($event)"
+                 @touchmove="onDragMove($event)"
+                 @touchend="onDragEnd($event)">
+                <div class="w-10 h-1.5 rounded-full bg-white/20"></div>
+            </div>
+
+            <!-- HEADER -->
+            <div class="px-3.5 pt-2 pb-3.5 shrink-0 border-b border-white/8">
+                <div class="flex items-start gap-3">
+                    <template x-if="mode === 'edit' && actual">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 shadow-lg"
+                             :class="hue(actual).ring">
+                            <span class="text-xs font-bold text-white" x-text="iniciales(actual)"></span>
+                        </div>
+                    </template>
+                    <template x-if="mode === 'add'">
+                        <div class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-user-plus text-primary"></i>
+                        </div>
+                    </template>
+
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg font-bold text-white leading-tight"
+                            x-text="mode === 'add' ? 'Nuevo cliente' : (form.name || 'Cliente')"></h2>
+                        <p class="text-xs text-gray-500 mt-0.5"
+                           x-text="mode === 'add' ? 'Queda disponible para reservar al instante' : (actual && actual.hasAccount ? 'Cuenta activa · puede ingresar al sitio' : 'Sin cuenta · solo reservas')"></p>
+                    </div>
+                    <button @click="cerrar()"
+                            class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 bg-white/5 hover:text-white hover:bg-white/10 transition-all shrink-0">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- BODY -->
+            <div class="flex-1 overflow-y-auto px-3.5 py-3.5 min-h-0">
+
+                <!-- Stats (edit only) -->
+                <div x-show="mode === 'edit' && actual" class="grid grid-cols-2 gap-1.5 mb-4">
+                    <div class="rounded-xl bg-white/[.03] border border-white/8 p-2.5">
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest leading-none mb-1.5">Citas</p>
+                        <p class="text-base font-bold text-white leading-none" x-text="(actual && actual.citas) || 0"></p>
+                    </div>
+                    <div class="rounded-xl bg-white/[.03] border border-white/8 p-2.5">
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest leading-none mb-1.5">Pagadas</p>
+                        <p class="text-base font-bold text-emerald-300 leading-none" x-text="(actual && actual.citasPagas) || 0"></p>
+                    </div>
+                    <div class="rounded-xl bg-white/[.03] border border-white/8 p-2.5">
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest leading-none mb-1.5">Gastado</p>
+                        <p class="text-base font-bold text-gold leading-none truncate" x-text="dinero(actual && actual.totalGastado)"></p>
+                    </div>
+                    <div class="rounded-xl bg-white/[.03] border border-white/8 p-2.5">
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest leading-none mb-1.5">Cliente desde</p>
+                        <p class="text-base font-bold text-gray-300 leading-none truncate"
+                           x-text="fecha((actual && (actual.primeraVisita || actual.createdAt)) || null)"></p>
+                    </div>
+                </div>
+
+                <p x-show="mode === 'edit' && actual && actual.topServicio" class="text-xs text-gray-500 mb-4">
+                    <i class="fa-solid fa-scissors text-[10px] me-1 text-primary"></i>
+                    Servicio favorito: <span class="text-gray-300 font-semibold" x-text="actual && actual.topServicio"></span>
+                </p>
+
+                <!-- Nombre -->
+                <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Nombre</label>
+                <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 mb-3.5 focus-within:border-primary/50 transition-all">
+                    <i class="fa-solid fa-user text-gray-500 text-xs shrink-0"></i>
+                    <input type="text" x-model="form.name" placeholder="Nombre y apellido" maxlength="60"
+                           autocomplete="off"
+                           class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                </div>
+
+                <!-- Teléfono -->
+                <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Teléfono</label>
+                <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                    <span class="text-gray-500 text-xs font-semibold shrink-0">+506</span>
+                    <input type="tel" x-model="form.phone" placeholder="88887777" maxlength="9" inputmode="numeric"
+                           autocomplete="off"
+                           class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600 font-mono">
+                </div>
+                <p class="text-[11px] text-gray-600 mt-1.5 mb-4">
+                    Es el identificador del cliente: al cambiarlo, sus citas anteriores se mueven con él.
+                </p>
+
+                <!-- Cuenta -->
+                <div class="rounded-xl bg-white/[.03] border border-white/8 p-3.5 mb-4">
+                    <div class="flex items-start gap-2.5">
+                        <i class="fa-solid fa-key text-xs mt-0.5 shrink-0"
+                           :class="(mode === 'edit' && actual && actual.hasAccount) ? 'text-emerald-300' : 'text-gray-500'"></i>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-semibold text-white leading-snug">Acceso al sitio</p>
+                            <p class="text-xs text-gray-500"
+                               x-text="mode === 'add'
+                                    ? 'Opcional: crea la contraseña para que pueda ingresar.'
+                                    : ((actual && actual.hasAccount) ? 'Tiene contraseña. Puedes reemplazarla.' : 'No tiene contraseña. Puedes crearle una cuenta.')"></p>
+                        </div>
+                        <button x-show="mode === 'edit'" @click="cambiarPass = !cambiarPass; form.password = ''; form.password2 = ''"
+                                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border transition-all shrink-0"
+                                :class="cambiarPass ? 'bg-primary/20 border-primary/40 text-white' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'"
+                                x-text="cambiarPass ? 'Cancelar' : ((actual && actual.hasAccount) ? 'Cambiar' : 'Crear')"></button>
+                    </div>
+
+                    <div x-show="mode === 'add' || cambiarPass" class="mt-3 space-y-2">
+                        <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                            <i class="fa-solid fa-lock text-gray-500 text-xs shrink-0"></i>
+                            <input :type="verPass ? 'text' : 'password'" x-model="form.password"
+                                   placeholder="Contraseña (mín. 8)" autocomplete="new-password"
+                                   class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                            <button @click="verPass = !verPass" class="text-gray-500 hover:text-white shrink-0" type="button">
+                                <i :class="verPass ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" class="text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                            <i class="fa-solid fa-lock text-gray-500 text-xs shrink-0"></i>
+                            <input :type="verPass ? 'text' : 'password'" x-model="form.password2"
+                                   placeholder="Repetir contraseña" autocomplete="new-password"
+                                   class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                            <i x-show="form.password2"
+                               :class="form.password2 === form.password ? 'fa-solid fa-circle-check text-emerald-400' : 'fa-solid fa-circle-xmark text-red-400'"
+                               class="text-xs shrink-0"></i>
+                        </div>
+                        <p class="text-[11px] text-gray-600">
+                            Al guardar, la sesión abierta del cliente se cierra.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Historial -->
+                <div x-show="mode === 'edit'" class="mb-2">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] text-gray-500 uppercase tracking-widest">Últimas citas</span>
+                        <span class="text-[10px] text-gray-600" x-show="historialTotal" x-text="historialTotal"></span>
+                    </div>
+
+                    <div x-show="loadingHistorial" class="space-y-1.5">
+                        <template x-for="i in 3" :key="i">
+                            <div class="h-12 rounded-xl bg-white/[.03] border border-white/8 animate-pulse"></div>
+                        </template>
+                    </div>
+
+                    <div x-show="!loadingHistorial" class="space-y-1.5 max-h-52 overflow-y-auto">
+                        <template x-for="cita in historial" :key="cita._id">
+                            <div class="flex items-center gap-2.5 rounded-xl bg-white/[.03] border border-white/8 px-2.5 py-2">
+                                <div class="w-9 h-9 rounded-lg flex flex-col items-center justify-center shrink-0 border"
+                                     :class="pagada(cita) ? 'bg-emerald-500/10 border-emerald-400/25' : 'bg-white/[.04] border-white/10'">
+                                    <span class="text-[9px] leading-none text-gray-500 uppercase" x-text="moment(cita.start).format('MMM')"></span>
+                                    <span class="text-xs leading-none font-bold text-white" x-text="moment(cita.start).format('D')"></span>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-semibold text-white truncate" x-text="servicios(cita)"></p>
+                                    <p class="text-[11px] text-gray-500" x-text="hora(cita.start) + ' · ' + moment(cita.start).format('YYYY')"></p>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <p class="text-xs font-bold" :class="pagada(cita) ? 'text-gold' : 'text-gray-500'" x-text="precio(cita)"></p>
+                                    <p class="text-[9px] font-semibold uppercase tracking-wider"
+                                       :class="pagada(cita) ? 'text-emerald-400/70' : 'text-orange-400/70'"
+                                       x-text="pagada(cita) ? 'Pago' : 'Pendiente'"></p>
+                                </div>
+                            </div>
+                        </template>
+                        <p x-show="!historial.length" class="text-xs text-gray-600 text-center py-3">
+                            Sin citas registradas todavía.
+                        </p>
+                        <button x-show="hayMasHistorial()" @click="verMasHistorial()" :disabled="loadingMoreHistorial"
+                                class="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/[.03] border border-white/8 text-[11px] font-semibold text-gray-400 hover:text-white hover:bg-white/[.06] transition-all disabled:opacity-40">
+                            <i class="fa-solid text-[10px]" :class="loadingMoreHistorial ? 'fa-spinner fa-spin' : 'fa-chevron-down'"></i>
+                            <span x-text="loadingMoreHistorial ? 'Cargando...' : 'Cargar más citas'"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <p x-show="errorMsg" x-text="errorMsg" class="text-xs text-danger mt-3.5"></p>
+
+                <!-- Danger zone -->
+                <div x-show="mode === 'edit'" class="mt-5 pt-4 border-t border-white/8 space-y-2">
+                    <button x-show="actual && actual.hasAccount" @click="quitarCuenta()" :disabled="saving"
+                            class="w-full py-2.5 rounded-xl border border-orange-500/25 bg-orange-500/[.06] text-xs font-semibold text-orange-300 hover:bg-orange-500/15 transition-all disabled:opacity-40">
+                        <i class="fa-solid fa-user-lock me-1.5"></i> Quitar cuenta (mantener cliente)
+                    </button>
+                    <button @click="eliminar()" :disabled="saving"
+                            class="w-full py-2.5 rounded-xl border border-red-500/25 bg-red-500/[.06] text-xs font-semibold text-red-400 hover:bg-red-500/15 transition-all disabled:opacity-40">
+                        <i class="fa-solid fa-trash me-1.5"></i> Eliminar cliente
+                    </button>
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="shrink-0 px-3.5 py-3.5 border-t border-white/8 bg-[#0d0d0d] flex gap-2"
+                 style="padding-bottom: calc(1rem + env(safe-area-inset-bottom));">
+                <button @click="cerrar()"
+                        class="px-4 bg-white/5 border border-white/8 text-gray-400 rounded-xl text-sm hover:bg-white/10 transition-all">
+                    Cancelar
+                </button>
+                <button @click="guardar()" :disabled="saving"
+                        class="flex-1 bg-primary text-white rounded-xl py-3 text-sm font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-40">
+                    <i class="fa-solid fa-floppy-disk me-1.5"></i>
+                    <span x-text="saving ? 'Guardando...' : (mode === 'add' ? 'Crear cliente' : 'Guardar cambios')"></span>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
-
-<script src="/js/admin/clientes.js"></script>

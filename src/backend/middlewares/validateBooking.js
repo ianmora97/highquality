@@ -1,6 +1,11 @@
 const Joi = require('joi');
 const jwt = require('jsonwebtoken');
+const moment = require('moment');
 const { COOKIE_NAME } = require('../helpers/token');
+const HorarioSchema = require('../models/horario/horario.schema');
+const SpecialSchema = require('../models/special/special.schema');
+const EventSchema = require('../models/events/event.schema');
+const { hydrateHorario, isSlotAllowed } = require('../helpers/slots');
 
 const NAME_PATTERN     = /^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s'\-]+$/;
 const PHONE_PATTERN    = /^\d{8}$/;
@@ -32,7 +37,13 @@ async function validateBooking(req, res, next) {
 
     if (token) {
         jwt.verify(token, SECRET, (err, decoded) => {
-            if (!err && decoded.role === 'client' && decoded.name && decoded.phone) {
+            if (err) {
+                // Expired or tampered token — drop it and fall back to the body.
+                res.clearCookie(COOKIE_NAME);
+                return validateFields(req, res, next);
+            }
+
+            if (decoded.role === 'client' && decoded.name && decoded.phone) {
                 // Trusted session — overwrite body with verified identity
                 req.body.title = decoded.name;
                 req.body.extendedProps = {
@@ -41,8 +52,11 @@ async function validateBooking(req, res, next) {
                 };
                 return validateFields(req, res, next);
             }
-            // Expired or invalid token — clear and fall through to body validation
-            res.clearCookie(COOKIE_NAME);
+
+            // Valid token that is not a client session (the barber booking from
+            // the public page, for example). The booking is treated as
+            // anonymous, but their session must survive it — clearing the
+            // cookie here used to log the admin out of the dashboard.
             validateFields(req, res, next);
         });
     } else {
@@ -58,4 +72,44 @@ function validateFields(req, res, next) {
     next();
 }
 
-module.exports = { validateBooking };
+// The slot grid the client renders can be stale (schedule edited, someone booked
+// first), so the same rules are enforced here before the event is created.
+async function validateSlot(req, res, next) {
+    try {
+        const start = moment(req.body.start, 'YYYY-MM-DD HH:mm:ss', true);
+        if (!start.isValid()) return res.status(422).json({ error: 'Fecha de inicio inválida.' });
+        if (start.isBefore(moment())) {
+            return res.status(409).json({ error: 'Esa hora ya pasó. Elige otra.' });
+        }
+
+        const doc = await HorarioSchema.findOne({ day: start.locale('en').format('dddd') }).lean();
+        const horario = doc ? hydrateHorario(doc) : null;
+        if (!horario || !horario.enable || !horario.blocks.length) {
+            return res.status(409).json({ error: 'No atendemos ese día.' });
+        }
+
+        const sameDay = start.isSame(moment(), 'day');
+        if (!isSlotAllowed(horario.blocks, start.format('HH:mm'), sameDay)) {
+            return res.status(409).json({ error: 'Esa hora no está disponible. Elige otra.' });
+        }
+
+        const special = await SpecialSchema.findOne({
+            start: { $lte: start.clone().endOf('day').toDate() },
+            end:   { $gte: start.clone().startOf('day').toDate() },
+        }).lean();
+        if (special) {
+            return res.status(409).json({ error: special.title || 'Día no disponible.' });
+        }
+
+        const taken = await EventSchema.findOne({ start: start.toDate() }).lean();
+        if (taken) {
+            return res.status(409).json({ error: 'Esa hora acaba de ser reservada. Elige otra.' });
+        }
+
+        next();
+    } catch (err) {
+        res.status(500).json({ error: 'No se pudo validar la cita. Intenta de nuevo.' });
+    }
+}
+
+module.exports = { validateBooking, validateSlot };

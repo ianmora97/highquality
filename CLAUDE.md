@@ -47,7 +47,7 @@ Bootstrap was replaced with Tailwind, but JS files generate HTML with Bootstrap 
 | `GET /` | public | `client/index` |
 | `GET /reservar` | public | `client/reservar` |
 | `GET /galeria` | public | `client/gallery` |
-| `GET /servicios` | public | `client/servicios` |
+| `GET /servicios` | public | **301 -> `/#servicios`** (page removed; services live only in the homepage section) |
 | `GET /ingresar` | public | `auth/client-login` (layout: `auth`) |
 | `GET /registro` | public | `auth/client-register` (layout: `auth`) |
 | `GET /dashboard` | public | `auth/admin-login` (layout: `auth`) |
@@ -57,6 +57,7 @@ Bootstrap was replaced with Tailwind, but JS files generate HTML with Bootstrap 
 | `GET /dashboard/horarios` | requirePage('admin') | `admin/horarios` |
 | `GET /dashboard/clientes` | requirePage('admin') | `admin/clients` |
 | `GET /dashboard/reviews` | requirePage('admin') | `admin/reviews` |
+| `GET /dashboard/galeria` | requirePage('admin') | `admin/galeria` |
 | `POST /api/v1/auth/client/login` | public | client login by phone |
 | `POST /api/v1/auth/client/register` | public | client registration |
 | `POST /api/v1/auth/logout` | any | clears `hq_token`, deletes session |
@@ -86,9 +87,10 @@ Bootstrap was replaced with Tailwind, but JS files generate HTML with Bootstrap 
 | `src/backend/routes/auth.routes.js` | `/api/v1/auth/*` — client auth endpoints |
 | `src/backend/middlewares/auth.js` | requirePage(role), requireApi(role), attachUser |
 | `src/backend/middlewares/book.js` | addProps (booking middleware) |
+| `src/backend/helpers/storage.js` | Supabase S3 upload/delete — re-encodes everything to JPEG |
+| `src/backend/helpers/aspects.js` | Gallery crop presets (server side of the table) |
 | `src/backend/helpers/whatsapp.js` | Twilio WhatsApp via content template |
 | `src/backend/helpers/telegram.js` | Telegram Bot API notification |
-| `src/backend/helpers/cron.js` | node-cron jobs (disabled in server.js) |
 | `src/backend/connections/mongo.js` | Mongoose connection |
 | `src/backend/connections/socket.js` | Socket.IO helpers |
 | `src/backend/test/seedAuth.js` | Seed roles + staff users (`npm run auth:seed`) |
@@ -102,8 +104,9 @@ Bootstrap was replaced with Tailwind, but JS files generate HTML with Bootstrap 
 | `src/public/js/admin/index.js` | Admin panel (FullCalendar, KPI, charts) |
 | `src/public/js/admin/servicios.js` | Services CRUD |
 | `src/public/js/admin/horarios.js` | Schedule CRUD |
-| `src/public/js/admin/clientes.js` | Clients DataTable |
+| `src/public/js/admin/clientes.js` | Clients directory (Alpine cards + edit bottom sheet) |
 | `src/public/js/admin/reviews.js` | Reviews list |
+| `src/public/js/admin/galeria.js` | Galería (Alpine grid + upload/crop bottom sheet) |
 | `src/public/js/auth/login.js` | Alpine factories: staffLogin(), clientLogin(), clientRegister() |
 
 ## Icons
@@ -126,6 +129,12 @@ TWILIO_AUTH_TOKEN=
 TELEGRAM_TOKEN=
 TELEGRAM_CHAT_ID=
 NODE_ENV=dev|prod
+# Supabase Storage (S3-compatible)
+ACCESS_KEY=
+SECRET_KEY=
+ENDPOINT_URL=      # ends in /storage/v1/s3 — the S3 API, NOT the public read path
+REGION=
+STORAGE_BUCKET=
 # Google OAuth (leave empty — strategy not registered if absent)
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
@@ -137,15 +146,141 @@ GOOGLE_CALLBACK_URL=
 | Model | Collection | Description |
 |-------|-----------|-------------|
 | Event | events | Appointments/bookings |
-| Client | clients | Legacy customer records (booking lookup by phone) |
+| Client | clients | Legacy customer records (booking lookup by phone) — still written by the booking flow |
 | Services | services | Haircut services |
-| Horario | horarios | Business hours |
+| Horario | horarios | Business hours — `blocks[]` is the source of truth, `hours`/`startTime`/`endTime` stored derived |
 | Reviews | reviews | Client reviews |
 | Special | specials | Special day closures |
+| Gallery | galleries | Gallery photos — `visible` gates the public `/galeria` |
 | **User** | **users** | Unified user accounts (staff + clients) |
 | **Rol** | **rols** | Roles: client(1), admin(2), su(3) |
 | **UserRol** | **userrols** | One role per user (unique on `user` field) |
 | **Session** | **sessions** | Active JWT sessions — jti + TTL expiry (single session per user) |
+| **Setting** | **settings** | Singleton site config — notification switches, public contact links, footer horario text |
+| PaymentMethod | paymentmethods | Cobro methods listed in the payment modal |
+
+## Client Directory
+
+Clients live in two collections (`users` for accounts, `clients` for the legacy
+booking record) and their history lives in `events` under `extendedProps.numero`.
+`src/backend/models/clients/directory.model.js` merges the three **by phone** and
+is the only thing the admin panel talks to.
+
+- Normalized shape carries both naming schemes: `name`/`nombre`, `phone`/`numero`,
+  plus `hasAccount`, `citas`, `citasPagas`, `totalGastado`, `primeraVisita`,
+  `ultimaVisita`, `topServicio`. Never drop the legacy keys — `admin/index.js`
+  and the booking modal read them.
+- Stats come from one `$group` over `events` (the `88008800` sentinel and
+  `Cerrado` blocks are excluded); the legacy `citasPagas` counter is a fallback.
+- Writes keep both records in sync: creating a client writes the `User` (+ role)
+  and the legacy `Client`; setting a password upgrades a legacy-only client to a
+  real account and kills its open session.
+- **The phone is the identity key** — changing it rewrites `extendedProps.numero`
+  on that client's past citas (and the title on a rename) so history follows them.
+- **Pagination**: production runs 200+ clients with 100+ citas each, growing
+  ~80 citas/week, so nothing fetches "all of it" by default. `Directory.list()`
+  is dual-mode — called with no options it returns the full unpaginated array
+  (kept only because `admin/index.js`'s booking flow needs the whole directory
+  client side to match phones while creating a cita); called with
+  `page`/`limit`/`search`/`filtro`/`orden` it returns a
+  `{ data, total, page, pages, summary }` envelope and only that page is
+  serialized. `Directory.history()` (a client's citas) is *always* paginated —
+  no unpaginated mode exists for it. `events` has `idx_event_numero_start`
+  (`src/backend/connections/indexes.js`) so both the per-client stats
+  aggregate and the citas pagination stay index-backed as the collection grows.
+  The Clientes dashboard (`clientes.js`) debounces search (350ms) and refetches
+  on filter/sort change instead of filtering a fully-loaded array client side.
+
+| Endpoint | Auth | Purpose |
+|----------|------|---------|
+| `GET /api/v1/client` | admin | no `page` → full array (legacy contract); with `page`/`limit`/`search`/`filtro`/`orden` → paginated envelope |
+| `GET /api/v1/client/:id` | admin | one client + recent citas |
+| `GET /api/v1/client/:id/citas?page=&limit=` | admin | that client's citas, paginated (15/page, 50 max) |
+| `GET /api/v1/client/lookup?numero=` | public | booking-page phone lookup |
+| `POST /api/v1/client` | admin | create (password optional) |
+| `PUT /api/v1/client/:id` | admin | edit name / phone / password |
+| `DELETE /api/v1/client/:id/account` | admin | revoke login, keep the client |
+| `DELETE /api/v1/client/:id` | admin | delete the client (citas stay) |
+
+## Gallery & Image Storage
+
+Photos live in Supabase Storage (S3-compatible) and are managed from
+`/dashboard/galeria`. `src/backend/helpers/storage.js` is the only thing that
+talks to the bucket.
+
+- **Two different Supabase paths.** `ENDPOINT_URL` ends in `/storage/v1/s3` —
+  that is the S3 API, and every read through it needs a SigV4 signature, so an
+  `<img src>` built from it answers **403 AccessDenied**. Public reads use
+  `/storage/v1/object/public/<bucket>/<key>`. `publicUrl()` builds that form and
+  is the only URL worth storing in Mongo; `normalizeUrl()` repairs old rows on
+  read (both `gallery.model` and `services.model` do this).
+- **Everything is stored as JPEG.** `toJpeg()` decodes whatever came in (HEIC
+  from iPhone, PNG with alpha, WebP, TIFF, GIF) and re-encodes to JPEG:
+  `.rotate()` applies EXIF orientation, `.flatten()` drops alpha onto white.
+  sharp failing to decode **is** the "is this an image?" check — the browser's
+  Content-Type is a claim, not evidence (iOS sends HEIC as
+  `application/octet-stream`). Non-images get a 415.
+- **HEIC in the browser.** Chrome/Firefox cannot draw HEIC into a canvas, so
+  Cropper can't touch it. `POST /api/v1/gallery/preview` transcodes it to JPEG
+  and returns the bytes — it stores nothing.
+- **Crop presets** live in `helpers/aspects.js` (4:5, 1:1, 4:3, 3:4, 16:9,
+  libre) and are mirrored client-side as `GALLERY_ASPECTS` in
+  `public/js/admin/galeria.js`. Keep the two in sync. `libre` keeps the natural
+  ratio, capped at 2000px on the long edge.
+- **`visible` gates the public page.** `GET /api/v1/gallery` returns visible
+  rows only; the admin grid uses `GET /api/v1/gallery/all` (admin auth). The
+  stored `width`/`height` let the public grid reserve space per photo.
+- `/galeria` is **server-rendered** from `render.routes.js` (photos in the HTML,
+  no empty flash, crawlable) with a CSS-columns masonry that honours each
+  photo's own ratio. With zero rows it falls back to `/images/cortes/*`.
+- The **homepage "Nuestro trabajo" carousel** shows the 6 newest visible photos,
+  also server-rendered by the `/` route with the same fallback. It is Splide in
+  `type: 'loop'` (infinite) with `focus: 'center'`; the centred slide scales to
+  full size and full colour while its neighbours shrink and fade. That scaling
+  is pure CSS on `.gallery-carousel .splide__slide.is-active` (2D only — no
+  perspective), mounted by `mountGaleriaCarousel()` in `public/js/client/index.js`.
+  On the `640` breakpoint `perPage` drops to 1 and `focus` must be `0`: with one
+  slide per page the `padding` already centres it, and leaving `focus: 'center'`
+  on top shifts the strip by half a slide.
+
+| Endpoint | Auth | Purpose |
+|----------|------|---------|
+| `GET /api/v1/gallery` | public | visible photos only |
+| `GET /api/v1/gallery/all` | admin | every photo, hidden included |
+| `GET /api/v1/gallery/aspects` | admin | crop presets |
+| `POST /api/v1/gallery` | admin | upload (multipart `image` + `aspect`) |
+| `POST /api/v1/gallery/preview` | admin | transcode to JPEG for the cropper, stores nothing |
+| `PUT /api/v1/gallery/reorder` | admin | `{ ids: [...] }` in render order |
+| `PUT /api/v1/gallery/:id` | admin | title / description / instagram / visible |
+| `DELETE /api/v1/gallery/:id` | admin | removes the row **and** the bucket object |
+
+## Site Settings (`/dashboard/configuracion`)
+
+One singleton document (`Setting.getSingleton()`) holds everything the admin can
+change about the public site. Four tabs in `views/admin/settings.hbs`, all driven
+by the `configuracionPage()` Alpine factory in `public/js/admin/settings.js`:
+
+- **Pagos** — CRUD over `paymentmethods` (`/api/v1/payment-method`).
+- **Contacto** — `contact.{address, phone, whatsapp, whatsappText, instagram, maps, waze}`.
+- **Horario** — `schedule[]` of `{ label, value, closed }`. **Plain display text
+  only.** It has nothing to do with the `horarios` collection that generates
+  booking slots; it just fills the "Horario" block in the footer.
+- **Notificaciones** — `whatsappConfirmEnabled`.
+
+`Setting.publicInfo()` is what the views consume: it derives every link
+(`tel:`, `wa.me/<digits>?text=`, the Instagram profile URL) from the stored
+values so no template ever builds a URL. Instagram accepts a bare handle or a
+full profile link; `phone`/`whatsapp` accept any formatting and are reduced to
+digits. `render.routes.js` passes it to `/` as `site` — the footer is the only
+place that renders it, and an empty field simply drops its row/circle (Waze
+starts empty). The footer circles are `.btn-socials` + a `--tel/--ig/--wa/--maps/--waze`
+modifier in `input.css`; the hue set lives in both that file and
+`SOCIAL_STYLE` in `admin/settings.js` (the admin preview) — keep the two in sync.
+
+| Endpoint | Auth | Purpose |
+|----------|------|---------|
+| `GET /api/v1/settings` | admin | full settings doc |
+| `PUT /api/v1/settings` | admin | partial update — `whatsappConfirmEnabled`, `contact`, `schedule` (whole-array replace) |
 
 ## Booking Flow
 
@@ -251,8 +386,13 @@ All admin KPI/stat cards and calendar buttons use a **gradient-tinted** look —
 ## Booking Slot Business Rules
 
 - All appointments and services last **30 minutes** (one slot).
-- **Future-day bookings**: clients can only book on the hour (e.g. 9:00, 10:00). Internally stored as 30-min slots in the DB.
-- **Same-day bookings**: half-hour slots (e.g. 9:30, 10:30) are unlocked **only for the current day**, starting at 12:00 AM (midnight) of that day, and they stay available **at all times throughout that whole day** — there is NO time-of-day cap (do not gate them to a morning window). The ONLY condition is `date.isSame(moment(), 'day')`. Generated by `additionalHalfHourSlots()` in `reserva.js`. Booked slots are still removed via `removeHoursBookedfromthatday()`.
+- **Work blocks**: each `Horario` day holds `blocks: [{ start, end }]` (`HH:mm`). The gap between two blocks is the barber's lunch/rest and generates no slots. Blocks are configured in `/dashboard/horarios`; everything else is derived from them by `src/backend/helpers/slots.js` — never hardcode excluded hours in the frontend.
+- `GET /api/v1/horario` returns, per day: `blocks`, `hours` (hourly base slots), `halfHours` (the +30 min grid), plus legacy `startTime`/`endTime`. Docs saved before blocks existed are migrated on read by `blocksFromHours()` (gap > 1h starts a new block).
+- A slot only fits while `slot + 30 min <= block end`, so a block of 9:00–13:00 gives 9/10/11/12 (last same-day slot 12:30).
+- **Future-day bookings**: clients can only book on the hour — `hours` only.
+- **Same-day bookings**: `halfHours` are unlocked **only for the current day**, and stay available **at all times throughout that whole day** — there is NO time-of-day cap (do not gate them to a morning window). The ONLY condition is `date.isSame(moment(), 'day')`. Booked slots are still removed via `removeHoursBookedfromthatday()`.
+- **Admin panel**: always books `hours` + `halfHours` (any day), merged in `addHalfHourtoMap()`.
+- **Server-side**: `validateSlot` (`middlewares/validateBooking.js`) re-checks day enabled, block membership, override/special, past time and double booking on `POST /api/v1/event/book` — the client grid can be stale.
 - **Past slots**: for the current day, any slot whose time has already passed (`isAfter(now)` is false) is removed from the grid. Future days show all slots.
 - **Nocturnal panel** (`#noctural`): the "Turnos de 30 min disponibles." banner appears **only between 00:00 and 06:00** of the current day, then disappears at 6:00 AM. This is just the panel — the half-hour slots themselves remain available all day (see `showNocturnalSchedule()`).
 - **UI consequence**: the "Media hora" badge and the slot-type legend (`#time-legend`) must only appear when half-hour slots are actually present in the rendered grid. Never show "Hora completa" label — the user doesn't need to know this distinction. Only label half-hour slots to help the user identify them when they coexist with full-hour slots.

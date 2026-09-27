@@ -1,10 +1,19 @@
 const Event = require('../models/events/event.model');
-const { addClient, addOneCitaPaga } = require('../helpers/addClient');
+const { findClient, ensureClient, addOneCitaPaga } = require('../helpers/addClient');
 const { sendWhatsappMessage }       = require('../helpers/whatsapp');
 const { sendTelegramMessage }       = require('../helpers/telegram');
 const Setting                       = require('../models/setting/setting.schema');
 const { createEvents }              = require('ics');
+const realtime                      = require('../helpers/realtime');
 const moment = require('moment-timezone');
+
+const DUPLICATE_KEY = 11000;
+
+// The unique index on events.start is what actually stops two clients from
+// booking the same slot; whoever loses the race lands here.
+function isSlotTaken(err) {
+    return err && (err.code === DUPLICATE_KEY || err?.cause?.code === DUPLICATE_KEY);
+}
 
 exports.get = async (req, res) => {
     const limit  = req.query?.limit  || null;
@@ -54,44 +63,83 @@ exports.getRange = async (req, res) => {
     res.json(events);
 };
 
-exports.create = async (req, res) => {
-    const io = req.app.get('socketio');
-    if (req.body.title !== 'Cerrado') {
-        const client     = await addClient(req.body);
-        req.body.title   = client.nombre;
-        const event      = await Event.create(req.body);
-        io.emit('nueva-cita', event);
-        res.json(event);
-    } else {
+// Admin-created citas (and "Cerrado" blocks).
+exports.create = async (req, res, next) => {
+    const esCerrado = req.body.title === 'Cerrado';
+    const numero    = req.body.extendedProps?.numero;
+    try {
+        // Same rule as the client path: resolve the name with a read, and only
+        // write the client once the cita has actually been created.
+        const existing = esCerrado ? null : await findClient(numero);
+        if (existing) req.body.title = existing.nombre;
+
         const event = await Event.create(req.body);
-        io.emit('nueva-cita', event);
+
+        if (!esCerrado) await ensureClient({ numero, nombre: req.body.title }, existing);
+
+        realtime.citaCreated(event, 'admin');
         res.json(event);
+    } catch (err) {
+        if (isSlotTaken(err)) {
+            return res.status(409).json({ error: 'Ese horario ya está ocupado.' });
+        }
+        next(err);
     }
 };
 
-exports.createClient = async (req, res) => {
-    const io         = req.app.get('socketio');
-    const client     = await addClient(req.body);
-    req.body.title   = client.nombre;
-    const event      = await Event.create(req.body);
-    const setting    = await Setting.getSingleton();
-    if (setting.whatsappConfirmEnabled) {
-        await sendWhatsappMessage(req.body);
+// Client bookings — already validated by validateBooking + validateSlot.
+exports.createClient = async (req, res, next) => {
+    const numero = req.body.extendedProps.numero;
+    try {
+        // Look the client up without writing: a booking that loses the slot race
+        // must not leave a client record behind.
+        const existing = await findClient(numero);
+        if (existing) req.body.title = existing.nombre;
+
+        const event = await Event.create(req.body);
+
+        // The cita exists — now the client is worth persisting.
+        await ensureClient({ numero, nombre: req.body.title }, existing);
+
+        realtime.citaCreated(event, 'client');
+
+        // Notifications must never fail the booking that already happened.
+        try {
+            const setting = await Setting.getSingleton();
+            if (setting.whatsappConfirmEnabled) await sendWhatsappMessage(req.body);
+        } catch (notifyErr) {
+            console.error('[event.createClient] notificación falló', notifyErr.message);
+        }
+
+        res.json(event);
+    } catch (err) {
+        if (isSlotTaken(err)) {
+            return res.status(409).json({ error: 'Esa hora acaba de ser reservada. Elige otra.' });
+        }
+        next(err);
     }
-    // await sendTelegramMessage(req.body);
-    io.emit('nueva-cita', event);
-    res.json(event);
 };
 
-exports.update = async (req, res) => {
+exports.update = async (req, res, next) => {
     const { id } = req.params;
-    const event  = await Event.update(id, req.body);
-    res.json(event);
+    try {
+        const event = await Event.update(id, req.body);
+        if (!event) return res.status(404).json({ error: 'Cita no encontrada.' });
+        realtime.citaUpdated(event, 'reagendada');
+        res.json(event);
+    } catch (err) {
+        if (isSlotTaken(err)) {
+            return res.status(409).json({ error: 'Ese horario ya está ocupado.' });
+        }
+        next(err);
+    }
 };
 
 exports.delete = async (req, res) => {
     const { id } = req.params;
     const event  = await Event.delete(id);
+    if (!event) return res.status(404).json({ error: 'Cita no encontrada.' });
+    realtime.citaDeleted(event);
     res.json(event);
 };
 
@@ -99,8 +147,19 @@ exports.pagar = async (req, res) => {
     const { id }  = req.params;
     const monto   = req.body.monto;
     const event   = await Event.pagar(id, monto);
+    if (!event) return res.status(404).json({ error: 'Cita no encontrada.' });
     await addOneCitaPaga(event);
+    realtime.citaUpdated(event, 'pago');
     res.json(event);
+};
+
+exports.pagarHoy = async (req, res) => {
+    const events = await Event.pagarTodasHoy();
+    for (const event of events) {
+        await addOneCitaPaga(event);
+        realtime.citaUpdated(event, 'pago');
+    }
+    res.json({ actualizadas: events.length });
 };
 
 exports.getByClient = async (req, res) => {
