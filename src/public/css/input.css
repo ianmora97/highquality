@@ -830,6 +830,18 @@ body.swal2-toast-shown .swal2-backdrop-show {
   box-shadow: 0 0 0 3px rgba(244,200,44,0.3) !important;
 }
 
+/* Destructive confirm — opt in with customClass: { confirmButton: 'hq-swal-danger' } */
+.swal2-confirm.swal2-styled.hq-swal-danger:not(.btn) {
+  background: #e74c3c !important;
+  color: #fff !important;
+}
+.swal2-confirm.swal2-styled.hq-swal-danger:not(.btn):hover {
+  box-shadow: 0 5px 18px rgba(231,76,60,0.35) !important;
+}
+.swal2-confirm.swal2-styled.hq-swal-danger:not(.btn):focus {
+  box-shadow: 0 0 0 3px rgba(231,76,60,0.3) !important;
+}
+
 /* Default cancel */
 .swal2-cancel.swal2-styled:not(.btn) {
   background: rgba(255,255,255,0.08) !important;

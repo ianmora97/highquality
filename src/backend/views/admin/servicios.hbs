@@ -1,191 +1,377 @@
-<div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
-
-    <!-- Header -->
-    <div class="bg-[#0d0d0d] border border-white/8 rounded-xl p-4 mb-4 flex flex-wrap gap-4 items-center justify-between">
-        <div>
-            <h1 class="text-xl font-bold mb-1 flex items-center gap-2">
-                <i class="fa-solid fa-scissors text-primary"></i> Servicios
-            </h1>
-            <p class="text-gray-500 text-sm mb-1">Todos los servicios que ofrece HighQuality</p>
-            <div class="flex items-center gap-4">
-                <span class="text-xs text-gray-600">
-                    <i class="fa-solid fa-clock"></i> Actualizado:
-                    <span id="lastUpdated" class="text-primary">ahora</span>
-                </span>
-                <span class="text-xs text-gray-600">
-                    <i class="fa-solid fa-list"></i> Total:
-                    <span id="totalitems" class="text-primary font-bold">—</span>
-                </span>
-            </div>
-        </div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addService">
-            <i class="fa-solid fa-plus"></i> Agregar Servicio
-        </button>
-    </div>
-
-    <!-- Services Grid -->
-    <div class="flex flex-wrap justify-start gap-4" id="listaServicios"></div>
-</div>
-
-<!-- Add Service Modal -->
-<div class="modal" id="addService" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-scrollable" style="max-width:550px;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title"><i class="fa-solid fa-scissors"></i> Agregar Servicio</h2>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body px-3">
-                <div class="mb-3">
-                    <label class="form-label">Nombre del servicio</label>
-                    <input type="text" class="form-control form-control-lg" id="nombre-add" placeholder="Nombre">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Precio del servicio</label>
-                    <input type="number" class="form-control form-control-lg" id="precio-add" placeholder="Precio">
-                </div>
-                <hr class="border-white/8 my-3">
-                <label class="form-label text-sm">Tipo de icono</label>
-                <div class="flex gap-2 mb-3" id="iconTypeBtns-add">
-                    <button type="button" class="icon-type-btn active" data-type="icon" onclick="setIconType('add', 'icon', this)">
-                        <i class="fa-solid fa-icons me-1"></i> Ícono FA
-                    </button>
-                    <button type="button" class="icon-type-btn" data-type="image" onclick="setIconType('add', 'image', this)">
-                        <i class="fa-solid fa-image me-1"></i> Imagen
-                    </button>
-                </div>
-
-                <!-- Icon picker -->
-                <div id="iconSection-add">
-                    <div class="fa-icon-grid" id="faIconGrid-add"></div>
-                    <div class="fa-icon-selected-preview" id="faIconPreview-add">
-                        <i class="fa-solid fa-scissors fa-icon-preview-i" id="faIconPreviewIcon-add"></i>
-                        <span class="fa-icon-preview-name" id="faIconPreviewName-add">Tijeras</span>
-                    </div>
-                </div>
-
-                <!-- Image upload -->
-                <div id="imageSection-add" style="display:none;">
-                    <div class="image-upload-area" id="uploadArea-add" onclick="document.getElementById('fileInput-add').click()">
-                        <div id="uploadPlaceholder-add">
-                            <i class="fa-solid fa-cloud-arrow-up fa-2x text-gray-600 mb-2"></i>
-                            <p class="text-gray-500 text-sm">Haz click o arrastra una imagen</p>
-                            <p class="text-gray-600 text-xs">JPG, PNG, WebP — se recortará a 800×800</p>
-                        </div>
-                        <img id="uploadPreview-add" style="display:none; max-height:200px; border-radius:8px; object-fit:cover;">
-                    </div>
-                    <input type="file" id="fileInput-add" accept="image/*" style="display:none;" onchange="handleFileSelect('add', this)">
-
-                    <div id="cropperContainer-add" style="display:none; margin-top:12px;">
-                        <div class="rounded-lg overflow-hidden border border-white/8" style="max-height:300px;">
-                            <img id="cropperImg-add" style="max-width:100%;">
-                        </div>
-                        <div class="flex gap-2 mt-2">
-                            <button type="button" class="btn btn-sm btn-dark flex-1" onclick="resetCrop('add')">
-                                <i class="fa-solid fa-rotate-left"></i> Cambiar
-                            </button>
-                            <button type="button" class="btn btn-sm btn-primary flex-1" onclick="confirmCrop('add')">
-                                <i class="fa-solid fa-crop"></i> Confirmar recorte
-                            </button>
-                        </div>
-                    </div>
-                    <div id="cropConfirmed-add" style="display:none; text-align:center; padding:8px;">
-                        <i class="fa-solid fa-circle-check text-green-400 me-2"></i>
-                        <span class="text-green-400 text-sm">Imagen lista</span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-success" onclick="agregarServicio()" style="color:white;">
-                    <i class="fa-solid fa-circle-plus"></i> Agregar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Service Modal -->
-<div class="modal" id="editService" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-scrollable" style="max-width:550px;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div>
-                    <h2 class="modal-title"><i class="fa-solid fa-scissors"></i> Editar Servicio</h2>
-                    <span class="text-xs text-gray-500 mt-1 block" id="idUpdate"></span>
-                </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body px-3">
-                <div class="mb-3">
-                    <label class="form-label">Nombre del servicio</label>
-                    <input type="text" class="form-control form-control-lg" id="nombre-edit" placeholder="Nombre">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Precio del servicio</label>
-                    <input type="number" class="form-control form-control-lg" id="precio-edit" placeholder="Precio">
-                </div>
-                <hr class="border-white/8 my-3">
-                <label class="form-label text-sm">Tipo de icono</label>
-                <div class="flex gap-2 mb-3" id="iconTypeBtns-edit">
-                    <button type="button" class="icon-type-btn active" data-type="icon" onclick="setIconType('edit', 'icon', this)">
-                        <i class="fa-solid fa-icons me-1"></i> Ícono FA
-                    </button>
-                    <button type="button" class="icon-type-btn" data-type="image" onclick="setIconType('edit', 'image', this)">
-                        <i class="fa-solid fa-image me-1"></i> Imagen
-                    </button>
-                </div>
-
-                <!-- Icon picker -->
-                <div id="iconSection-edit">
-                    <div class="fa-icon-grid" id="faIconGrid-edit"></div>
-                    <div class="fa-icon-selected-preview" id="faIconPreview-edit">
-                        <i class="fa-solid fa-scissors fa-icon-preview-i" id="faIconPreviewIcon-edit"></i>
-                        <span class="fa-icon-preview-name" id="faIconPreviewName-edit">Tijeras</span>
-                    </div>
-                </div>
-
-                <!-- Image upload -->
-                <div id="imageSection-edit" style="display:none;">
-                    <div class="image-upload-area" id="uploadArea-edit" onclick="document.getElementById('fileInput-edit').click()">
-                        <div id="uploadPlaceholder-edit">
-                            <i class="fa-solid fa-cloud-arrow-up fa-2x text-gray-600 mb-2"></i>
-                            <p class="text-gray-500 text-sm">Haz click o arrastra una imagen</p>
-                            <p class="text-gray-600 text-xs">JPG, PNG, WebP — se recortará a 800×800</p>
-                        </div>
-                        <img id="uploadPreview-edit" style="display:none; max-height:200px; border-radius:8px; object-fit:cover;">
-                    </div>
-                    <input type="file" id="fileInput-edit" accept="image/*" style="display:none;" onchange="handleFileSelect('edit', this)">
-
-                    <div id="cropperContainer-edit" style="display:none; margin-top:12px;">
-                        <div class="rounded-lg overflow-hidden border border-white/8" style="max-height:300px;">
-                            <img id="cropperImg-edit" style="max-width:100%;">
-                        </div>
-                        <div class="flex gap-2 mt-2">
-                            <button type="button" class="btn btn-sm btn-dark flex-1" onclick="resetCrop('edit')">
-                                <i class="fa-solid fa-rotate-left"></i> Cambiar
-                            </button>
-                            <button type="button" class="btn btn-sm btn-primary flex-1" onclick="confirmCrop('edit')">
-                                <i class="fa-solid fa-crop"></i> Confirmar recorte
-                            </button>
-                        </div>
-                    </div>
-                    <div id="cropConfirmed-edit" style="display:none; text-align:center; padding:8px;">
-                        <i class="fa-solid fa-circle-check text-green-400 me-2"></i>
-                        <span class="text-green-400 text-sm">Imagen lista</span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-light" onclick="actualizarServicio()">
-                    <i class="fa-solid fa-floppy-disk"></i> Actualizar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script src="/js/admin/servicios.js"></script>
+
+<div x-data="serviciosPage()">
+
+    <div class="max-w-screen-xl mx-auto px-4 sm:px-6 py-4">
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mb-4">
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-violet-500/20 via-purple-500/10 to-transparent border border-violet-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-violet-500/20">
+                    <i class="fa-solid fa-scissors text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-violet-300/70 leading-none mb-1 truncate">Servicios</p>
+                    <h2 class="text-base font-bold text-violet-200 leading-none" x-text="servicios.length"></h2>
+                </div>
+            </div>
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-transparent border border-emerald-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-circle-check text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-emerald-300/70 leading-none mb-1 truncate">Activos</p>
+                    <h2 class="text-base font-bold text-emerald-200 leading-none" x-text="activos()"></h2>
+                </div>
+            </div>
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-orange-500/20 via-red-500/10 to-transparent border border-orange-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center shrink-0 shadow-lg shadow-orange-500/20">
+                    <i class="fa-solid fa-circle-pause text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-orange-300/70 leading-none mb-1 truncate">Inactivos</p>
+                    <h2 class="text-base font-bold text-orange-200 leading-none" x-text="inactivos()"></h2>
+                </div>
+            </div>
+            <div class="rounded-lg p-2.5 bg-gradient-to-br from-blue-500/20 via-primary/10 to-transparent border border-blue-400/25 flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-primary flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
+                    <i class="fa-solid fa-tags text-white text-xs"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[10px] text-blue-300/70 leading-none mb-1 truncate">Precio promedio</p>
+                    <h2 class="text-base font-bold text-blue-200 leading-none" x-text="precio(promedio())"></h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-4">
+            <div class="flex-1 flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                <i class="fa-solid fa-magnifying-glass text-gray-500 text-xs shrink-0"></i>
+                <input type="text" x-model="query" placeholder="Buscar servicio..."
+                       class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                <button x-show="query" @click="query = ''" class="text-gray-500 hover:text-white shrink-0">
+                    <i class="fa-solid fa-circle-xmark text-xs"></i>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Filter segmented -->
+                <div class="flex items-center gap-1 p-1 rounded-xl bg-white/[.03] border border-white/8">
+                    <template x-for="f in [['todos','Todos'],['activos','Activos'],['inactivos','Inactivos']]" :key="f[0]">
+                        <button @click="filtro = f[0]"
+                                class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
+                                :class="filtro === f[0] ? 'bg-primary/20 text-white border border-primary/40' : 'text-gray-500 hover:text-gray-300 border border-transparent'"
+                                x-text="f[1]"></button>
+                    </template>
+                </div>
+
+                <button @click="abrirNuevo()"
+                        class="h-10 px-3.5 flex items-center gap-2 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 active:scale-95 transition-all shrink-0 whitespace-nowrap">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Nuevo</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Skeleton -->
+        <div x-show="loading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+            <template x-for="i in 8" :key="i">
+                <div class="h-[132px] rounded-xl bg-white/[.03] border border-white/8 animate-pulse"></div>
+            </template>
+        </div>
+
+        <!-- Grid -->
+        <div x-show="!loading" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+            <template x-for="s in filtradas()" :key="s._id">
+                <div class="group rounded-xl bg-[#0d0d0d] border transition-all flex flex-col overflow-hidden"
+                     :class="s.enable ? 'border-white/10 hover:border-white/20' : 'border-white/8 opacity-60'">
+
+                    <div class="p-3 flex-1 flex flex-col">
+                        <div class="flex items-start justify-between gap-2 mb-2.5">
+                            <!-- Icon / image -->
+                            <template x-if="esImagen(s)">
+                                <img :src="s.imageUrl" :alt="s.name" @error="s.imageType = 'icon'"
+                                     class="w-10 h-10 rounded-xl object-cover border border-white/10 shrink-0">
+                            </template>
+                            <template x-if="!esImagen(s)">
+                                <div class="w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 transition-colors"
+                                     :class="s.enable ? 'bg-white/[.06] border-white/12 text-gray-200' : 'bg-white/[.02] border-white/8 text-gray-600'">
+                                    <i :class="iconOf(s)" class="text-sm"></i>
+                                </div>
+                            </template>
+
+                            <!-- Switch -->
+                            <div class="form-check form-switch form-check-lg mb-0 shrink-0"
+                                 :class="toggling[s._id] ? 'opacity-50 pointer-events-none' : ''">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       :checked="s.enable" @change="toggle(s, $event)">
+                            </div>
+                        </div>
+
+                        <h5 class="text-sm font-bold text-white leading-snug mb-1.5 line-clamp-2" x-text="s.name"></h5>
+                        <div class="mt-auto">
+                            <p class="text-sm font-bold mb-0" :class="s.enable ? 'text-gold' : 'text-gray-500'" x-text="precio(s.price)"></p>
+                            <p x-show="!s.enable" class="text-[10px] font-semibold uppercase tracking-wider text-red-400/60 mt-1">Inactivo</p>
+                        </div>
+                    </div>
+
+                    <button @click="abrirEditar(s)"
+                            class="w-full flex items-center justify-center gap-1.5 py-2 border-t border-white/8 text-[11px] font-semibold text-gray-500 hover:text-white hover:bg-white/[.04] transition-all">
+                        <i class="fa-solid fa-pen text-[10px]"></i> Editar
+                    </button>
+                </div>
+            </template>
+        </div>
+
+        <!-- Empty states -->
+        <div x-show="!loading && !filtradas().length && servicios.length" class="text-center py-14">
+            <i class="fa-solid fa-magnifying-glass text-gray-700 text-2xl mb-3"></i>
+            <p class="text-sm text-gray-500 mb-4">Ningún servicio coincide con el filtro.</p>
+            <button @click="query = ''; filtro = 'todos'"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm font-semibold hover:bg-white/10 transition-all">
+                <i class="fa-solid fa-rotate-left text-xs"></i> Limpiar filtros
+            </button>
+        </div>
+
+        <div x-show="!loading && !servicios.length" class="text-center py-14">
+            <i class="fa-solid fa-scissors text-gray-700 text-3xl mb-3"></i>
+            <p class="text-sm text-gray-500 mb-1">Todavía no hay servicios.</p>
+            <p class="text-xs text-gray-600 mb-4">Agrega el primero para que aparezca en la reserva.</p>
+            <button @click="abrirNuevo()"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 transition-all">
+                <i class="fa-solid fa-plus text-xs"></i> Crear servicio
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== SERVICIO SHEET (agregar / editar) ===== -->
+    <div x-show="open"
+         x-effect="document.documentElement.style.overflow = open ? 'hidden' : ''"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @keydown.escape.window="cerrar()"
+         @click="cerrar()"
+         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+         style="background:rgba(0,0,0,0.75); backdrop-filter:blur(6px);"
+         x-cloak>
+
+        <!-- Panel -->
+        <div x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-full"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 translate-y-full"
+             class="w-full sm:max-w-md bg-[#0d0d0d] border border-white/10 rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[86vh]"
+             :style="dragY ? `transform: translateY(${dragY}px)` : ''"
+             @click.stop>
+
+            <!-- Drag handle (mobile) -->
+            <div class="flex justify-center pt-3 pb-2 sm:hidden cursor-grab shrink-0"
+                 @touchstart="onDragStart($event)"
+                 @touchmove="onDragMove($event)"
+                 @touchend="onDragEnd($event)">
+                <div class="w-10 h-1.5 rounded-full bg-white/20"></div>
+            </div>
+
+            <!-- HEADER -->
+            <div class="px-3.5 pt-2 pb-3.5 shrink-0 border-b border-white/8">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-scissors text-primary"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-lg font-bold text-white leading-tight"
+                            x-text="mode === 'add' ? 'Nuevo servicio' : 'Editar servicio'"></h2>
+                        <p class="text-xs text-gray-500 mt-0.5"
+                           x-text="mode === 'add' ? 'Aparecerá en la página de reserva' : (form.name || 'Servicio')"></p>
+                    </div>
+                    <button @click="cerrar()"
+                            class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 bg-white/5 hover:text-white hover:bg-white/10 transition-all shrink-0">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- BODY -->
+            <div class="flex-1 overflow-y-auto px-3.5 py-3.5 min-h-0">
+
+                <!-- Live preview -->
+                <div class="flex items-center gap-3 rounded-xl bg-white/[.03] border border-white/8 p-3 mb-4">
+                    <template x-if="form.imageType === 'image' && previewUrl">
+                        <img :src="previewUrl" @error="previewUrl = ''; cropStage = 'empty'"
+                             class="w-11 h-11 rounded-xl object-cover border border-white/10 shrink-0">
+                    </template>
+                    <template x-if="!(form.imageType === 'image' && previewUrl)">
+                        <div class="w-11 h-11 rounded-xl bg-white/[.06] border border-white/12 flex items-center justify-center shrink-0">
+                            <i :class="form.faIcon || 'fa-solid fa-scissors'" class="text-gray-200"></i>
+                        </div>
+                    </template>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm font-bold text-white truncate" x-text="form.name || 'Nombre del servicio'"></p>
+                        <p class="text-sm font-bold text-gold" x-text="precio(form.price || 0)"></p>
+                    </div>
+                    <span class="text-[10px] font-semibold uppercase tracking-widest px-2 py-1 rounded-lg shrink-0"
+                          :class="form.enable ? 'bg-emerald-500/10 border border-emerald-400/25 text-emerald-300' : 'bg-red-500/10 border border-red-400/25 text-red-300'"
+                          x-text="form.enable ? 'Activo' : 'Inactivo'"></span>
+                </div>
+
+                <!-- Nombre -->
+                <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Nombre</label>
+                <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 mb-3.5 focus-within:border-primary/50 transition-all">
+                    <i class="fa-solid fa-tag text-gray-500 text-xs shrink-0"></i>
+                    <input type="text" x-model="form.name" placeholder="Corte clásico" maxlength="60"
+                           class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                </div>
+
+                <!-- Precio -->
+                <label class="block text-[10px] text-gray-500 uppercase tracking-widest mb-1.5">Precio</label>
+                <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 focus-within:border-primary/50 transition-all">
+                    <span class="text-gold font-bold text-sm shrink-0">₡</span>
+                    <input type="number" x-model="form.price" placeholder="0" min="0" step="500" inputmode="numeric"
+                           class="w-full min-w-0 bg-transparent border-0 py-2.5 text-sm text-white outline-none placeholder:text-gray-600">
+                </div>
+                <div class="flex flex-wrap gap-1.5 mt-2 mb-4">
+                    <template x-for="p in [3000, 4000, 5000, 6000, 8000, 10000]" :key="p">
+                        <button @click="form.price = p"
+                                class="text-[11px] px-2 py-1 rounded-lg border transition-all"
+                                :class="Number(form.price) === p ? 'bg-gold/15 border-gold/40 text-gold' : 'bg-white/[.03] border-white/8 text-gray-500 hover:text-gray-300'"
+                                x-text="precio(p)"></button>
+                    </template>
+                </div>
+
+                <!-- Estado -->
+                <div class="flex items-center justify-between rounded-xl bg-white/[.03] border border-white/8 p-3.5 mb-4">
+                    <div class="min-w-0 pr-3">
+                        <p class="text-sm font-semibold text-white">Servicio habilitado</p>
+                        <p class="text-xs text-gray-500" x-text="form.enable ? 'Los clientes lo pueden reservar' : 'Oculto en la reserva'"></p>
+                    </div>
+                    <div class="form-check form-switch form-check-lg mb-0 shrink-0">
+                        <input class="form-check-input" type="checkbox" role="switch" x-model="form.enable">
+                    </div>
+                </div>
+
+                <!-- Imagen / icono -->
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] text-gray-500 uppercase tracking-widest">Apariencia</span>
+                    <div class="flex items-center gap-1 p-1 rounded-xl bg-white/[.03] border border-white/8">
+                        <button @click="form.imageType = 'icon'"
+                                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all"
+                                :class="form.imageType === 'icon' ? 'bg-primary/20 text-white border border-primary/40' : 'text-gray-500 hover:text-gray-300 border border-transparent'">
+                            <i class="fa-solid fa-icons text-[10px] me-1"></i> Ícono
+                        </button>
+                        <button @click="form.imageType = 'image'"
+                                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all"
+                                :class="form.imageType === 'image' ? 'bg-primary/20 text-white border border-primary/40' : 'text-gray-500 hover:text-gray-300 border border-transparent'">
+                            <i class="fa-solid fa-image text-[10px] me-1"></i> Imagen
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── Icon picker ── -->
+                <div x-show="form.imageType === 'icon'">
+                    <div class="flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-xl px-3.5 mb-2 focus-within:border-primary/50 transition-all">
+                        <i class="fa-solid fa-magnifying-glass text-gray-500 text-xs shrink-0"></i>
+                        <input type="text" x-model="iconQuery" placeholder="Buscar ícono..."
+                               class="w-full min-w-0 bg-transparent border-0 py-2 text-xs text-white outline-none placeholder:text-gray-600">
+                    </div>
+
+                    <div class="grid grid-cols-6 gap-1.5 max-h-44 overflow-y-auto p-1 bg-white/[.03] border border-white/8 rounded-xl">
+                        <template x-for="ic in iconosFiltrados()" :key="ic.cls">
+                            <button @click="form.faIcon = ic.cls" :title="ic.label"
+                                    class="aspect-square flex items-center justify-center w-full rounded-lg border text-base transition-all"
+                                    :class="form.faIcon === ic.cls ? 'border-gold/50 bg-gold/10 text-gold' : 'border-transparent text-gray-500 hover:bg-white/5 hover:text-white'">
+                                <i :class="ic.cls"></i>
+                            </button>
+                        </template>
+                    </div>
+                    <p x-show="!iconosFiltrados().length" class="text-xs text-gray-600 text-center py-3">
+                        Sin íconos para “<span x-text="iconQuery"></span>”
+                    </p>
+                    <div class="flex items-center gap-3 mt-2 px-3 py-2 bg-white/[.03] rounded-lg">
+                        <i :class="form.faIcon" class="text-gold" style="font-size:1.4rem;"></i>
+                        <span class="text-xs text-gray-400" x-text="nombreIcono()"></span>
+                    </div>
+                </div>
+
+                <!-- ── Image upload ── -->
+                <div x-show="form.imageType === 'image'">
+                    <input type="file" x-ref="fileInput" accept="image/*" class="hidden" @change="onArchivo($event)">
+
+                    <!-- empty -->
+                    <div x-show="cropStage === 'empty'" @click="elegirArchivo()"
+                         class="border-2 border-dashed border-white/15 rounded-xl p-6 text-center cursor-pointer transition-all bg-white/[.02] hover:border-primary/50 hover:bg-primary/[.04]">
+                        <i class="fa-solid fa-cloud-arrow-up text-gray-600 text-2xl mb-2"></i>
+                        <p class="text-sm text-gray-400">Haz click para subir una imagen</p>
+                        <p class="text-xs text-gray-600 mt-0.5">JPG, PNG o WebP — se recorta a 800×800</p>
+                    </div>
+
+                    <!-- cropping -->
+                    <div x-show="cropStage === 'cropping'">
+                        <div class="rounded-xl overflow-hidden border border-white/8 bg-black" style="max-height:280px;">
+                            <img x-ref="cropImg" style="max-width:100%; display:block;">
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <button @click="resetImagen()"
+                                    class="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/8 text-xs font-semibold text-gray-300 hover:bg-white/10 transition-all">
+                                <i class="fa-solid fa-rotate-left me-1"></i> Cambiar
+                            </button>
+                            <button @click="confirmarCrop()"
+                                    class="flex-1 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 active:scale-95 transition-all">
+                                <i class="fa-solid fa-crop me-1"></i> Confirmar recorte
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ready -->
+                    <div x-show="cropStage === 'ready'"
+                         class="flex items-center gap-3 rounded-xl bg-emerald-500/[.06] border border-emerald-400/25 p-3">
+                        <img :src="previewUrl" class="w-14 h-14 rounded-xl object-cover border border-white/10 shrink-0">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-semibold text-emerald-300">
+                                <i class="fa-solid fa-circle-check me-1"></i>
+                                <span x-text="croppedBlob ? 'Imagen lista' : 'Imagen actual'"></span>
+                            </p>
+                            <p class="text-xs text-gray-500" x-text="croppedBlob ? 'Se guardará al confirmar' : 'Sube otra para reemplazarla'"></p>
+                        </div>
+                        <button @click="resetImagen(); elegirArchivo()"
+                                class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 bg-white/5 hover:text-white hover:bg-white/10 transition-all shrink-0">
+                            <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <p x-show="errorMsg" x-text="errorMsg" class="text-xs text-danger mt-3.5"></p>
+
+                <!-- Danger zone -->
+                <div x-show="mode === 'edit'" class="mt-5 pt-4 border-t border-white/8">
+                    <button @click="eliminar()" :disabled="saving"
+                            class="w-full py-2.5 rounded-xl border border-red-500/25 bg-red-500/[.06] text-xs font-semibold text-red-400 hover:bg-red-500/15 transition-all disabled:opacity-40">
+                        <i class="fa-solid fa-trash me-1.5"></i> Eliminar servicio
+                    </button>
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="shrink-0 px-3.5 py-3.5 border-t border-white/8 bg-[#0d0d0d] flex gap-2"
+                 style="padding-bottom: calc(1rem + env(safe-area-inset-bottom));">
+                <button @click="cerrar()"
+                        class="px-4 bg-white/5 border border-white/8 text-gray-400 rounded-xl text-sm hover:bg-white/10 transition-all">
+                    Cancelar
+                </button>
+                <button @click="guardar()" :disabled="saving"
+                        class="flex-1 bg-primary text-white rounded-xl py-3 text-sm font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-40">
+                    <i class="fa-solid fa-floppy-disk me-1.5"></i>
+                    <span x-text="saving ? 'Guardando...' : (mode === 'add' ? 'Crear servicio' : 'Guardar cambios')"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

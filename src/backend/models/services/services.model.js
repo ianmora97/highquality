@@ -12,7 +12,7 @@ exports.create = async (service) => {
 };
 
 exports.update = async (id, data) => {
-    const service = await Services.findByIdAndUpdate(id, data);
+    const service = await Services.findByIdAndUpdate(id, data, { new: true });
     return service;
 };
 
