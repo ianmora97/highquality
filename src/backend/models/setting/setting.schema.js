@@ -10,7 +10,7 @@ const ScheduleRowSchema = new mongoose.Schema({
 }, { _id: false });
 
 const ContactSchema = new mongoose.Schema({
-    address:   { type: String, default: 'Hatillo 5, San José, Costa Rica', trim: true },
+    address:   { type: String, default: 'Hatillo 4, San José, Costa Rica', trim: true },
     phone:     { type: String, default: '+506 7245-1908', trim: true },
     whatsapp:  { type: String, default: '50672451908', trim: true },
     whatsappText: { type: String, default: 'Quiero sacar una cita', trim: true },

@@ -651,7 +651,7 @@ function nuevaCitaData() {
             const list = q
                 ? this.clientes.filter(c => (c.nombre || '').toLowerCase().includes(q) || String(c.numero).includes(q))
                 : this.clientes;
-            return list.slice(0, 60);
+            return list.slice(0, 5);
         },
 
         seleccionarCliente(c) {
