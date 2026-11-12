@@ -1,0 +1,5 @@
+/* Self-hosted fonts (latin subset: covers Spanish accents, ñ, ¿ ¡, ₡). */
+@font-face { font-family: "Bebas Neue"; font-style: normal; font-weight: 400; font-display: swap; src: url("/fonts/hq/bebas-neue.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 100 900; font-display: swap; src: url("/fonts/hq/inter-var.woff2") format("woff2"); }
+@font-face { font-family: "The Nautigal"; font-style: normal; font-weight: 400; font-display: swap; src: url("/fonts/hq/nautigal-400.woff2") format("woff2"); }
+@font-face { font-family: "The Nautigal"; font-style: normal; font-weight: 700; font-display: swap; src: url("/fonts/hq/nautigal-700.woff2") format("woff2"); }
