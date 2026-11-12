@@ -1,7 +1,7 @@
 const Event = require('../models/events/event.model');
 const { findClient, ensureClient, addOneCitaPaga } = require('../helpers/addClient');
 const { sendWhatsappMessage }       = require('../helpers/whatsapp');
-const { sendTelegramMessage }       = require('../helpers/telegram');
+const { notifyNuevaCita, notifyCancelada } = require('../helpers/telegram');
 const Setting                       = require('../models/setting/setting.schema');
 const { createEvents }              = require('ics');
 const realtime                      = require('../helpers/realtime');
@@ -78,6 +78,7 @@ exports.create = async (req, res, next) => {
         if (!esCerrado) await ensureClient({ numero, nombre: req.body.title }, existing);
 
         realtime.citaCreated(event, 'admin');
+        notifyNuevaCita(event, 'admin'); // fire-and-forget, never throws
         res.json(event);
     } catch (err) {
         if (isSlotTaken(err)) {
@@ -102,6 +103,7 @@ exports.createClient = async (req, res, next) => {
         await ensureClient({ numero, nombre: req.body.title }, existing);
 
         realtime.citaCreated(event, 'client');
+        notifyNuevaCita(event, 'client'); // fire-and-forget, never throws
 
         // Notifications must never fail the booking that already happened.
         try {
@@ -140,6 +142,7 @@ exports.delete = async (req, res) => {
     const event  = await Event.delete(id);
     if (!event) return res.status(404).json({ error: 'Cita no encontrada.' });
     realtime.citaDeleted(event);
+    notifyCancelada(event); // fire-and-forget, never throws
     res.json(event);
 };
 

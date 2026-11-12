@@ -54,6 +54,7 @@ const server = http.createServer(app).listen(app.get('port'), () => {
     console.log(`[OK] SERVER STARTED ON PORT ${app.get('port')}`);
     require('./backend/connections/mongo.js');
     require('./backend/connections/indexes.js').ensureIndexes();
+    require('./backend/helpers/reminders').start();
 });
 
 // ? Realtime (socket.io) — attached to every listening server

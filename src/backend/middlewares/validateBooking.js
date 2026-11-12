@@ -7,7 +7,7 @@ const SpecialSchema = require('../models/special/special.schema');
 const EventSchema = require('../models/events/event.schema');
 const { hydrateHorario, isSlotAllowed } = require('../helpers/slots');
 
-const NAME_PATTERN     = /^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s'\-]+$/;
+const NAME_PATTERN     = /^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ\s'-]+$/;
 const PHONE_PATTERN    = /^\d{8}$/;
 const DATETIME_PATTERN = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
 
