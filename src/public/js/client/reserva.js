@@ -98,7 +98,7 @@ function formatPhone(num) {
 async function bringServices() {
     const { data } = await axios.get('/api/v1/services');
     g_servicios.clear();
-    data.forEach(e => g_servicios.set(e._id, e));
+    data.filter(e => e.enable !== false).forEach(e => g_servicios.set(e._id, e));
 
     const { data: horarios } = await axios.get('/api/v1/horario');
     g_horarios.clear();
@@ -587,6 +587,31 @@ function updateStepUI() {
     updatePriceDisplay();
 }
 
+// Links to put the 30 min cita in the client's own calendar: Google (web link) and
+// a .ics data URI for Apple / Outlook. `data.start`/`end` are local 'YYYY-MM-DD HH:mm:ss'.
+function calendarLinks(data) {
+    const utc = s => moment(s).utc().format('YYYYMMDD[T]HHmmss[Z]');
+    const title = 'Cita en HighQuality Studio';
+    const details = `Servicios: ${data.extendedProps.servicios.join(', ')}`;
+    const where = 'HighQuality Studio, Hatillo 4, San José';
+    const dates = `${utc(data.start)}/${utc(data.end)}`;
+
+    const google = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+        + `&text=${encodeURIComponent(title)}&dates=${dates}`
+        + `&details=${encodeURIComponent(details)}&location=${encodeURIComponent(where)}`;
+
+    const ics = [
+        'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//HighQuality Studio//ES', 'BEGIN:VEVENT',
+        `UID:${utc(data.start)}-${data.extendedProps.numero}@highquality`,
+        `DTSTAMP:${utc(moment())}`, `DTSTART:${utc(data.start)}`, `DTEND:${utc(data.end)}`,
+        `SUMMARY:${title}`, `DESCRIPTION:${details}`, `LOCATION:${where}`,
+        'BEGIN:VALARM', 'TRIGGER:-PT4H', 'ACTION:DISPLAY', 'DESCRIPTION:Tu cita es en 4 horas', 'END:VALARM',
+        'END:VEVENT', 'END:VCALENDAR',
+    ].join('\r\n');
+
+    return { google, ics: 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics) };
+}
+
 // ===== BOOKING SUBMISSION =====
 async function agendarCita() {
     const bg    = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
@@ -632,11 +657,23 @@ async function agendarCita() {
         await axios.post('/api/v1/event/book', data);
         g_myHold = null;   // the cita exists now; the server dropped the hold
 
+        const cal = calendarLinks(data);
+
         Swal.fire({
             title: '¡Cita Agendada!',
-            iconHtml: '<i class="fa-solid fa-check"></i>',
-            customClass: { icon: 'swal-icon-success' },
+            iconHtml: `<svg class="hq-check" viewBox="0 0 52 52" aria-hidden="true">
+                           <circle class="hq-check-bg" cx="26" cy="26" r="24"/>
+                           <path class="hq-check-mark" d="M15 27.5l8 8 14.5-17"/>
+                       </svg>`,
+            customClass: { icon: 'swal-icon-ok' },
             html: `
+                <div class="swal-cal">
+                    <a class="swal-cal-btn" href="${cal.google}" target="_blank" rel="noopener">
+                        <i class="fa-regular fa-calendar-plus"></i> Agregar al calendario
+                    </a>
+                    <a class="swal-cal-alt" href="${cal.ics}" download="cita-highquality.ics">Apple / Outlook (.ics)</a>
+                </div>
+
                 <div class="swal-policy-box">
                     <p class="swal-policy-title"><i class="fa-solid fa-shield-halved"></i> Política de citas</p>
                     <ul class="swal-policy-list">
