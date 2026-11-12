@@ -759,11 +759,10 @@ body.swal2-toast-shown .swal2-backdrop-show {
 }
 
 /* --- Icons ------------------------------------------------------- */
+/* Keep SweetAlert's native 5em size: its error X / success tick / "!" are positioned
+   for that box, so shrinking it (was 60px) left the lines crossing outside the ring. */
 .swal2-icon {
-  margin: 0 auto 1.25rem !important;
-  width: 60px !important;
-  height: 60px !important;
-  border-width: 2px !important;
+  margin: 0.5rem auto 1.25rem !important;
 }
 /* Warning */
 .swal2-icon.swal2-warning {

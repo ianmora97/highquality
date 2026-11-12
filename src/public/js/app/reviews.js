@@ -68,7 +68,9 @@ async function submitReview(e) {
         selected = 0;
         paintStars(0);
         Swal.fire({
-            icon: 'success', title: '¡Gracias!',
+            iconHtml: '<svg class="hq-check" viewBox="0 0 52 52" aria-hidden="true"><circle class="hq-check-bg" cx="26" cy="26" r="24"/><path class="hq-check-mark" d="M15 27.5l8 8 14.5-17"/></svg>',
+            customClass: { icon: 'swal-icon-ok' },
+            title: '¡Gracias!',
             text: 'Tu reseña quedó en revisión y se publicará una vez aprobada.',
             background: '#0d0d0d', color: '#f1f1f1', timer: 2500, showConfirmButton: false,
         });

@@ -5678,10 +5678,7 @@ body.swal2-toast-shown .swal2-backdrop-show {
   padding: 0 !important;
 }
 .swal2-icon {
-  margin: 0 auto 1.25rem !important;
-  width: 60px !important;
-  height: 60px !important;
-  border-width: 2px !important;
+  margin: 0.5rem auto 1.25rem !important;
 }
 .swal2-icon.swal2-warning {
   border-color: #F4C82C !important;
