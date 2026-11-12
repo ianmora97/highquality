@@ -2,27 +2,17 @@ const mongoose = require('mongoose');
 const moment = require('moment');
 
 const SpecialSchema = new mongoose.Schema({
-    title:{
+    title: { type: String, required: true },
+    start: { type: Date, required: true },
+    end: { type: Date, required: true },
+    type: {
         type: String,
-        required: true,
+        enum: ['all-day', 'hours', 'range'],
+        default: 'all-day'
     },
-    start:{
-        type: Date,
-        required: true,
-    },
-    end:{
-        type: Date,
-        required: true,
-    },
-    props:{
-        type: Object,
-        required: true,
-    },
-    createdAt:{
-        type: Date,
-        required: true,
-        default: moment().format()
-    }
+    color: { type: String, default: '#e44e4e' },
+    props: { type: Object, required: false, default: {} },
+    createdAt: { type: Date, required: true, default: () => moment().format() }
 });
 
 const Special = mongoose.model('Special', SpecialSchema);

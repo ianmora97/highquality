@@ -1,0 +1,31 @@
+<div>
+    <section class="acc-rise" style="--i:0">
+        <p class="acc-eyebrow" id="acc-today"></p>
+        <h1 class="acc-title mt-2">Hola, <em id="acc-first">{{user.name}}</em></h1>
+    </section>
+
+    <!-- Next appointment: the thing people open this page for -->
+    <div class="acc-h2 acc-rise" style="--i:1"><h2>Próxima cita</h2></div>
+    <div id="next-appointment" class="acc-rise" style="--i:2">
+        <div class="acc-skel" style="min-height:9.5rem"></div>
+    </div>
+
+    <a href="/reservar" class="acc-btn mt-4 acc-rise" style="--i:3">
+        <i class="fa-solid fa-plus"></i> Nueva cita
+    </a>
+
+    <div id="acc-stats-wrap" class="mt-6 acc-rise" style="--i:4">
+        <div class="acc-stats">
+            <div class="acc-skel" style="min-height:5rem"></div>
+            <div class="acc-skel" style="min-height:5rem"></div>
+            <div class="acc-skel" style="min-height:5rem"></div>
+        </div>
+    </div>
+
+    <div class="acc-h2 acc-rise" style="--i:5"><h2>Servicios</h2><span id="rebook-hint"></span></div>
+    <div id="recommended-services" class="flex flex-col gap-2 acc-rise" style="--i:6">
+        <div class="acc-skel"></div>
+        <div class="acc-skel"></div>
+    </div>
+</div>
+<script src="/js/app/index.js"></script>

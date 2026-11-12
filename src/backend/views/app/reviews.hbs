@@ -1,0 +1,33 @@
+<div>
+    <section class="acc-rise" style="--i:0">
+        <p class="acc-eyebrow">Comparte tu experiencia</p>
+        <h1 class="acc-title mt-2">Mis <em>reseñas</em></h1>
+    </section>
+
+    <form id="review-form" class="acc-card p-5 mt-5 acc-rise" style="--i:1" novalidate>
+        <p class="text-white font-semibold mb-3">¿Cómo te fue?</p>
+        <div class="acc-stars" id="star-picker" role="radiogroup" aria-label="Calificación">
+            <button type="button" class="acc-star fa-regular fa-star" data-val="1" role="radio" aria-checked="false" aria-label="1 estrella"></button>
+            <button type="button" class="acc-star fa-regular fa-star" data-val="2" role="radio" aria-checked="false" aria-label="2 estrellas"></button>
+            <button type="button" class="acc-star fa-regular fa-star" data-val="3" role="radio" aria-checked="false" aria-label="3 estrellas"></button>
+            <button type="button" class="acc-star fa-regular fa-star" data-val="4" role="radio" aria-checked="false" aria-label="4 estrellas"></button>
+            <button type="button" class="acc-star fa-regular fa-star" data-val="5" role="radio" aria-checked="false" aria-label="5 estrellas"></button>
+        </div>
+        <p class="acc-star-label mt-2" id="star-label">&nbsp;</p>
+
+        <textarea id="review-text" class="acc-area mt-2" rows="4" maxlength="600" placeholder="Cuéntanos qué te pareció el corte y la atención…"></textarea>
+        <div class="flex items-center justify-between mt-1 mb-4">
+            <span class="acc-count" id="review-count">0 / 600</span>
+        </div>
+
+        <button type="submit" class="acc-btn" id="review-submit" disabled>
+            <i class="fa-solid fa-paper-plane"></i> <span>Publicar reseña</span>
+        </button>
+    </form>
+
+    <div class="acc-h2 acc-rise" style="--i:2"><h2>Tus reseñas</h2><span id="my-count"></span></div>
+    <div id="my-reviews" class="flex flex-col gap-3 acc-rise" style="--i:3">
+        <div class="acc-skel" style="min-height:5.5rem"></div>
+    </div>
+</div>
+<script src="/js/app/reviews.js"></script>

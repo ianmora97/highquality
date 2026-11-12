@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Express Server (dev)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "Tailwind CSS Watch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "css:watch"],
+      "port": null
+    }
+  ]
+}

@@ -1,14 +1,13 @@
 const Admin = require('./admin.schema');
-const moment = require('moment');
 
 exports.get = async () => {
     const admins = await Admin.find();
     return admins;
 };
 
-exports.auth = async (user, password) => {
+exports.auth = async (user) => {
     try {
-        const admin = await Admin.findOne({user, password});
+        const admin = await Admin.findOne({user});
         return admin;
     } catch (error) {
         console.log(error);
@@ -16,15 +15,16 @@ exports.auth = async (user, password) => {
 };
 
 exports.create = async (admin) => {
-    admin.createdAt = moment().format('DD/MM/YYYY hh:mm:ss');
-    admin.updatedAt = moment().format('DD/MM/YYYY hh:mm:ss');
+    // createdAt/updatedAt are Date fields: a 'DD/MM/YYYY' string fails the cast.
+    admin.createdAt = new Date();
+    admin.updatedAt = new Date();
     const newAdmin = new Admin(admin);
     await newAdmin.save();
     return newAdmin;
 };
 
 exports.update = async (id, data) => {
-    data.updatedAt = moment().format('DD/MM/YYYY hh:mm:ss');
+    data.updatedAt = new Date();
     const admin = await Admin.findByIdAndUpdate(id, data);
     return admin;
 };

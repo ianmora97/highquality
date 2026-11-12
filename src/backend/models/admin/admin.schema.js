@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const moment = require('moment');
 
 const AdminSchema = new mongoose.Schema({
     name: {
@@ -18,11 +17,11 @@ const AdminSchema = new mongoose.Schema({
     },
     createdAt: {
         type: Date,
-        default: moment().format('DD/MM/YYYY hh:mm:ss')
+        default: Date.now
     },
     updatedAt: {
         type: Date,
-        default: moment().format('DD/MM/YYYY hh:mm:ss')
+        default: Date.now
     }
 });
 

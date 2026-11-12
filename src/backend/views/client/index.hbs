@@ -1,189 +1,409 @@
-<link rel="stylesheet" href="/scripts/@splidejs/splide/dist/css/splide.min.css"></link>
+<!-- Splide Carousel -->
+<link rel="stylesheet" href="/scripts/@splidejs/splide/dist/css/splide.min.css">
 <script src="/scripts/@splidejs/splide/dist/js/splide.min.js"></script>
 <script src="/scripts/@splidejs/splide-extension-auto-scroll/dist/js/splide-extension-auto-scroll.min.js"></script>
 
+<!-- AOS -->
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
-<style>
-    body{
-        /* background-image: url('/images/fma-landing-page.jpeg');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed; */
-        background-color: black;
-    }
-</style>
+<!-- ===== HERO ===== -->
+<section class="hero-section bg-fma-homepage">
+    <div class="absolute inset-0 hero-overlay"></div>
+    <div class="absolute bottom-0 left-0 right-0" style="height:180px; background:linear-gradient(to bottom, transparent, #141414);"></div>
 
-<article>
-    <section class="d-flex justify-content-start align-items-lg-center bg-fma-homepage p-5" 
-    data-aos="zoom-out" data-aos-duration="1500">
-        <div class="ps-5" data-aos="fade-left" data-aos-duration="1500">
-            <!-- <img src="/images/logo-tr.png" alt="Pole Image" width="150px"> -->
-            <h1 class="display-1 bebas text-uppercase" >
-                <span class="d-block">More <span class="text-gold">than</span></span>
-                <span class="d-block ">just a</span>
-                <span class="d-block text-gold">haircut</span>
-            </h1>
-            <a href="/reservar" class="btn btn-secondary rounded-pill btn-lg" >
-                <i class="fa-solid fa-scissors"></i> Reservar cita
+    <div class="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-14 pb-24 md:pb-32">
+        <p class="nautigal text-gold hero-tagline" style="font-size: clamp(1.6rem, 4vw, 2.6rem); line-height:1;">High Quality Studio</p>
+        <h1 class="bebas text-white leading-none hero-title" style="font-size: clamp(4.5rem, 15vw, 11rem);">
+            More than<br>
+            <span style="color:#F4C82C;">just a</span><br>
+            haircut
+        </h1>
+        <p class="text-gray-300 mt-4 mb-8 hero-desc" style="max-width:480px; font-size:clamp(0.9rem, 2vw, 1.05rem); line-height:1.75;">
+            Precisión. Estilo. Confianza. Transformamos tu apariencia con cortes de élite y atención premium.
+        </p>
+        <div class="flex flex-wrap gap-4 hero-buttons">
+            <a href="/reservar" class="btn btn-gold btn-lg rounded-pill">
+                <i class="fa-solid fa-calendar-check me-1"></i>Reservar Cita
+            </a>
+            <a href="/app" class="btn btn-outline-light btn-lg rounded-pill">
+                <i class="fa-regular fa-user me-2"></i>Mi cuenta
             </a>
         </div>
-    </section>
+    </div>
 
-    <!-- <section class="bg-black">
-        <div id="citasdisponibles">
+</section>
+
+<!-- ===== STATS BAR ===== -->
+<section style="background-color:#0d0d0d; border-bottom:1px solid rgba(255,255,255,0.06);">
+    <div class="max-w-5xl mx-auto px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div data-aos="fade-up" data-aos-delay="0">
+            <div class="bebas text-gold" style="font-size:3.5rem; line-height:1;">15+</div>
+            <p class="text-gray-500 text-xs uppercase tracking-widest mt-1">Años de experiencia</p>
         </div>
-            <div class="border border-gold rounded-3 p-3" style="width: 200px;">
-                <h6 class="fw-bold"><i class="fa-duotone fa-calendar-days"></i> Sabado</h6>
+        <div data-aos="fade-up" data-aos-delay="80">
+            <div class="bebas text-gold" style="font-size:3.5rem; line-height:1;">500+</div>
+            <p class="text-gray-500 text-xs uppercase tracking-widest mt-1">Clientes satisfechos</p>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="160">
+            <div class="bebas text-gold" style="font-size:3.5rem; line-height:1;">100%</div>
+            <p class="text-gray-500 text-xs uppercase tracking-widest mt-1">Satisfacción garantizada</p>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="240">
+            <div class="bebas text-gold" style="font-size:3.5rem; line-height:1;">5★</div>
+            <p class="text-gray-500 text-xs uppercase tracking-widest mt-1">Calificación promedio</p>
+        </div>
+    </div>
+</section>
 
+<!-- ===== ABOUT ===== -->
+<section class="py-24" style="background-color:#f1f1f1;">
+    <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+
+        <div data-aos="fade-right" data-aos-duration="900">
+            <p class="nautigal mb-1" style="font-size:2rem; color:#f8272e;">Sobre nosotros</p>
+            <h2 class="bebas text-black leading-none mb-5" style="font-size:clamp(3rem,7vw,5.5rem);">Calidad &amp;<br>Experiencia</h2>
+            <div class="mostache-hr hr-black mb-6 justify-start">
+                <div class="mostache-hr-inner" style="width:55px;"></div>
+                <img src="/images/icons/mostacho.png" alt="moustache">
+                <div class="mostache-hr-inner" style="width:55px;"></div>
             </div>
-    </section> -->
-    <section class="bg-light py-5">
-        <div class="d-lg-flex justify-content-center align-items-center gap-3">
-            <div class="col-lg-3" data-aos="fade-right">
-                <h1 class="fw-bold text-center text-dark text-uppercase bebas">Calidad y Experiencia</h1>
-                <div class="mostache-hr hr-black my-3">
-                    <div class="mostache-hr-inner"></div>
-                    <img src="/images/icons/mostacho.png" alt="moustache">
-                    <div class="mostache-hr-inner"></div>
+            <p class="text-gray-700 leading-relaxed mb-4" style="font-size:0.98rem;">
+                En <strong>High Quality Studio</strong> nos dedicamos a brindar un servicio de barbería de primera clase. Cada corte es una obra de arte ejecutada con precisión y pasión.
+            </p>
+            <p class="text-gray-600 leading-relaxed mb-8" style="font-size:0.92rem;">
+                Ubicados en el corazón de Hatillo 4, San José, somos el destino preferido de quienes buscan verse y sentirse lo mejor posible.
+            </p>
+            <div class="flex flex-col gap-3 mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="about-check"><i class="fa-solid fa-check"></i></div>
+                    <span class="text-gray-700 text-sm">Cortes precisos con técnicas modernas</span>
                 </div>
-                <p class="text-center text-dark lead">High Quality Studio se dedica a brindarles a nuestros clientes un excelente corte de cabello y un servicio premium a un precio asequible.</p>
+                <div class="flex items-center gap-3">
+                    <div class="about-check"><i class="fa-solid fa-check"></i></div>
+                    <span class="text-gray-700 text-sm">Ambiente premium y relajado</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="about-check"><i class="fa-solid fa-check"></i></div>
+                    <span class="text-gray-700 text-sm">Atención personalizada para cada cliente</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="about-check"><i class="fa-solid fa-check"></i></div>
+                    <span class="text-gray-700 text-sm">Precios asequibles, calidad sin compromiso</span>
+                </div>
             </div>
-            <div class="d-flex d-lg-block justify-content-center" data-aos="fade-left">
-                <img src="/images/brocha.png" alt="moustache">
+            <a href="/reservar" class="btn btn-dark btn-lg rounded-pill">
+                <i class="fa-solid fa-calendar-check me-2"></i>Agenda tu cita
+            </a>
+        </div>
+
+        <div class="relative flex justify-center" data-aos="fade-left" data-aos-duration="900">
+            <div class="about-image-wrapper">
+                <img src="/images/panoramica.jpeg" alt="HighQuality Studio" class="about-main-img">
+                <div class="about-badge">
+                    <img src="/images/simple-logo.png" alt="logo" style="width:44px;">
+                    <div>
+                        <div class="bebas text-gold" style="font-size:1.3rem; line-height:1;">HighQuality</div>
+                        <div class="text-gray-500 text-xs">Studio — Hatillo 4</div>
+                    </div>
+                </div>
+                <img src="/images/brocha.png" alt="brocha" class="about-brocha">
             </div>
         </div>
-    </section>
-    <section class="bg-image-wood py-5 position-relative">
-        <div class="backdrop-image" style="z-index: 1;"></div>
-        
-        <div class="position-relative py-4" style="z-index: 2;">
-            <h1 class="fw-bold text-center bebas">Servicios</h1>
-            <div class="mostache-hr hr-light my-4">
+
+    </div>
+</section>
+
+<!-- ===== SERVICES ===== -->
+<section id="servicios" class="relative py-24 bg-image-wood overflow-hidden">
+    <div class="absolute inset-0 backdrop-image bg-black/78"></div>
+
+    <div class="relative z-10 max-w-6xl mx-auto px-6">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <p class="nautigal text-gold mb-2" style="font-size:2rem;">Lo que ofrecemos</p>
+            <h2 class="bebas text-white leading-none" style="font-size:clamp(3rem,7vw,5.5rem);">Nuestros Servicios</h2>
+            <div class="mostache-hr hr-light my-5">
                 <div class="mostache-hr-inner"></div>
                 <img src="/images/icons/mostacho.png" alt="moustache">
                 <div class="mostache-hr-inner"></div>
             </div>
-            <p class="text-center text-white w-60 d-block mx-auto my-4">
-                Nuestro objetivo es ayudar a hombres, adolescentes y niños a verse y sentirse lo mejor posible. Queremos convertirte en un cliente de por vida.
-                Conoce los servicios que ofrecemos
+            <p class="text-gray-300 max-w-lg mx-auto" style="font-size:0.95rem; line-height:1.75;">
+                Ofrecemos una amplia variedad de servicios diseñados para que salgas sintiéndote renovado y con total confianza.
             </p>
-            <div class="d-flex justify-content-center align-items-center flex-wrap gap-2 my-5">
-                <div class="card-service" data-aos="fade-down" data-aos-delay="0">
-                    <img src="/images/cortes/taper_fade.jpeg" alt="Corte de pelo 1">
-                    <div class="text-center mt-5">
-                        <h4 class="fw-bold mb-1 bebas">Modernos</h4>
-                        <p class=""></p>
-                    </div>
-                </div>
-                
-                <div class="card-service" data-aos="fade-down" data-aos-delay="100">
-                    <img src="/images/cortes/corte1.jpg" alt="Corte de pelo 2">
-                    <div class="text-center mt-5">
-                        <h4 class="fw-bold mb-1 bebas">Clasicos</h4>
-                        <p class=""></p>
-                    </div>
-                </div>
-                
-                <div class="card-service" data-aos="fade-down" data-aos-delay="200">
-                    <img src="/images/cortes/corte2.jpg" alt="Corte de pelo 3">
-                    <div class="text-center mt-5">
-                        <h4 class="fw-bold mb-1 bebas">Diseños</h4>
-                        <p class=""></p>
-                    </div>
-                </div>
-                
-                <div class="card-service" data-aos="fade-down" data-aos-delay="300">
-                    <img src="/images/cortes/corte3.jpg" alt="Corte de pelo 4">
-                    <div class="text-center mt-5">
-                        <h4 class="fw-bold mb-1 bebas">Corte de Niño</h4>
-                        <p class=""></p>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- <a href="/servicios" class="mt-4 mx-auto d-block text-decoration-underline text-gold text-center" style="width: 120px;">
-                Ver mas
-            </a> -->
         </div>
-    </section>
 
-    <div class="container mt-5">
-        <h1 class="fw-bold bebas">Reviews</h1>
-        <hr>
-        <section class="splide" id="opinionesCarousel">
+        <div class="services-grid">
+            <div class="service-card" data-aos="fade-up" data-aos-delay="0">
+                <div class="service-card-img-wrap">
+                    <img src="/images/cortes/taper_fade.jpeg" alt="Modernos">
+                    <div class="service-card-overlay">
+                        <a href="/reservar" class="btn btn-gold btn-sm rounded-pill">Reservar</a>
+                    </div>
+                </div>
+                <div class="service-card-body">
+                    <h4 class="bebas text-white" style="font-size:1.6rem; margin:0;">Modernos</h4>
+                    <p class="text-gray-500 text-xs mt-1">Taper fade, skin fade, textured crop</p>
+                </div>
+            </div>
+            <div class="service-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="service-card-img-wrap">
+                    <img src="/images/cortes/corte1.jpg" alt="Clásicos">
+                    <div class="service-card-overlay">
+                        <a href="/reservar" class="btn btn-gold btn-sm rounded-pill">Reservar</a>
+                    </div>
+                </div>
+                <div class="service-card-body">
+                    <h4 class="bebas text-white" style="font-size:1.6rem; margin:0;">Clásicos</h4>
+                    <p class="text-gray-500 text-xs mt-1">Side part, pompadour, quiff</p>
+                </div>
+            </div>
+            <div class="service-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="service-card-img-wrap">
+                    <img src="/images/cortes/corteybarba.jpg" alt="Barba">
+                    <div class="service-card-overlay">
+                        <a href="/reservar" class="btn btn-gold btn-sm rounded-pill">Reservar</a>
+                    </div>
+                </div>
+                <div class="service-card-body">
+                    <h4 class="bebas text-white" style="font-size:1.6rem; margin:0;">Barba</h4>
+                    <p class="text-gray-500 text-xs mt-1">Perfilado, afeitado, arreglo de barba</p>
+                </div>
+            </div>
+            <div class="service-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="service-card-img-wrap">
+                    <img src="/images/cortes/corte3.jpg" alt="Diseños">
+                    <div class="service-card-overlay">
+                        <a href="/reservar" class="btn btn-gold btn-sm rounded-pill">Reservar</a>
+                    </div>
+                </div>
+                <div class="service-card-body">
+                    <h4 class="bebas text-white" style="font-size:1.6rem; margin:0;">Diseños</h4>
+                    <p class="text-gray-500 text-xs mt-1">Degradés, líneas, arte en cabello</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== WHY US ===== -->
+<section class="py-24" style="background-color:#141414;">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="text-center mb-14" data-aos="fade-up">
+            <p class="nautigal text-gold mb-2" style="font-size:2rem;">¿Por qué elegirnos?</p>
+            <h2 class="bebas text-white leading-none" style="font-size:clamp(2.5rem,6vw,4.5rem);">
+                La diferencia <span style="color:#F4C82C;">HighQuality</span>
+            </h2>
+        </div>
+        <div class="why-grid">
+            <div class="why-card" data-aos="fade-up" data-aos-delay="0">
+                <div class="why-icon"><i class="fa-solid fa-medal"></i></div>
+                <h3 class="bebas text-white mt-4 mb-2" style="font-size:1.7rem;">Experiencia Probada</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Más de 10 años perfeccionando el arte del corte. Cada cliente es una nueva oportunidad de demostrar nuestra excelencia.</p>
+            </div>
+            <div class="why-card" data-aos="fade-up" data-aos-delay="120">
+                <div class="why-icon"><i class="fa-solid fa-scissors"></i></div>
+                <h3 class="bebas text-white mt-4 mb-2" style="font-size:1.7rem;">Precisión Total</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Usamos las mejores herramientas y técnicas para garantizar un resultado impecable. Cada línea y detalle importa.</p>
+            </div>
+            <div class="why-card" data-aos="fade-up" data-aos-delay="240">
+                <div class="why-icon"><i class="fa-solid fa-star"></i></div>
+                <h3 class="bebas text-white mt-4 mb-2" style="font-size:1.7rem;">Ambiente Premium</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Más que una barbería, es una experiencia. Un espacio pensado para que te sientas cómodo, relajado y bien atendido.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== GALLERY PREVIEW ===== -->
+<section class="py-24" style="background-color:#0d0d0d;">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-12" data-aos="fade-up">
+            <div>
+                <p class="nautigal text-gold mb-1" style="font-size:2rem;">Nuestro trabajo</p>
+                <h2 class="bebas text-white leading-none" style="font-size:clamp(2.5rem,6vw,4.5rem);">Galería</h2>
+            </div>
+            <a href="/galeria" class="btn btn-outline-light rounded-pill mt-4 md:mt-0">
+                Ver galería completa <i class="fa-solid fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+        {{!-- Splide in loop mode with the active slide centred and scaled up.
+              Slides come from the gallery (6 newest visible photos) and fall
+              back to the bundled shots when the collection is empty. --}}
+        <div class="gallery-carousel" data-aos="fade-up">
+            <section class="splide" id="galeriaCarousel" aria-label="Nuestro trabajo">
+                <div class="splide__track">
+                    <ul class="splide__list">
+                        {{#if hasFotos}}
+                            {{#each fotos}}
+                                <li class="splide__slide">
+                                    <a href="/galeria" class="gallery-slide" aria-label="Ver galería">
+                                        <img src="{{imageUrl}}" alt="{{#if title}}{{title}}{{else}}Trabajo de HighQuality Studio{{/if}}"
+                                             loading="lazy" decoding="async">
+                                        <span class="gallery-slide-glow"></span>
+                                        {{#if title}}
+                                            <span class="gallery-slide-caption">
+                                                {{title}}
+                                                {{#if instagramLink}}<em>@{{instagramLink}}</em>{{/if}}
+                                            </span>
+                                        {{/if}}
+                                    </a>
+                                </li>
+                            {{/each}}
+                        {{else}}
+                            {{#each staticFallback}}
+                                <li class="splide__slide">
+                                    <a href="/galeria" class="gallery-slide" aria-label="Ver galería">
+                                        <img src="{{this}}" alt="Trabajo de HighQuality Studio" loading="lazy" decoding="async">
+                                        <span class="gallery-slide-glow"></span>
+                                    </a>
+                                </li>
+                            {{/each}}
+                        {{/if}}
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+</section>
+
+<!-- ===== REVIEWS ===== -->
+<section class="py-24" style="background-color:#141414;">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="text-center mb-12" data-aos="fade-up">
+            <p class="nautigal text-gold mb-1" style="font-size:2rem;">Lo que dicen</p>
+            <h2 class="bebas text-white leading-none" style="font-size:clamp(2.5rem,6vw,4.5rem);">Nuestros Clientes</h2>
+        </div>
+        <section class="splide" id="opinionesCarousel" data-aos="fade-up">
             <div class="splide__track">
-                <ul class="splide__list" id="opinionesList">
-                </ul>
+                <ul class="splide__list" id="opinionesList"></ul>
             </div>
         </section>
     </div>
-    <section class="container my-5">
-        <h2 class="fw-bold bebas">Deja tu opinión</h2>
-        <hr>
-        <div class="bg-dark rounded-3 shadow p-3">
-            <form action="/api/v1/review/test" method="post" id="formOpinion">
-                <input type="number" class="form-control" name="stars" id="stars" aria-describedby="starsId" hidden/>
-                <div class="d-flex justify-content-start align-items-center gap-2 mb-3">
-                    <button type="button" class="btn btn-star-ranking" onclick="addStar(1, this)">
-                        <i class="fa-regular fa-star"></i>
-                    </button>
-                    <button type="button" class="btn btn-star-ranking" onclick="addStar(2, this);">
-                        <i class="fa-regular fa-star"></i>
-                    </button>
-                    <button type="button" class="btn btn-star-ranking" onclick="addStar(3, this);">
-                        <i class="fa-regular fa-star"></i>
-                    </button>
-                    <button type="button" class="btn btn-star-ranking" onclick="addStar(4, this);">
-                        <i class="fa-regular fa-star"></i>
-                    </button>
-                    <button type="button" class="btn btn-star-ranking" onclick="addStar(5, this);">
-                        <i class="fa-regular fa-star"></i>
-                    </button>
+</section>
+
+<!-- ===== CTA STRIP ===== -->
+<section class="cta-strip">
+    <div class="max-w-4xl mx-auto text-center" data-aos="fade-up">
+        <h2 class="bebas text-white leading-none" style="font-size:clamp(2.5rem,7vw,5.5rem);">
+            ¿Listo para verte<br><span style="color:#F4C82C;">increíble?</span>
+        </h2>
+        <p class="text-gray-400 mt-3 mb-8" style="font-size:1rem;">Reserva tu cita en línea y asegura tu lugar hoy mismo.</p>
+        <a href="/reservar" class="btn btn-gold btn-lg rounded-pill" style="font-size:1.05rem; padding:0.75rem 2.5rem;">
+            <i class="fa-solid fa-calendar-check me-2"></i> Reservar Cita
+        </a>
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="pt-16 pb-8 border-t border-white/10" style="background-color:#0d0d0d;">
+    <div class="max-w-6xl mx-auto px-6">
+        <div class="footer-grid">
+
+            <!-- Brand -->
+            <div>
+                <img src="/images/logo-tr.png" alt="HighQuality Studio" class="mb-5" style="width:150px;">
+                <p class="text-gray-500 text-sm leading-relaxed mb-6">
+                    Barbería premium en Hatillo 4, San José. Cortes de cabello y servicio de primera clase para hombres, adolescentes y niños.
+                </p>
+                <div class="socials-row">
+                    {{#if site.links.tel}}
+                    <a href="{{site.links.tel}}" class="btn-socials btn-socials--tel" aria-label="Llamar" title="Llamar">
+                        <i class="fa-solid fa-phone"></i>
+                    </a>
+                    {{/if}}
+                    {{#if site.links.instagram}}
+                    <a href="{{site.links.instagram}}" class="btn-socials btn-socials--ig" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    {{/if}}
+                    {{#if site.links.whatsapp}}
+                    <a href="{{site.links.whatsapp}}" class="btn-socials btn-socials--wa" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </a>
+                    {{/if}}
+                    {{#if site.links.maps}}
+                    <a href="{{site.links.maps}}" class="btn-socials btn-socials--maps" target="_blank" rel="noopener" aria-label="Google Maps" title="Google Maps">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </a>
+                    {{/if}}
+                    {{#if site.links.waze}}
+                    <a href="{{site.links.waze}}" class="btn-socials btn-socials--waze" target="_blank" rel="noopener" aria-label="Waze" title="Waze">
+                        <i class="fa-brands fa-waze"></i>
+                    </a>
+                    {{/if}}
                 </div>
-                <div class="mb-3">
-                    <label for="nombre" class="form-label">Nombre</label>
-                    <input type="text" class="form-control" name="nombre" id="nombre" aria-describedby="nombreId" placeholder="Nombre"/>
+            </div>
+
+            <!-- Navegación -->
+            <div>
+                <h5 class="bebas text-white mb-4" style="font-size:1.2rem; letter-spacing:1px;">Navegación</h5>
+                <div class="flex flex-col gap-2">
+                    <a href="/" class="footer-link">Inicio</a>
+                    <a href="/reservar" class="footer-link">Reservar Cita</a>
+                    <a href="/galeria" class="footer-link">Galería</a>
                 </div>
-                <div class="mb-3">
-                    <label for="opinion" class="form-label">Opiniones</label>
-                    <textarea class="form-control" name="opinion" id="opinion" rows="3" placeholder="Review..."></textarea>
+            </div>
+
+            <!-- Contacto -->
+            <div>
+                <h5 class="bebas text-white mb-4" style="font-size:1.2rem; letter-spacing:1px;">Contacto</h5>
+                <div class="flex flex-col gap-3">
+                    {{#if site.contact.address}}
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-location-dot text-gold mt-1" style="font-size:0.8rem;"></i>
+                        {{#if site.links.maps}}
+                        <a href="{{site.links.maps}}" target="_blank" rel="noopener" class="text-gray-500 text-sm hover:text-white transition-colors">{{site.contact.address}}</a>
+                        {{else}}
+                        <span class="text-gray-500 text-sm">{{site.contact.address}}</span>
+                        {{/if}}
+                    </div>
+                    {{/if}}
+                    {{#if site.contact.phone}}
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-phone text-gold" style="font-size:0.8rem;"></i>
+                        <a href="{{site.links.tel}}" class="text-gray-500 text-sm hover:text-white transition-colors">{{site.contact.phone}}</a>
+                    </div>
+                    {{/if}}
+                    {{#if site.contact.instagram}}
+                    <div class="flex items-center gap-3">
+                        <i class="fa-brands fa-instagram text-gold" style="font-size:0.8rem;"></i>
+                        <a href="{{site.links.instagram}}" target="_blank" rel="noopener" class="text-gray-500 text-sm hover:text-white transition-colors">{{site.contact.instagram}}</a>
+                    </div>
+                    {{/if}}
+                    {{#if site.links.waze}}
+                    <div class="flex items-center gap-3">
+                        <i class="fa-brands fa-waze text-gold" style="font-size:0.8rem;"></i>
+                        <a href="{{site.links.waze}}" target="_blank" rel="noopener" class="text-gray-500 text-sm hover:text-white transition-colors">Cómo llegar con Waze</a>
+                    </div>
+                    {{/if}}
                 </div>
-                <small id="feedbackerror" class="text-danger d-block my-2"></small>
-                <button type="submit" class="btn btn-success text-white">
-                    <i class="fa-solid fa-paper-plane"></i> Enviar
-                </button>
-            </form>
-        </div>
-    </section>
-    <section class="bg-fore p-3">
-        <img src="/images/logo-tr.png" alt="Logo the HighQuality Studio" class="mx-auto d-block" width="250px">
-        
-        <div class="d-flex justify-content-center align-items-center gap-3 py-3">
-            <a href="tel:+50672451908" 
-            class="btn btn-socials" target="_blank">
-                <i class="fa-duotone fa-phone fa-2xl"></i>
-            </a>
-            <a href="https://www.instagram.com/high_quality_barber.cr" 
-            class="btn btn-socials" target="_blank">
-                <i class="fa-brands fa-instagram fa-2xl"></i>
-            </a>
-            <a href="https://wa.me/50672451908?text=Quiero%20sacar%20una%20cita" 
-            class="btn btn-socials" target="_blank">
-                <i class="fa-brands fa-whatsapp fa-2xl"></i>
-            </a>
-            <a href="https://maps.app.goo.gl/og9Jny78AHMnbg2z7" 
-            class="btn btn-socials" target="_blank">
-                <i class="fa-brands fa-google fa-2xl"></i>
-            </a>
+            </div>
+
+            <!-- Horario -->
+            <div>
+                <h5 class="bebas text-white mb-4" style="font-size:1.2rem; letter-spacing:1px;">Horario</h5>
+                <div class="flex flex-col gap-2 mb-6">
+                    {{#each site.schedule}}
+                    <div class="flex justify-between gap-6">
+                        <span class="text-gray-500 text-sm">{{this.label}}</span>
+                        <span class="text-sm {{#if this.closed}}text-danger{{else}}text-gray-300{{/if}}">{{this.value}}</span>
+                    </div>
+                    {{/each}}
+                </div>
+                <a href="/reservar" class="btn btn-gold rounded-pill" style="font-size:0.85rem;">
+                    <i class="fa-solid fa-scissors me-1"></i>Reservar
+                </a>
+            </div>
+
         </div>
 
-        <p class="text-center text-muted small my-3">HighQuality Studio &copy; 2025 - by IM Labs</p>
-    </section>
-</article>
+        <div class="border-t border-white/5 mt-12 pt-6 text-center">
+            <p class="text-gray-600 text-xs">HighQuality Studio &copy; 2025 — Diseñado por <span class="text-gray-500">IM Labs</span></p>
+        </div>
+    </div>
+</footer>
+
 <script>
-    AOS.init();
+    AOS.init({ once: true, duration: 820, offset: 60 });
 </script>
 <script src="/js/client/index.js"></script>

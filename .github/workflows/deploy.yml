@@ -1,0 +1,55 @@
+name: Deploy production
+
+on:
+  push:
+    branches: [master]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Deploy
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ vars.SSH_HOST }} bash -s <<'EOF'
+          set -euo pipefail
+          # non-interactive ssh skips .bashrc; load nvm if node/pm2 live there
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+          cd "${{ vars.APP_PATH }}"
+          git fetch origin master
+          git reset --hard origin/master
+          npm ci --omit=dev
+          pm2 reload ecosystem.config.js --env production --update-env
+          sleep 3
+          curl -fsS http://127.0.0.1:3000/ > /dev/null
+          EOF
+
+      - name: Notify Telegram
+        if: always()
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          STATUS: ${{ job.status }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          ACTOR: ${{ github.actor }}
+          SHA: ${{ github.sha }}
+        run: |
+          if [ "$STATUS" = "success" ]; then icon="✅ Deploy OK"; else icon="❌ Deploy FALLÓ"; fi
+          curl -sS "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TG_CHAT}" \
+            --data-urlencode "text=${icon} — highquality
+          ${COMMIT_MSG}
+          por ${ACTOR} · ${SHA:0:7}" > /dev/null

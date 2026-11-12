@@ -1,0 +1,118 @@
+<div x-data="staffLogin()"
+     class="min-h-screen bg-[#141414] flex flex-col items-center justify-center px-4 py-12 safe-area-inset">
+
+    <!-- ── Brand ── -->
+    <div class="text-center mb-8 animate__animated animate__fadeIn">
+        <div class="w-25 h-25 mx-auto ps-1.5  mb-4 rounded-2xl bg-white/5 border border-white/[.08] flex items-center justify-center">
+            <img src="/images/simple-logo.png" alt="HighQuality" width="80" height="80" draggable="false">
+        </div>
+        <div class="w-10 h-px mx-auto mt-2.5 bg-gold/40 rounded-full"></div>
+    </div>
+
+    <!-- ── Shake wrapper ── -->
+    <div class="w-full max-w-sm"
+         :class="shake ? 'animate__animated animate__faster animate__shakeX' : ''"
+         @animationend="shake = false">
+
+        <!-- ── Card ── -->
+        <div class="animate__animated animate__fadeInUp animate__faster bg-[#0d0d0d] border border-white/[.08] rounded-2xl p-7 sm:p-9">
+
+            <!-- Error banner (from API) -->
+            <div x-show="error"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-1"
+                 class="mb-5 rounded-xl px-4 py-3.5 bg-danger/10 border border-danger/25 flex items-start gap-3">
+                <i class="fa-solid fa-circle-exclamation text-danger text-sm mt-0.5 flex-shrink-0"></i>
+                <p class="text-danger text-sm leading-snug" x-text="error"></p>
+            </div>
+
+            <!-- Identifier input -->
+            <div class="mb-4">
+                <div class="relative">
+                    <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-sm pointer-events-none transition-colors duration-200"
+                       :class="focusField === 'identifier' ? 'text-gold' : 'text-gray-600'"></i>
+                    <input
+                        type="text"
+                        name="identifier"
+                        x-model="form.identifier"
+                        @focus="focusField = 'identifier'"
+                        @blur="focusField = null; validateIdentifier()"
+                        @input="errors.identifier && validateIdentifier()"
+                        placeholder="Usuario o email"
+                        autocomplete="username"
+                        inputmode="email"
+                        class="w-full text-white text-base placeholder-gray-600 rounded-xl pl-11 pr-4 py-4 outline-none border transition-all duration-200"
+                        :class="errors.identifier
+                            ? 'bg-danger/5 border-danger/50 ring-2 ring-danger/15'
+                            : focusField === 'identifier'
+                                ? 'bg-white/[.06] border-gold/55 ring-2 ring-gold/12'
+                                : 'bg-white/[.04] border-white/[.08] hover:border-white/[.16]'">
+                </div>
+                <p class="text-danger text-xs mt-1.5 pl-1 leading-snug"
+                   x-show="errors.identifier"
+                   x-transition:enter="transition ease-out duration-150"
+                   x-transition:enter-start="opacity-0 -translate-y-0.5"
+                   x-transition:enter-end="opacity-100 translate-y-0"
+                   x-text="errors.identifier"></p>
+            </div>
+
+            <!-- Password input -->
+            <div class="mb-7">
+                <div class="relative">
+                    <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-sm pointer-events-none transition-colors duration-200"
+                       :class="focusField === 'password' ? 'text-gold' : 'text-gray-600'"></i>
+                    <input
+                        :type="showPwd ? 'text' : 'password'"
+                        name="password"
+                        x-model="form.password"
+                        @focus="focusField = 'password'"
+                        @blur="focusField = null; validatePassword()"
+                        @input="errors.password && validatePassword()"
+                        @keydown.enter="submit()"
+                        placeholder="Contraseña"
+                        autocomplete="current-password"
+                        class="w-full text-white text-base placeholder-gray-600 rounded-xl pl-11 pr-12 py-4 outline-none border transition-all duration-200"
+                        :class="errors.password
+                            ? 'bg-danger/5 border-danger/50 ring-2 ring-danger/15'
+                            : focusField === 'password'
+                                ? 'bg-white/[.06] border-gold/55 ring-2 ring-gold/12'
+                                : 'bg-white/[.04] border-white/[.08] hover:border-white/[.16]'">
+                    <button type="button" @click="showPwd = !showPwd"
+                            class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gold transition-colors duration-150 p-1 touch-manipulation">
+                        <i class="fa-solid text-sm" :class="showPwd ? 'fa-eye-slash' : 'fa-eye'"></i>
+                    </button>
+                </div>
+                <p class="text-danger text-xs mt-1.5 pl-1 leading-snug"
+                   x-show="errors.password"
+                   x-transition:enter="transition ease-out duration-150"
+                   x-transition:enter-start="opacity-0 -translate-y-0.5"
+                   x-transition:enter-end="opacity-100 translate-y-0"
+                   x-text="errors.password"></p>
+            </div>
+
+            <!-- CTA -->
+            <button type="button" @click="submit()" :disabled="loading || success"
+                    class="w-full rounded-full py-4 text-base font-semibold tracking-wide transition-all duration-200 active:scale-[.97] touch-manipulation select-none"
+                    :class="success
+                        ? 'bg-success text-white cursor-default'
+                        : loading
+                            ? 'bg-gold/60 text-[#141414]/50 cursor-not-allowed'
+                            : 'bg-gold text-[#141414] hover:brightness-110 cursor-pointer'">
+                <span x-show="!loading && !success" class="flex items-center justify-center gap-2">
+                    Ingresar <i class="fa-solid fa-arrow-right text-sm"></i>
+                </span>
+                <span x-show="loading" class="flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Verificando...
+                </span>
+                <span x-show="success" class="flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-check"></i> ¡Listo!
+                </span>
+            </button>
+
+        </div>
+    </div>
+</div>

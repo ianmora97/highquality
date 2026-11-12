@@ -1,0 +1,22 @@
+<div>
+    <section class="acc-rise" style="--i:0">
+        <p class="acc-eyebrow" id="history-summary">&nbsp;</p>
+        <h1 class="acc-title mt-2">Tu <em>historial</em></h1>
+    </section>
+
+    <div class="acc-seg mt-5 acc-rise" style="--i:1" role="group" aria-label="Filtrar citas">
+        <span class="acc-seg-thumb" id="seg-thumb" aria-hidden="true"></span>
+        <button type="button" data-filter="all" aria-pressed="true">Todas<em id="n-all"></em></button>
+        <button type="button" data-filter="upcoming" aria-pressed="false">Próximas<em id="n-upcoming"></em></button>
+        <button type="button" data-filter="past" aria-pressed="false">Pasadas<em id="n-past"></em></button>
+    </div>
+
+    <div id="history-list" class="mt-2" aria-live="polite">
+        <div class="flex flex-col gap-3 mt-4">
+            <div class="acc-skel" style="min-height:5.5rem"></div>
+            <div class="acc-skel" style="min-height:5.5rem"></div>
+            <div class="acc-skel" style="min-height:5.5rem"></div>
+        </div>
+    </div>
+</div>
+<script src="/js/app/history.js"></script>

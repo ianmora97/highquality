@@ -1,0 +1,267 @@
+{
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\connections\\mongo.js": {
+    "mtime": 1704337457.7291996,
+    "ast_hash": "f75f176c906ac293f4f8cf08934c5a65",
+    "semantic_hash": "f75f176c906ac293f4f8cf08934c5a65"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\connections\\socket.js": {
+    "mtime": 1704475280.7196429,
+    "ast_hash": "d33487096624fd98f269c81b24e028dc",
+    "semantic_hash": "d33487096624fd98f269c81b24e028dc"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\controllers\\admin.controller.js": {
+    "mtime": 1777078040.831941,
+    "ast_hash": "1203a91f7dbf31d9fa3409355c0cc901",
+    "semantic_hash": "1203a91f7dbf31d9fa3409355c0cc901"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\controllers\\client.controller.js": {
+    "mtime": 1760111701.2461643,
+    "ast_hash": "6c9bb3d734e3ff7b9e4b36fb6e6a7dcf",
+    "semantic_hash": "6c9bb3d734e3ff7b9e4b36fb6e6a7dcf"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\controllers\\event.controller.js": {
+    "mtime": 1760131477.2353203,
+    "ast_hash": "9261194270c735683d59be2469d6eda4",
+    "semantic_hash": "9261194270c735683d59be2469d6eda4"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\controllers\\horario.controller.js": {
+    "mtime": 1704507126.1636844,
+    "ast_hash": "18eee7ed0710e93089b80a72e53ab737",
+    "semantic_hash": "18eee7ed0710e93089b80a72e53ab737"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\controllers\\review.controller.js": {
+    "mtime": 1760111701.2475784,
+    "ast_hash": "ac51ababd34f98acba5f2d732ad6b5e6",
+    "semantic_hash": "ac51ababd34f98acba5f2d732ad6b5e6"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\controllers\\services.controller.js": {
+    "mtime": 1760111701.2485878,
+    "ast_hash": "37bb2f9b3b9eee1e313d2287cf24e759",
+    "semantic_hash": "37bb2f9b3b9eee1e313d2287cf24e759"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\controllers\\special.controller.js": {
+    "mtime": 1706386741.1947994,
+    "ast_hash": "bc4cd9c1616a94b9177fca7497febd73",
+    "semantic_hash": "bc4cd9c1616a94b9177fca7497febd73"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\engine\\handlebars.js": {
+    "mtime": 1704336972.283793,
+    "ast_hash": "ad050884eadb80725378a701e2f39d05",
+    "semantic_hash": "ad050884eadb80725378a701e2f39d05"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\helpers\\addClient.js": {
+    "mtime": 1760111701.2485878,
+    "ast_hash": "c62fcba4390b3b50bcdfc5e9e63cc29d",
+    "semantic_hash": "c62fcba4390b3b50bcdfc5e9e63cc29d"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\helpers\\cipher.js": {
+    "mtime": 1704478834.8877313,
+    "ast_hash": "ded6c58e25c3a5d817db445c62823321",
+    "semantic_hash": "ded6c58e25c3a5d817db445c62823321"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\helpers\\cron.js": {
+    "mtime": 1760111701.2485878,
+    "ast_hash": "5930ce79337ad75bf812b447c6d1e23f",
+    "semantic_hash": "5930ce79337ad75bf812b447c6d1e23f"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\helpers\\migrate.js": {
+    "mtime": 1760111701.2485878,
+    "ast_hash": "dc397915a125c3973b22eff534e7dcec",
+    "semantic_hash": "dc397915a125c3973b22eff534e7dcec"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\helpers\\telegram.js": {
+    "mtime": 1760123440.6714635,
+    "ast_hash": "3bf7b679605a6b9a554de35f74d84e28",
+    "semantic_hash": "3bf7b679605a6b9a554de35f74d84e28"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\helpers\\whatsapp.js": {
+    "mtime": 1760111701.2495873,
+    "ast_hash": "d1e23d7c9961aeceae3d9a6f8f699948",
+    "semantic_hash": "d1e23d7c9961aeceae3d9a6f8f699948"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\middlewares\\auth.js": {
+    "mtime": 1777078040.8324459,
+    "ast_hash": "47e2976fd046824cf4937362152921cb",
+    "semantic_hash": "47e2976fd046824cf4937362152921cb"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\middlewares\\book.js": {
+    "mtime": 1760111701.2505872,
+    "ast_hash": "fc640f3382c5b343c9d753de5554532f",
+    "semantic_hash": "fc640f3382c5b343c9d753de5554532f"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\middlewares\\https.js": {
+    "mtime": 1760111701.2505872,
+    "ast_hash": "6bbcbe67fc0c2a571fd9f503f0ad019b",
+    "semantic_hash": "6bbcbe67fc0c2a571fd9f503f0ad019b"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\admin\\admin.model.js": {
+    "mtime": 1704509215.221773,
+    "ast_hash": "79931fa276bdcb16447d1b31f6c99610",
+    "semantic_hash": "79931fa276bdcb16447d1b31f6c99610"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\admin\\admin.schema.js": {
+    "mtime": 1704509153.3969924,
+    "ast_hash": "e178a7f8c8f14b55139cda923008256b",
+    "semantic_hash": "e178a7f8c8f14b55139cda923008256b"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\clients\\client.model.js": {
+    "mtime": 1760111701.2505872,
+    "ast_hash": "b58c60bdbb6f65246dc1824ede954248",
+    "semantic_hash": "b58c60bdbb6f65246dc1824ede954248"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\clients\\client.schema.js": {
+    "mtime": 1760111701.2515876,
+    "ast_hash": "df9c8ece0ea81256ac58481bdbedb579",
+    "semantic_hash": "df9c8ece0ea81256ac58481bdbedb579"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\events\\event.model.js": {
+    "mtime": 1760117319.8376822,
+    "ast_hash": "192dba3ef37950ef00b29346c83ff133",
+    "semantic_hash": "192dba3ef37950ef00b29346c83ff133"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\events\\event.schema.js": {
+    "mtime": 1706385125.4917972,
+    "ast_hash": "3ad3963e33fa82feda2a8072518443cf",
+    "semantic_hash": "3ad3963e33fa82feda2a8072518443cf"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\horario\\horario.model.js": {
+    "mtime": 1704507018.6471894,
+    "ast_hash": "67024e03a04643ed2c1dbb6ef7479959",
+    "semantic_hash": "67024e03a04643ed2c1dbb6ef7479959"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\horario\\horario.schema.js": {
+    "mtime": 1760111701.2515876,
+    "ast_hash": "e82599cf190aed6451f41aa649a072d8",
+    "semantic_hash": "e82599cf190aed6451f41aa649a072d8"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\reviews\\reviews.model.js": {
+    "mtime": 1760111701.2525885,
+    "ast_hash": "ee2310da2f4dfe9dab6fc0ceb55731a2",
+    "semantic_hash": "ee2310da2f4dfe9dab6fc0ceb55731a2"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\reviews\\reviews.schema.js": {
+    "mtime": 1760111701.2525885,
+    "ast_hash": "b6073b5f2f5c1e5ef37a29004945792a",
+    "semantic_hash": "b6073b5f2f5c1e5ef37a29004945792a"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\services\\services.model.js": {
+    "mtime": 1704521020.1495776,
+    "ast_hash": "b7b49bd3a9feb18a6e40a16bf8ed73d4",
+    "semantic_hash": "b7b49bd3a9feb18a6e40a16bf8ed73d4"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\services\\services.schema.js": {
+    "mtime": 1781941618.5463965,
+    "ast_hash": "ced4519ce96f9ecd211819a23618bd13",
+    "semantic_hash": "ced4519ce96f9ecd211819a23618bd13"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\special\\special.model.js": {
+    "mtime": 1756671177.6161604,
+    "ast_hash": "06d3a0016d0382773f78fb82a733efdc",
+    "semantic_hash": "06d3a0016d0382773f78fb82a733efdc"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\models\\special\\special.schema.js": {
+    "mtime": 1706385193.6936123,
+    "ast_hash": "36f9f478dd0a3d3a5ef5311e6569aff9",
+    "semantic_hash": "36f9f478dd0a3d3a5ef5311e6569aff9"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\routes\\admin.routes.js": {
+    "mtime": 1781937763.2962728,
+    "ast_hash": "d5b82a3904f03d9ea10ef67037b60c8b",
+    "semantic_hash": "d5b82a3904f03d9ea10ef67037b60c8b"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\routes\\api.routes.js": {
+    "mtime": 1774906765.6896944,
+    "ast_hash": "63033f2c5d4489fe22a8fb52aecfdf36",
+    "semantic_hash": "63033f2c5d4489fe22a8fb52aecfdf36"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\routes\\render.routes.js": {
+    "mtime": 1760126832.0163796,
+    "ast_hash": "c1b849a096ff3e17799a4a87190f748b",
+    "semantic_hash": "c1b849a096ff3e17799a4a87190f748b"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\routes\\static.routes.js": {
+    "mtime": 1704522610.2508729,
+    "ast_hash": "39987beda06bf3dbee5d7056b352082b",
+    "semantic_hash": "39987beda06bf3dbee5d7056b352082b"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\test\\createAdmin.js": {
+    "mtime": 1781947235.3928678,
+    "ast_hash": "0d78e764b533fba59121b4c553b0ab86",
+    "semantic_hash": "0d78e764b533fba59121b4c553b0ab86"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\backend\\test\\seed.js": {
+    "mtime": 1781943694.9556987,
+    "ast_hash": "a71d4ced63f1fae4aa45d26de4b4117f",
+    "semantic_hash": "a71d4ced63f1fae4aa45d26de4b4117f"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\data\\highquality.admins.json": {
+    "mtime": 1760111701.2600973,
+    "ast_hash": "d38ecd850ddb12eb4913f0d71b0af780",
+    "semantic_hash": "d38ecd850ddb12eb4913f0d71b0af780"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\data\\highquality.events.json": {
+    "mtime": 1760111701.2695956,
+    "ast_hash": "471feea3c0996c333c4f6f4ea95e3960",
+    "semantic_hash": "471feea3c0996c333c4f6f4ea95e3960"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\data\\highquality.horarios.json": {
+    "mtime": 1760111701.270596,
+    "ast_hash": "403ac7357a62e62351c016ff99e196ec",
+    "semantic_hash": "403ac7357a62e62351c016ff99e196ec"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\data\\highquality.services.json": {
+    "mtime": 1760111701.270596,
+    "ast_hash": "e25e37c92c1284e2cc1e26163b477d62",
+    "semantic_hash": "e25e37c92c1284e2cc1e26163b477d62"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\public\\js\\admin\\clientes.js": {
+    "mtime": 1760111701.3945568,
+    "ast_hash": "f528bf3d6cdc1ff29af5e99cca3c4cda",
+    "semantic_hash": "f528bf3d6cdc1ff29af5e99cca3c4cda"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\public\\js\\admin\\horarios.js": {
+    "mtime": 1760117994.5549889,
+    "ast_hash": "1a9fff9d15224c8d4a3185206620a277",
+    "semantic_hash": "1a9fff9d15224c8d4a3185206620a277"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\public\\js\\admin\\index.js": {
+    "mtime": 1781937666.5617983,
+    "ast_hash": "8d4ec474d6f8e4f18d2b64c7806e1270",
+    "semantic_hash": "8d4ec474d6f8e4f18d2b64c7806e1270"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\public\\js\\admin\\reviews.js": {
+    "mtime": 1760111701.3965564,
+    "ast_hash": "b83a549c3e0e322d1eba6e0c0ff4c9c0",
+    "semantic_hash": "b83a549c3e0e322d1eba6e0c0ff4c9c0"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\public\\js\\admin\\servicios.js": {
+    "mtime": 1781943702.887355,
+    "ast_hash": "2ab33ee3de679ebb378b79d0b49bac94",
+    "semantic_hash": "2ab33ee3de679ebb378b79d0b49bac94"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\public\\js\\client\\index.js": {
+    "mtime": 1760111701.3965564,
+    "ast_hash": "66a9c4d79ea47162e6a087c53ca6fcc5",
+    "semantic_hash": "66a9c4d79ea47162e6a087c53ca6fcc5"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\public\\js\\client\\reserva.js": {
+    "mtime": 1781945630.8482962,
+    "ast_hash": "9e8eb3c23f8b370b5f2c9e2a9b920b33",
+    "semantic_hash": "9e8eb3c23f8b370b5f2c9e2a9b920b33"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\server.js": {
+    "mtime": 1777078040.8415089,
+    "ast_hash": "32eaf73edcb14eb18d212c7893eef242",
+    "semantic_hash": "32eaf73edcb14eb18d212c7893eef242"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\public\\fonts\\icons\\free\\LICENSE.txt": {
+    "mtime": 1699510341.160269,
+    "ast_hash": "6957234f7c170c187a9e39f89181b519",
+    "semantic_hash": "6957234f7c170c187a9e39f89181b519"
+  },
+  "C:\\Users\\ianmo\\dev\\highquality\\src\\public\\fonts\\icons\\pro\\LICENSE.txt": {
+    "mtime": 1699510342.1064737,
+    "ast_hash": "51ea11814f3dff2a0f0c22191f424549",
+    "semantic_hash": "51ea11814f3dff2a0f0c22191f424549"
+  }
+}

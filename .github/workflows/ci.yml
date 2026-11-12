@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      # tailwind.css is committed and served as-is, so a stale one ships stale styles.
+      - name: Tailwind CSS is up to date
+        run: |
+          npm run css
+          git diff --exit-code src/public/css/tailwind.css || {
+            echo "::error::tailwind.css desactualizado. Corre 'npm run css' y commitea el resultado."
+            exit 1
+          }

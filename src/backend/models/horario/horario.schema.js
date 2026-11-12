@@ -1,14 +1,34 @@
 const mongoose = require('mongoose');
-const moment = require('moment');
+
+const BlockSchema = new mongoose.Schema({
+    start: { type: String, required: true },
+    end:   { type: String, required: true },
+}, { _id: false });
 
 const HorarioSchema = new mongoose.Schema({
     day: {
         type: String,
         required: true,
     },
-    hours:{
+    blocks: {
+        type: [BlockSchema],
+        required: false,
+        default: [],
+    },
+    hours: {
         type: Array,
-        required: true,
+        required: false,
+        default: [],
+    },
+    startTime: {
+        type: String,
+        required: false,
+        default: '',
+    },
+    endTime: {
+        type: String,
+        required: false,
+        default: '',
     },
     enable: {
         type: Boolean,
@@ -19,5 +39,3 @@ const HorarioSchema = new mongoose.Schema({
 const Horario = mongoose.model('Horario', HorarioSchema);
 
 module.exports = Horario;
-
-// Generate here an example of the days from monday to sunday from 10:00am - 8:00pm - create a json file

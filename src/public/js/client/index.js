@@ -1,8 +1,47 @@
 function init(event){
-    checkForm();
     animateElements();
     bringOpiniones();
+    mountGaleriaCarousel();
     // getCitas();
+}
+
+/* Homepage gallery carousel.
+ * Slides are server-rendered, so this only mounts Splide. focus:'center' plus
+ * an odd perPage keeps one slide in the middle; the scale-up is CSS
+ * (.gallery-carousel .splide__slide.is-active), driven by the class Splide
+ * sets. type:'loop' is what makes it infinite — with fewer slides than
+ * perPage Splide can't clone enough to loop, so it falls back to a static row. */
+function mountGaleriaCarousel(){
+    const el = document.getElementById('galeriaCarousel');
+    if (!el || typeof Splide === 'undefined') return;
+
+    const slides = el.querySelectorAll('.splide__slide').length;
+    if (!slides) return;
+
+    new Splide(el, {
+        type: slides > 1 ? 'loop' : 'slide',
+        focus: 'center',
+        perPage: 3,
+        perMove: 1,
+        gap: '0.9rem',
+        padding: '8%',
+        arrows: slides > 1,
+        pagination: slides > 1,
+        autoplay: slides > 1,
+        interval: 3800,
+        pauseOnHover: true,
+        pauseOnFocus: true,
+        speed: 650,
+        easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+        updateOnMove: true,      // sets is-active before the move finishes, so
+                                 // the scale-up animates with the slide
+        breakpoints: {
+            1024: { perPage: 3, padding: '6%', gap: '0.75rem' },
+            // With perPage 1 the padding already centres the frame; leaving
+            // focus:'center' on top of it shifts the strip by half a slide.
+            640:  { perPage: 1, focus: 0, padding: '15%', gap: '0.6rem' },
+        },
+    }).mount();
 }
 
 // async function getCitas(){
@@ -55,47 +94,6 @@ async function bringOpiniones(){
     splide.mount(window.splide.Extensions);
 }
 
-function addStar(star, ele){
-    document.getElementById('stars').value = parseInt(star);
-    $(ele).find('i').removeClass('fa-regular').addClass('fa-solid active');
-    $(ele).prevAll().find('i').removeClass('fa-regular').addClass('fa-solid active');
-    $(ele).nextAll().find('i').removeClass('fa-solid active').addClass('fa-regular');
-}
-function checkForm(){
-    $("#formOpinion").on('submit', async function(e){
-        const bg = window.getComputedStyle(document.body).getPropertyValue('--bs-body-bg');
-        const color = window.getComputedStyle(document.body).getPropertyValue('--bs-body-color');
-        e.preventDefault();
-        let form = $(this);
-        let stars = document.getElementById('stars').value;
-        let nombre = document.getElementById('nombre').value;
-        let opinion = document.getElementById('opinion').value;
-
-        if(stars == '' || nombre == '' || opinion == ''){
-            $("#feedbackerror").text('Debe llenar todos los campos.');
-        }else{
-            $("#feedbackerror").text('');
-            let {data} = await axios.post('/api/v1/review', {
-                stars: parseInt(stars),
-                nombre: nombre,
-                review: opinion
-            });
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'center-center',
-                showConfirmButton: false,
-                timer: 1500,
-                timerProgressBar: true,
-                background: bg,
-                color: color,
-            });
-            Toast.fire({
-                icon: 'success',
-                title: 'Review Enviado'
-            });
-        }
-    });
-}
 function animateElements(){
     
 }

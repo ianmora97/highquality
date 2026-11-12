@@ -38,3 +38,11 @@ exports.delete = async (id) => {
     const client = await Client.findByIdAndDelete(id);
     return client;
 };
+
+exports.findByPhone = async (numero) => {
+    return await Client.findOne({ numero: parseInt(numero) });
+};
+
+exports.findByPhoneWithPassword = async (numero) => {
+    return await Client.findOne({ numero: parseInt(numero) });
+};

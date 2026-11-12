@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const moment = require('moment');
 
 const ClientSchema = new mongoose.Schema({
     nombre: {
@@ -16,9 +15,13 @@ const ClientSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    password: {
+        type: String,
+        default: '',
+    },
     createdAt: {
         type: Date,
-        default: moment().format()
+        default: Date.now
     },
 });
 

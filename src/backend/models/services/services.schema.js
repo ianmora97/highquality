@@ -15,6 +15,14 @@ const ServicesSchema = new mongoose.Schema({
         required: false,
         default: '1.png'
     },
+    faIcon:{
+        type: String,
+        required: false,
+        default: ''
+    },
+    imageUrl: { type: String, required: false, default: '' },
+    imageKey: { type: String, required: false, default: '' },
+    imageType: { type: String, enum: ['icon', 'image'], default: 'icon' },
     enable:{
         type: Boolean,
         required: true,
