@@ -3,7 +3,7 @@
 // A horario day is a list of work blocks: [{ start: '09:00', end: '13:00' }, ...].
 // The gap between two blocks is the barber's lunch/rest — no slots are generated there.
 // Every appointment lasts 30 min, so a slot only fits when slot + 30 <= block end.
-//   · base slots  → one per hour from the block start (what clients see on future days)
+//   · base slots  → one per clock hour (:00) inside the block (what clients see on future days)
 //   · half slots  → the same grid shifted 30 min (same-day only for clients, always for admin)
 
 const SLOT_MINUTES = 30;
@@ -85,7 +85,10 @@ function slotsFromBlocks(blocks, offsetMinutes) {
     const out = [];
     normalizeBlocks(blocks).forEach(b => {
         const end = toMinutes(b.end);
-        for (let t = toMinutes(b.start) + offsetMinutes; t + SLOT_MINUTES <= end; t += STEP_MINUTES) {
+        // Snap to the clock grid (on the hour / on the :30), not to the block start:
+        // a 15:30 block must not turn :30 into a "base" slot on future days.
+        const first = Math.ceil((toMinutes(b.start) - offsetMinutes) / STEP_MINUTES) * STEP_MINUTES + offsetMinutes;
+        for (let t = first; t + SLOT_MINUTES <= end; t += STEP_MINUTES) {
             out.push(t);
         }
     });
