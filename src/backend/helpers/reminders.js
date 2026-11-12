@@ -46,7 +46,6 @@ function start() {
     };
     tick(); // catch-up for a restart between ticks (e.g. 10:25 for a 10:30 cita)
     setTimeout(loop, msUntilNextTick());
-    console.log('[OK] REMINDERS STARTED (ticks at :20 and :50)');
 }
 
 module.exports = { start, tick, msUntilNextTick };

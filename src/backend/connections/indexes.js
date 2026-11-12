@@ -19,16 +19,10 @@ async function ensureEventStartIndex() {
     ]).toArray();
 
     if (dupes.length) {
-        console.warn(
-            `[WARN] events.start has ${dupes.length} duplicated slot(s) — unique index NOT created.\n` +
-            '       Double booking stays possible until they are cleaned up:\n' +
-            dupes.map(d => `       · ${new Date(d._id).toISOString()} (${d.n} citas)`).join('\n')
-        );
-        return false;
+        return false; // duplicated slots: unique index skipped, double booking stays possible
     }
 
     await col.createIndex({ start: 1 }, { unique: true, name: 'uniq_event_start' });
-    console.log('[OK] events.start unique index ready');
     return true;
 }
 
@@ -43,7 +37,6 @@ async function ensureClientHistoryIndex() {
         { 'extendedProps.numero': 1, start: -1 },
         { name: 'idx_event_numero_start' }
     );
-    console.log('[OK] events.extendedProps.numero index ready');
 }
 
 function ensureIndexes() {
