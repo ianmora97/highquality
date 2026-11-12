@@ -804,7 +804,7 @@ body.swal2-toast-shown .swal2-backdrop-show {
   height: 5rem !important;
   border-width: 2px !important;
 }
-/* Booking confirmed: gold disc, check draws itself */
+/* Booking confirmed: green disc, check draws itself */
 .swal-icon-ok {
   border: 0 !important;
   width: 5rem !important;
@@ -814,18 +814,18 @@ body.swal2-toast-shown .swal2-backdrop-show {
 }
 .hq-check { width: 100%; height: 100%; display: block; overflow: visible; }
 .hq-check-bg {
-  fill: #F4C82C;
+  fill: #14b73a;
   transform-origin: center;
   animation: hqCheckPop .5s cubic-bezier(.3,1.5,.5,1) both, hqCheckGlow 1.6s .35s ease-out 1;
 }
 .hq-check-mark {
-  fill: none; stroke: #141414; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round;
+  fill: none; stroke: #fff; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round;
   stroke-dasharray: 36; stroke-dashoffset: 36;
   animation: hqCheckDraw .45s .3s ease-out forwards;
 }
 @keyframes hqCheckPop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes hqCheckDraw { to { stroke-dashoffset: 0; } }
-@keyframes hqCheckGlow { 0% { filter: drop-shadow(0 0 0 rgba(244,200,44,.6)); } 40% { filter: drop-shadow(0 0 18px rgba(244,200,44,.55)); } 100% { filter: drop-shadow(0 0 0 rgba(244,200,44,0)); } }
+@keyframes hqCheckGlow { 0% { filter: drop-shadow(0 0 0 rgba(20,183,58,.6)); } 40% { filter: drop-shadow(0 0 18px rgba(20,183,58,.55)); } 100% { filter: drop-shadow(0 0 0 rgba(20,183,58,0)); } }
 @media (prefers-reduced-motion: reduce) {
   .hq-check-bg, .hq-check-mark { animation: none; stroke-dashoffset: 0; }
 }
@@ -839,8 +839,6 @@ body.swal2-toast-shown .swal2-backdrop-show {
 }
 .swal-cal-btn:hover { background: rgba(244,200,44,.16); border-color: #F4C82C; }
 .swal-cal-btn:active { transform: scale(.98); }
-.swal-cal-alt { font-size: .75rem; color: #9ca3af; text-decoration: underline; text-underline-offset: 3px; }
-.swal-cal-alt:hover { color: #fff; }
 /* Policy box inside success swal */
 .swal-policy-box {
   background: rgba(255,255,255,0.03);

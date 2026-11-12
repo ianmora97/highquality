@@ -5733,13 +5733,13 @@ body.swal2-toast-shown .swal2-backdrop-show {
   overflow: visible;
 }
 .hq-check-bg {
-  fill: #F4C82C;
+  fill: #14b73a;
   transform-origin: center;
   animation: hqCheckPop .5s cubic-bezier(.3,1.5,.5,1) both, hqCheckGlow 1.6s .35s ease-out 1;
 }
 .hq-check-mark {
   fill: none;
-  stroke: #141414;
+  stroke: #fff;
   stroke-width: 4.5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -5764,13 +5764,13 @@ body.swal2-toast-shown .swal2-backdrop-show {
 }
 @keyframes hqCheckGlow {
   0% {
-    filter: drop-shadow(0 0 0 rgba(244,200,44,.6));
+    filter: drop-shadow(0 0 0 rgba(20,183,58,.6));
   }
   40% {
-    filter: drop-shadow(0 0 18px rgba(244,200,44,.55));
+    filter: drop-shadow(0 0 18px rgba(20,183,58,.55));
   }
   100% {
-    filter: drop-shadow(0 0 0 rgba(244,200,44,0));
+    filter: drop-shadow(0 0 0 rgba(20,183,58,0));
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -5808,15 +5808,6 @@ body.swal2-toast-shown .swal2-backdrop-show {
 }
 .swal-cal-btn:active {
   transform: scale(.98);
-}
-.swal-cal-alt {
-  font-size: .75rem;
-  color: #9ca3af;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.swal-cal-alt:hover {
-  color: #fff;
 }
 .swal-policy-box {
   background: rgba(255,255,255,0.03);

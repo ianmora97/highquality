@@ -587,8 +587,7 @@ function updateStepUI() {
     updatePriceDisplay();
 }
 
-// Links to put the 30 min cita in the client's own calendar: Google (web link) and
-// a .ics data URI for Apple / Outlook. `data.start`/`end` are local 'YYYY-MM-DD HH:mm:ss'.
+// Google Calendar link for the 30 min cita. `data.start`/`end` are local 'YYYY-MM-DD HH:mm:ss'.
 function calendarLinks(data) {
     const utc = s => moment(s).utc().format('YYYYMMDD[T]HHmmss[Z]');
     const title = 'Cita en HighQuality Studio';
@@ -600,16 +599,7 @@ function calendarLinks(data) {
         + `&text=${encodeURIComponent(title)}&dates=${dates}`
         + `&details=${encodeURIComponent(details)}&location=${encodeURIComponent(where)}`;
 
-    const ics = [
-        'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//HighQuality Studio//ES', 'BEGIN:VEVENT',
-        `UID:${utc(data.start)}-${data.extendedProps.numero}@highquality`,
-        `DTSTAMP:${utc(moment())}`, `DTSTART:${utc(data.start)}`, `DTEND:${utc(data.end)}`,
-        `SUMMARY:${title}`, `DESCRIPTION:${details}`, `LOCATION:${where}`,
-        'BEGIN:VALARM', 'TRIGGER:-PT4H', 'ACTION:DISPLAY', 'DESCRIPTION:Tu cita es en 4 horas', 'END:VALARM',
-        'END:VEVENT', 'END:VCALENDAR',
-    ].join('\r\n');
-
-    return { google, ics: 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics) };
+    return { google };
 }
 
 // ===== BOOKING SUBMISSION =====
@@ -671,7 +661,6 @@ async function agendarCita() {
                     <a class="swal-cal-btn" href="${cal.google}" target="_blank" rel="noopener">
                         <i class="fa-regular fa-calendar-plus"></i> Agregar al calendario
                     </a>
-                    <a class="swal-cal-alt" href="${cal.ics}" download="cita-highquality.ics">Apple / Outlook (.ics)</a>
                 </div>
 
                 <div class="swal-policy-box">
