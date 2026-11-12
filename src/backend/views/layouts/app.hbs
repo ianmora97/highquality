@@ -35,6 +35,7 @@
 
     <!-- Axios -->
     <script src="/scripts/axios/dist/axios.min.js"></script>
+    <script src="/js/app/common.js"></script>
 
     <!-- SweetAlert2 JS -->
     <script src="/scripts/sweetalert2/dist/sweetalert2.min.js"></script>
@@ -81,50 +82,67 @@
         })();
     </script>
 </head>
-<body class="inter" style="background:#111111; color:#f1f1f1;">
+<body class="inter acc-body">
 
-    <!-- Client app header -->
-    <header style="background:#0d0d0d; border-bottom:1px solid rgba(255,255,255,0.08);">
-        <div class="flex items-center justify-between px-4 py-3 max-w-2xl mx-auto">
-            <div class="flex items-center gap-3">
-                <a href="/" class="text-gray-500 hover:text-white text-sm">
-                    <i class="fa-solid fa-arrow-left me-1"></i> Inicio
-                </a>
-                <span class="text-gray-700">|</span>
-                <span class="text-white font-semibold text-sm">{{user.name}}</span>
+    <!-- Top bar: who is signed in, way back to the site, sign out -->
+    <header class="acc-top">
+        <div class="acc-wrap acc-top-in">
+            <span class="acc-avatar" id="acc-avatar" aria-hidden="true"></span>
+            <div class="acc-who">
+                <small>Mi cuenta</small>
+                <strong>{{user.name}}</strong>
             </div>
-            <nav class="flex items-center gap-3">
-                <a href="/app" class="text-sm {{#if isApp}}text-gold font-semibold{{else}}text-gray-400 hover:text-white{{/if}}">
-                    <i class="fa-solid fa-house"></i>
-                </a>
-                <a href="/app/history" class="text-sm {{#if isHistory}}text-gold font-semibold{{else}}text-gray-400 hover:text-white{{/if}}">
-                    <i class="fa-solid fa-clock-rotate-left me-1"></i> Historial
-                </a>
-                <a href="/app/reviews" class="text-sm {{#if isReviews}}text-gold font-semibold{{else}}text-gray-400 hover:text-white{{/if}}">
-                    <i class="fa-solid fa-star me-1"></i> Reseñas
-                </a>
-                <button onclick="logoutUser()" class="text-xs text-gray-600 hover:text-red-400 btn btn-sm btn-dark ms-2">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </button>
-            </nav>
+            <a href="/" class="acc-iconbtn" aria-label="Volver al sitio" title="Volver al sitio">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+            <button type="button" onclick="logoutUser()" class="acc-iconbtn danger" aria-label="Cerrar sesión" title="Cerrar sesión">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
         </div>
     </header>
 
-    <main class="max-w-2xl mx-auto px-4 py-6">
+    <main class="acc-wrap acc-main">
         {{{body}}}
     </main>
+
+    <!-- Bottom dock: thumb-reach navigation, the active pill slides between pages -->
+    <nav class="acc-dock" aria-label="Mi cuenta">
+        <a href="/app" class="acc-tab" {{#if isApp}}aria-current="page"{{/if}}>
+            {{#if isApp}}<span class="acc-pill"></span>{{/if}}
+            <i class="fa-solid fa-house"></i><span>Inicio</span>
+        </a>
+        <a href="/app/history" class="acc-tab" {{#if isHistory}}aria-current="page"{{/if}}>
+            {{#if isHistory}}<span class="acc-pill"></span>{{/if}}
+            <i class="fa-solid fa-clock-rotate-left"></i><span>Historial</span>
+        </a>
+        <a href="/app/reviews" class="acc-tab" {{#if isReviews}}aria-current="page"{{/if}}>
+            {{#if isReviews}}<span class="acc-pill"></span>{{/if}}
+            <i class="fa-solid fa-star"></i><span>Reseñas</span>
+        </a>
+    </nav>
 
     <!-- Alpine.js -->
     <script defer src="/scripts/alpinejs/dist/cdn.min.js"></script>
 
     <script>
+    moment.locale('es');
+    (function () {
+        var n = (document.querySelector('meta[name="user-name"]') || {}).content || '';
+        document.getElementById('acc-avatar').textContent = (n.trim().charAt(0) || '?').toUpperCase();
+    })();
+
     async function logoutUser() {
+        const ok = await Swal.fire({
+            title: '¿Cerrar sesión?', text: 'Tendrás que volver a ingresar para ver tus citas.',
+            showCancelButton: true, confirmButtonText: 'Cerrar sesión', cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#F4C82C', background: '#0d0d0d', color: '#f1f1f1', reverseButtons: true,
+        });
+        if (!ok.isConfirmed) return;
         await axios.post('/api/v1/auth/logout');
         window.location.href = '/';
     }
     // Legacy alias
     var logoutClient = logoutUser;
-    moment.locale('es');
     </script>
 </body>
 </html>

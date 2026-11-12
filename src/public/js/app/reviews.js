@@ -1,81 +1,135 @@
-var selectedStars = 0;
+// Reviews: star picker, write form, and the client's own reviews with their status.
+
+const STAR_WORDS = ['', 'Mala experiencia', 'Podría mejorar', 'Estuvo bien', 'Muy buena', '¡Excelente!'];
+const MAX = 600;
+let selected = 0;
+
+const $ = id => document.getElementById(id);
+const stars = () => [...document.querySelectorAll('.acc-star')];
+
+function paintStars(n, popLast) {
+    stars().forEach((el, i) => {
+        const on = i < n;
+        el.classList.toggle('on', on);
+        el.classList.toggle('fa-solid', on);
+        el.classList.toggle('fa-regular', !on);
+        el.setAttribute('aria-checked', String(i + 1 === selected));
+        if (popLast && i + 1 === n) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+    });
+    $('star-label').textContent = STAR_WORDS[n] || ' ';
+}
 
 function pickStar(n) {
-    selectedStars = n;
-    document.querySelectorAll('.star-btn').forEach(function(el, i) {
-        if (i < n) {
-            el.className = 'fa-solid fa-star fa-2x cursor-pointer text-yellow-400 star-btn';
-        } else {
-            el.className = 'fa-regular fa-star fa-2x cursor-pointer text-gray-600 star-btn';
-        }
-    });
+    selected = n;
+    paintStars(n, true);
+    refresh();
 }
 
-async function submitReview() {
-    const text = document.getElementById('review-text').value.trim();
-    if (!selectedStars) {
-        return Swal.fire({ icon: 'warning', text: 'Selecciona una calificación', background: '#0d0d0d', color: '#f1f1f1' });
-    }
-    if (!text) {
-        return Swal.fire({ icon: 'warning', text: 'Escribe tu reseña', background: '#0d0d0d', color: '#f1f1f1' });
-    }
+function refresh() {
+    const len = $('review-text').value.length;
+    $('review-count').textContent = `${len} / ${MAX}`;
+    $('review-count').classList.toggle('warn', len > MAX - 40);
+    $('review-submit').disabled = !(selected && $('review-text').value.trim());
+}
+
+function setupForm() {
+    stars().forEach((el, i) => {
+        const n = i + 1;
+        el.addEventListener('click', () => pickStar(n));
+        el.addEventListener('mouseenter', () => paintStars(n));       // hover preview
+        el.addEventListener('focus', () => paintStars(n));
+        el.addEventListener('blur', () => paintStars(selected));
+        el.addEventListener('keydown', e => {
+            if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+            e.preventDefault();
+            const next = Math.min(5, Math.max(1, n + (e.key === 'ArrowRight' ? 1 : -1)));
+            stars()[next - 1].focus();
+            pickStar(next);
+        });
+    });
+    $('star-picker').addEventListener('mouseleave', () => paintStars(selected));
+    $('review-text').addEventListener('input', refresh);
+    $('review-form').addEventListener('submit', submitReview);
+}
+
+async function submitReview(e) {
+    e.preventDefault();
+    const text = $('review-text').value.trim();
+    if (!selected || !text) return;
+
+    const btn = $('review-submit');
+    btn.disabled = true;
+    btn.querySelector('i').className = 'fa-solid fa-circle-notch fa-spin';
+    btn.querySelector('span').textContent = 'Enviando…';
 
     try {
-        await axios.post('/api/v1/review', { review: text, stars: selectedStars });
-        document.getElementById('review-text').value = '';
-        pickStar(0);
-        selectedStars = 0;
+        await axios.post('/api/v1/review', { review: text, stars: selected });
+        $('review-text').value = '';
+        selected = 0;
+        paintStars(0);
         Swal.fire({
             icon: 'success', title: '¡Gracias!',
-            text: 'Tu reseña fue enviada y quedará visible en el sitio una vez aprobada.',
+            text: 'Tu reseña quedó en revisión y se publicará una vez aprobada.',
             background: '#0d0d0d', color: '#f1f1f1', timer: 2500, showConfirmButton: false,
         });
-        loadMyReviews();
-    } catch (e) {
-        const text = (e.response && e.response.data && e.response.data.error) || 'Error al enviar reseña';
-        Swal.fire({ icon: 'error', text, background: '#0d0d0d', color: '#f1f1f1' });
+        loadMyReviews(true);
+    } catch (err) {
+        const msg = (err.response && err.response.data && err.response.data.error) || 'No se pudo enviar la reseña. Intenta de nuevo.';
+        Swal.fire({ icon: 'error', text: msg, background: '#0d0d0d', color: '#f1f1f1' });
+    } finally {
+        btn.querySelector('i').className = 'fa-solid fa-paper-plane';
+        btn.querySelector('span').textContent = 'Publicar reseña';
+        refresh();
     }
 }
 
-const STATUS_LABEL = { pending: 'En revisión', approved: 'Publicada', rejected: 'No publicada' };
-const STATUS_CLASS = {
-    pending:  'bg-gray-800 text-gray-400',
-    approved: 'bg-yellow-400/10 text-yellow-400',
-    rejected: 'bg-red-500/10 text-red-400',
+const STATUS = {
+    pending:  { cls: 'gray',  label: 'En revisión',  icon: 'fa-hourglass-half' },
+    approved: { cls: 'green', label: 'Publicada',    icon: 'fa-circle-check' },
+    rejected: { cls: 'red',   label: 'No publicada', icon: 'fa-circle-xmark' },
 };
 
-async function loadMyReviews() {
+async function loadMyReviews(fresh) {
+    const box = $('my-reviews');
     try {
         const { data } = await axios.get('/api/v1/review/mine');
-        const container = document.getElementById('my-reviews');
+        $('my-count').textContent = data.length ? String(data.length) : '';
         if (!data.length) {
-            container.innerHTML = '<p class="text-gray-600 text-sm text-center py-4">Aún no tienes reseñas</p>';
+            box.innerHTML = `
+                <div class="acc-empty">
+                    <i class="fa-regular fa-star"></i>
+                    <strong>Aún no escribes reseñas</strong>
+                    <p>Tu opinión ayuda a otros clientes a elegirnos.</p>
+                </div>`;
             return;
         }
-        container.innerHTML = data.map(function(r) {
-            const stars = Array.from({ length: 5 }, function(_, i) {
-                return `<i class="fa-${i < r.stars ? 'solid' : 'regular'} fa-star" style="color:${i < r.stars ? '#F4C82C' : '#374151'}; font-size:0.85rem;"></i>`;
-            }).join('');
+        box.innerHTML = data.map((r, i) => {
+            const st = STATUS[r.status] || STATUS.pending;
+            const row = Array.from({ length: 5 }, (_, k) =>
+                `<i class="fa-${k < r.stars ? 'solid' : 'regular'} fa-star" style="color:${k < r.stars ? '#F4C82C' : '#3b3b3b'};font-size:.85rem"></i>`).join('');
             const reply = r.reply ? `
-                <div class="mt-3 pt-3 border-t border-white/5 flex gap-2">
-                    <i class="fa-solid fa-scissors text-primary text-xs mt-0.5"></i>
-                    <p class="text-gray-400 text-xs leading-relaxed"><span class="text-white font-semibold">Respuesta del barbero: </span>"${r.reply}"</p>
+                <div class="acc-reply"><i class="fa-solid fa-scissors text-gold me-1"></i>
+                    <strong class="text-white">Respuesta del barbero:</strong> ${esc(r.reply)}
                 </div>` : '';
             return `
-                <div class="rounded-xl p-4 border border-white/10" style="background:#0d0d0d;">
+                <article class="acc-card p-4 ${fresh && i === 0 ? 'acc-rise' : ''}">
                     <div class="flex items-center justify-between gap-2 mb-2">
-                        <div class="flex gap-1">${stars}</div>
-                        <span class="text-xs px-2 py-1 rounded-full ${STATUS_CLASS[r.status] || STATUS_CLASS.pending}">${STATUS_LABEL[r.status] || STATUS_LABEL.pending}</span>
+                        <div class="flex gap-1">${row}</div>
+                        <span class="acc-badge ${st.cls}"><i class="fa-solid ${st.icon}"></i> ${st.label}</span>
                     </div>
-                    <p class="text-gray-400 text-sm">"${r.review}"</p>
-                    <p class="text-xs text-gray-600 mt-2">${new Date(r.createdAt || Date.now()).toLocaleDateString('es-CR')}</p>
+                    <p class="text-gray-300 text-sm leading-relaxed">${esc(r.review)}</p>
+                    <p class="acc-sub mt-2" style="font-size:.72rem">${esc(moment(r.createdAt || Date.now()).format('D [de] MMMM YYYY'))}</p>
                     ${reply}
-                </div>
-            `;
+                </article>`;
         }).join('');
     } catch (e) {
-        console.error('Error loading reviews', e);
+        box.innerHTML = `
+            <div class="acc-empty">
+                <i class="fa-solid fa-plug-circle-exclamation"></i>
+                <strong>No pudimos cargar tus reseñas</strong>
+                <p>Revisa tu conexión e intenta de nuevo.</p>
+            </div>`;
     }
 }
 
-document.addEventListener('DOMContentLoaded', loadMyReviews);
+document.addEventListener('DOMContentLoaded', () => { setupForm(); loadMyReviews(); });

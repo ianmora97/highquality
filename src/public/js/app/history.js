@@ -1,54 +1,114 @@
-async function init() {
-    const { data } = await axios.get('/api/v1/event/client');
-    const container = document.getElementById('history-list');
-    document.getElementById('history-count').textContent = `${data.length} citas`;
+// Appointment history: filter (all / upcoming / past), grouped by month.
 
-    if (!data.length) {
-        container.innerHTML = '<p class="text-gray-600 text-sm text-center py-8">No tienes citas aún</p>';
+let ALL = [];
+let FILTER = 'all';
+
+const isUpcoming = ev => new Date(ev.start) > new Date();
+
+async function init() {
+    try {
+        const { data } = await axios.get('/api/v1/event/client');
+        ALL = data.sort((a, b) => new Date(b.start) - new Date(a.start));
+    } catch (e) {
+        document.getElementById('history-list').innerHTML = `
+            <div class="acc-empty mt-4">
+                <i class="fa-solid fa-plug-circle-exclamation"></i>
+                <strong>No pudimos cargar tus citas</strong>
+                <p>Revisa tu conexión e intenta de nuevo.</p>
+            </div>`;
         return;
     }
-    container.innerHTML = '';
 
-    // Sort by date descending (most recent first)
-    data.sort((a, b) => new Date(b.start) - new Date(a.start));
+    const up = ALL.filter(isUpcoming).length;
+    const spent = ALL.filter(ev => !isUpcoming(ev) && ev.extendedProps && ev.extendedProps.estado === 'PAGO')
+        .reduce((t, ev) => t + eventPrice(ev), 0);
+    document.getElementById('history-summary').textContent =
+        ALL.length ? `${plural(ALL.length, 'cita', 'citas')}${spent ? ' · ' + money(spent) + ' pagados' : ''}` : 'Sin citas todavía';
 
-    data.forEach((ev, i) => {
-        const fecha = moment(ev.start).format('dddd DD [de] MMMM YYYY');
-        const hora = moment(ev.start).format('h:mm a');
-        const estado = (ev.extendedProps && ev.extendedProps.estado) ? ev.extendedProps.estado : 'PENDIENTE';
-        const isPaid = estado === 'PAGO';
-        const isPast = new Date(ev.start) < new Date();
-        const servicios = ev.extendedProps && ev.extendedProps.servicios ? ev.extendedProps.servicios : [];
-        const precio = ev.extendedProps ? ev.extendedProps.precio : null;
+    document.getElementById('n-all').textContent = ALL.length;
+    document.getElementById('n-upcoming').textContent = up;
+    document.getElementById('n-past').textContent = ALL.length - up;
 
-        const card = document.createElement('div');
-        card.className = 'rounded-xl p-4 border border-white/10 animate__animated animate__fadeInUp';
-        card.style.animationDelay = `${i * 40}ms`;
-        card.style.background = '#0d0d0d';
-
-        const badgeColor = isPaid ? 'rgba(34,197,94,0.1)' : isPast ? 'rgba(107,114,128,0.1)' : 'rgba(234,179,8,0.1)';
-        const badgeBorder = isPaid ? 'rgba(34,197,94,0.2)' : isPast ? 'rgba(107,114,128,0.2)' : 'rgba(234,179,8,0.2)';
-        const badgeText = isPaid ? 'text-green-400' : isPast ? 'text-gray-500' : 'text-yellow-400';
-        const badgeLabel = isPaid ? 'Pagado' : isPast ? 'Pasado' : 'Próxima';
-
-        card.innerHTML = `
-            <div class="flex items-start justify-between gap-2 mb-2">
-                <div>
-                    <p class="font-semibold text-white capitalize mb-0">${fecha}</p>
-                    <p class="text-sm text-gray-400 mb-0">${hora}</p>
-                </div>
-                <span class="text-xs px-2 py-1 rounded-full ${badgeText}"
-                      style="background:${badgeColor}; border:1px solid ${badgeBorder}; white-space:nowrap;">
-                    ${badgeLabel}
-                </span>
-            </div>
-            <div class="flex flex-wrap gap-1 mt-2">
-                ${servicios.map(s => `<span class="text-xs px-2 py-0.5 rounded" style="background:rgba(244,200,44,0.1); color:#F4C82C; border:1px solid rgba(244,200,44,0.2);">${s}</span>`).join('')}
-            </div>
-            ${precio ? `<p class="text-sm text-gray-500 mt-2">₡${Number(precio).toLocaleString('es-CR')}</p>` : ''}
-        `;
-        container.appendChild(card);
+    document.querySelectorAll('.acc-seg button').forEach(btn => {
+        btn.addEventListener('click', () => setFilter(btn.dataset.filter));
     });
+    setFilter('all', true);
+}
+
+function setFilter(f, first) {
+    FILTER = f;
+    const btns = [...document.querySelectorAll('.acc-seg button')];
+    btns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.filter === f)));
+    document.getElementById('seg-thumb').style.transform = `translateX(${btns.findIndex(b => b.dataset.filter === f) * 100}%)`;
+    render(first);
+}
+
+function badgeFor(ev) {
+    const estado = (ev.extendedProps && ev.extendedProps.estado) || 'PENDIENTE';
+    if (isUpcoming(ev)) return { cls: 'gold', label: relativeDay(ev.start), rail: '#F4C82C' };
+    if (estado === 'PAGO') return { cls: 'green', label: 'Pagada', rail: '#22c55e' };
+    return { cls: 'gray', label: 'Completada', rail: '#4b5563' };
+}
+
+function render() {
+    const box = document.getElementById('history-list');
+    let list = ALL;
+    if (FILTER === 'upcoming') list = ALL.filter(isUpcoming).reverse(); // soonest first
+    if (FILTER === 'past') list = ALL.filter(ev => !isUpcoming(ev));
+
+    if (!list.length) {
+        const msg = FILTER === 'upcoming'
+            ? ['No tienes citas próximas', 'Agenda una y aparecerá aquí.']
+            : FILTER === 'past' ? ['Aún no tienes citas pasadas', 'Tu historial se llena después de tu primera visita.']
+            : ['Todavía no tienes citas', 'Cuando agendes la primera, la verás aquí.'];
+        box.innerHTML = `
+            <div class="acc-empty mt-4 acc-rise">
+                <i class="fa-regular fa-calendar"></i>
+                <strong>${msg[0]}</strong>
+                <p>${msg[1]}</p>
+                <a href="/reservar" class="acc-btn mt-4" style="width:auto;display:inline-flex;padding:.7rem 1.4rem;font-size:.9rem">
+                    <i class="fa-solid fa-plus"></i> Nueva cita
+                </a>
+            </div>`;
+        return;
+    }
+
+    // Group by month, keeping the list order.
+    const groups = [];
+    list.forEach(ev => {
+        const key = moment(ev.start).format('MMMM YYYY');
+        let g = groups[groups.length - 1];
+        if (!g || g.key !== key) { g = { key, items: [] }; groups.push(g); }
+        g.items.push(ev);
+    });
+
+    box.innerHTML = groups.map(g => `
+        <h3 class="acc-month acc-rise">${esc(g.key)}</h3>
+        <div class="flex flex-col gap-2">
+            ${g.items.map(row).join('')}
+        </div>`).join('');
+    stagger(box);
+}
+
+function row(ev) {
+    const m = moment(ev.start);
+    const b = badgeFor(ev);
+    const services = eventServices(ev);
+    const price = eventPrice(ev);
+    return `
+        <article class="acc-card acc-item acc-rise" style="--rail:${b.rail}">
+            <div class="d"><b>${m.format('D')}</b><small>${esc(m.format('ddd').replace('.', ''))}</small></div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                    <p class="text-white font-semibold text-sm">${esc(m.format('h:mm a'))}</p>
+                    <span class="acc-badge ${b.cls}">${esc(b.label)}</span>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-2">
+                    ${services.map(s => `<span class="acc-svc">${esc(s)}</span>`).join('')}
+                </div>
+                ${price ? `<p class="acc-sub mt-2">${money(price)}</p>` : ''}
+            </div>
+        </article>`;
 }
 
 document.addEventListener('DOMContentLoaded', init);

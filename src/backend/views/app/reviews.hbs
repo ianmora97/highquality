@@ -1,26 +1,33 @@
-<div class="py-2">
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-white bebas">Mis Reseñas</h1>
-        <p class="text-gray-500 text-sm mt-1">Comparte tu experiencia</p>
-    </div>
+<div>
+    <section class="acc-rise" style="--i:0">
+        <p class="acc-eyebrow">Comparte tu experiencia</p>
+        <h1 class="acc-title mt-2">Mis <em>reseñas</em></h1>
+    </section>
 
-    <!-- Write review form -->
-    <div class="rounded-xl p-5 border border-white/10 mb-6" style="background:#0d0d0d;">
-        <h2 class="font-semibold text-white mb-4">Nueva reseña</h2>
-        <div class="flex gap-2 mb-4" id="star-picker">
-            <i class="fa-regular fa-star fa-2x cursor-pointer text-gray-600 star-btn" data-val="1" onclick="pickStar(1)"></i>
-            <i class="fa-regular fa-star fa-2x cursor-pointer text-gray-600 star-btn" data-val="2" onclick="pickStar(2)"></i>
-            <i class="fa-regular fa-star fa-2x cursor-pointer text-gray-600 star-btn" data-val="3" onclick="pickStar(3)"></i>
-            <i class="fa-regular fa-star fa-2x cursor-pointer text-gray-600 star-btn" data-val="4" onclick="pickStar(4)"></i>
-            <i class="fa-regular fa-star fa-2x cursor-pointer text-gray-600 star-btn" data-val="5" onclick="pickStar(5)"></i>
+    <form id="review-form" class="acc-card p-5 mt-5 acc-rise" style="--i:1" novalidate>
+        <p class="text-white font-semibold mb-3">¿Cómo te fue?</p>
+        <div class="acc-stars" id="star-picker" role="radiogroup" aria-label="Calificación">
+            <button type="button" class="acc-star fa-regular fa-star" data-val="1" role="radio" aria-checked="false" aria-label="1 estrella"></button>
+            <button type="button" class="acc-star fa-regular fa-star" data-val="2" role="radio" aria-checked="false" aria-label="2 estrellas"></button>
+            <button type="button" class="acc-star fa-regular fa-star" data-val="3" role="radio" aria-checked="false" aria-label="3 estrellas"></button>
+            <button type="button" class="acc-star fa-regular fa-star" data-val="4" role="radio" aria-checked="false" aria-label="4 estrellas"></button>
+            <button type="button" class="acc-star fa-regular fa-star" data-val="5" role="radio" aria-checked="false" aria-label="5 estrellas"></button>
         </div>
-        <textarea id="review-text" class="form-control mb-3" rows="3" placeholder="Cuéntanos tu experiencia..."></textarea>
-        <button class="btn btn-gold w-full rounded-pill" onclick="submitReview()">
-            <i class="fa-solid fa-paper-plane me-2"></i> Publicar reseña
-        </button>
-    </div>
+        <p class="acc-star-label mt-2" id="star-label">&nbsp;</p>
 
-    <!-- My reviews list -->
-    <div id="my-reviews" class="flex flex-col gap-3"></div>
+        <textarea id="review-text" class="acc-area mt-2" rows="4" maxlength="600" placeholder="Cuéntanos qué te pareció el corte y la atención…"></textarea>
+        <div class="flex items-center justify-between mt-1 mb-4">
+            <span class="acc-count" id="review-count">0 / 600</span>
+        </div>
+
+        <button type="submit" class="acc-btn" id="review-submit" disabled>
+            <i class="fa-solid fa-paper-plane"></i> <span>Publicar reseña</span>
+        </button>
+    </form>
+
+    <div class="acc-h2 acc-rise" style="--i:2"><h2>Tus reseñas</h2><span id="my-count"></span></div>
+    <div id="my-reviews" class="flex flex-col gap-3 acc-rise" style="--i:3">
+        <div class="acc-skel" style="min-height:5.5rem"></div>
+    </div>
 </div>
 <script src="/js/app/reviews.js"></script>
